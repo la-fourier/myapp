@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class YearView extends StatefulWidget {
-  const YearView({super.key});
+  final void Function(DateTime) onDaySelected;
+
+  const YearView({super.key, required this.onDaySelected});
 
   @override
   State<YearView> createState() => _YearViewState();
@@ -58,14 +60,31 @@ class _YearViewState extends State<YearView> {
             padding: const EdgeInsets.all(8.0),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
-              crossAxisSpacing: 16.0,
-              mainAxisSpacing: 16.0,
-              childAspectRatio: 0.8, // Adjusted for table layout
+              crossAxisSpacing: 8.0,
+              mainAxisSpacing: 8.0,
+              childAspectRatio: 0.75,
             ),
             itemCount: 12,
             itemBuilder: (context, index) {
               final month = DateTime(_currentYear.year, index + 1);
-              return _MonthCalendar(month: month);
+              return Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12.0),
+                  color: Theme.of(context).cardColor,
+                  boxShadow: [
+                    BoxShadow(
+                       color: Colors.grey.withOpacity(0.2),
+                       spreadRadius: 1,
+                       blurRadius: 3,
+                       offset: const Offset(0, 1), // changes position of shadow
+                    ),
+                  ],
+                ),
+                child: _MonthCalendar(
+                  month: month,
+                  onDaySelected: widget.onDaySelected,
+                ),
+              );
             },
           ),
         ),
@@ -76,8 +95,9 @@ class _YearViewState extends State<YearView> {
 
 class _MonthCalendar extends StatelessWidget {
   final DateTime month;
+  final void Function(DateTime) onDaySelected;
 
-  const _MonthCalendar({required this.month});
+  const _MonthCalendar({required this.month, required this.onDaySelected});
 
   @override
   Widget build(BuildContext context) {
@@ -85,8 +105,7 @@ class _MonthCalendar extends StatelessWidget {
     final firstDayOfMonth = DateTime(month.year, month.month, 1);
     final firstWeekday = firstDayOfMonth.weekday; // Monday is 1, Sunday is 7
 
-    // Using German short names for weekdays
-    final List<String> weekdayNames = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+    final List<String> weekdayNames = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 
     List<TableRow> buildCalendarRows() {
       final List<TableRow> rows = [];
@@ -96,11 +115,12 @@ class _MonthCalendar extends StatelessWidget {
       rows.add(TableRow(
         children: weekdayNames.map((name) => Center(
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4.0),
+            padding: const EdgeInsets.symmetric(vertical: 2.0),
             child: Text(
               name,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
+                fontSize: 10,
                 color: Colors.grey.shade700,
               ),
             ),
@@ -109,20 +129,22 @@ class _MonthCalendar extends StatelessWidget {
       ));
 
       // Day Rows
-      // Add empty cells for the beginning of the first week
       for (int i = 1; i < firstWeekday; i++) {
         weekChildren.add(Container());
       }
 
-      // Add day cells
       for (int day = 1; day <= daysInMonth; day++) {
+        final date = DateTime(month.year, month.month, day);
         weekChildren.add(
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4.0),
-              child: Text(
-                '$day',
-                style: Theme.of(context).textTheme.bodySmall,
+          InkWell(
+            onTap: () => onDaySelected(date),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2.0),
+                child: Text(
+                  '$day',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 10),
+                ),
               ),
             ),
           ),
@@ -134,7 +156,6 @@ class _MonthCalendar extends StatelessWidget {
         }
       }
 
-      // Add the last week if it's not full
       if (weekChildren.isNotEmpty) {
         while (weekChildren.length < 7) {
           weekChildren.add(Container());
@@ -148,14 +169,17 @@ class _MonthCalendar extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 4.0, bottom: 8.0),
+          padding: const EdgeInsets.only(left: 8.0, top: 8.0, bottom: 4.0),
           child: Text(
-            DateFormat.MMMM('de_DE').format(month),
-            style: Theme.of(context).textTheme.titleMedium,
+            DateFormat.MMMM().format(month),
+            style: Theme.of(context).textTheme.titleSmall,
           ),
         ),
-        Table(
-          children: buildCalendarRows(),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+          child: Table(
+            children: buildCalendarRows(),
+          ),
         ),
       ],
     );

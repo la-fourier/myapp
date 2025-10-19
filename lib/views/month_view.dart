@@ -66,7 +66,7 @@ class _MonthViewState extends State<MonthView> {
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -76,7 +76,7 @@ class _MonthViewState extends State<MonthView> {
           ),
           Text(
             DateFormat.yMMMM().format(_currentMonth),
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           IconButton(
             icon: const Icon(Icons.chevron_right),
@@ -95,10 +95,10 @@ class _MonthViewState extends State<MonthView> {
         // To start week with Monday
         final dayIndex = (index + 1) % 7;
         return Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(4.0),
           child: Text(
             days[dayIndex],
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
           ),
         );
       }),
@@ -122,9 +122,10 @@ class _MonthViewState extends State<MonthView> {
     return GridView.builder(
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
-      padding: const EdgeInsets.all(4.0),
+      padding: const EdgeInsets.all(2.0),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 7,
+        childAspectRatio: 1.2,
       ),
       itemCount: daysInMonth + dayOffset,
       itemBuilder: (context, index) {
@@ -151,18 +152,14 @@ class _MonthViewState extends State<MonthView> {
         return GestureDetector(
           onTap: () => widget.onDaySelected(date, date),
           child: Container(
-            margin: const EdgeInsets.all(4.0),
+            margin: const EdgeInsets.all(2.0),
             decoration: BoxDecoration(
               color: isSelected
                   ? Colors.blue.shade300
                   : isToday
                   ? Colors.blue.shade100
                   : Colors.transparent,
-              borderRadius: BorderRadius.circular(8.0),
-              border: Border.all(
-                color: isToday ? Colors.blue.shade400 : Colors.transparent,
-                width: 1.5,
-              ),
+              borderRadius: BorderRadius.circular(12.0),
             ),
             child: Center(
               child: Text(

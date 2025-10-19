@@ -21,22 +21,43 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Calendar',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      localizationsDelegates: [
+      theme: ThemeData(
+        primarySwatch: Colors.indigo,
+        colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.indigo).copyWith(
+          secondary: Colors.green.shade300,
+        ),
+        inputDecorationTheme: const InputDecorationTheme(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(12.0)),
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.0),
+            ),
+          ),
+        ),
+        cardTheme: CardThemeData(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0),
+          ),
+        ),
+      ),
+      localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: [
-        const Locale('en', ''), // English, no country code
-        const Locale('de', ''), // German, no country code
+      supportedLocales: const [
+        Locale('en', ''), // English, no country code
       ],
       home: const CalendarApp(),
     );
   }
 }
 
-enum CalendarView { month, week, year }
+enum CalendarView { week, month, year }
 
 class CalendarApp extends StatefulWidget {
   const CalendarApp({super.key});
@@ -66,6 +87,8 @@ class _CalendarAppState extends State<CalendarApp> {
 
   Widget _buildView() {
     switch (_currentView) {
+      case CalendarView.week:
+        return WeekView(focusedDay: _focusedDay);
       case CalendarView.month:
         return SingleChildScrollView(
           child: Column(
@@ -86,10 +109,16 @@ class _CalendarAppState extends State<CalendarApp> {
             ],
           ),
         );
-      case CalendarView.week:
-        return WeekView(focusedDay: _focusedDay);
       case CalendarView.year:
-        return const YearView();
+        return YearView(
+          onDaySelected: (day) {
+            setState(() {
+              _focusedDay = day;
+              _selectedDay = day;
+              _currentView = CalendarView.month;
+            });
+          },
+        );
     }
   }
 
@@ -123,6 +152,25 @@ class _CalendarAppState extends State<CalendarApp> {
               ),
             ),
             ListTile(
+              leading: const Icon(Icons.calendar_today),
+              title: const Text('Calendar'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.today),
+              title: const Text('Today'),
+              onTap: () {
+                setState(() {
+                  _focusedDay = DateTime.now();
+                  _selectedDay = DateTime.now();
+                });
+                Navigator.pop(context);
+              },
+            ),
+            const Divider(),
+            ListTile(
               leading: const Icon(Icons.notifications),
               title: const Text('Test Notification'),
               onTap: () {
@@ -142,24 +190,29 @@ class _CalendarAppState extends State<CalendarApp> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: ToggleButtons(
+              borderRadius: BorderRadius.circular(12.0),
               isSelected: [
-                _currentView == CalendarView.month,
                 _currentView == CalendarView.week,
+                _currentView == CalendarView.month,
                 _currentView == CalendarView.year,
               ],
               onPressed: (index) {
                 setState(() {
-                  _currentView = CalendarView.values[index];
+                  final newView = CalendarView.values[index];
+                  if (newView == CalendarView.week) {
+                    _focusedDay = DateTime.now();
+                  }
+                  _currentView = newView;
                 });
               },
               children: const [
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text('Month'),
+                  child: Text('Week'),
                 ),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text('Week'),
+                  child: Text('Month'),
                 ),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16.0),
