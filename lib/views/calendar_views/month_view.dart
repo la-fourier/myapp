@@ -65,13 +65,16 @@ class _MonthViewState extends State<MonthView> {
   }
 
   Widget _buildHeader() {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final arrowColor = isDarkMode ? Colors.white : Colors.black;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
-            icon: const Icon(Icons.chevron_left),
+            icon: Icon(Icons.chevron_left, color: arrowColor),
             onPressed: _previousMonth,
           ),
           Text(
@@ -79,7 +82,7 @@ class _MonthViewState extends State<MonthView> {
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           IconButton(
-            icon: const Icon(Icons.chevron_right),
+            icon: Icon(Icons.chevron_right, color: arrowColor),
             onPressed: _nextMonth,
           ),
         ],
@@ -92,7 +95,6 @@ class _MonthViewState extends State<MonthView> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: List.generate(7, (index) {
-        // To start week with Monday
         final dayIndex = (index + 1) % 7;
         return Padding(
           padding: const EdgeInsets.all(4.0),
@@ -116,7 +118,6 @@ class _MonthViewState extends State<MonthView> {
       _currentMonth.month,
       1,
     );
-    // Adjust for Monday start: weekday returns 1 for Monday, 7 for Sunday.
     final dayOffset = firstDayOfMonth.weekday - 1;
 
     return GridView.builder(
@@ -130,7 +131,7 @@ class _MonthViewState extends State<MonthView> {
       itemCount: daysInMonth + dayOffset,
       itemBuilder: (context, index) {
         if (index < dayOffset) {
-          return const SizedBox.shrink(); // Empty cell before the month starts
+          return const SizedBox.shrink();
         }
 
         final dayNumber = index - dayOffset + 1;
@@ -139,46 +140,82 @@ class _MonthViewState extends State<MonthView> {
           _currentMonth.month,
           dayNumber,
         );
-        final isToday =
-            date.year == DateTime.now().year &&
-            date.month == DateTime.now().month &&
-            date.day == DateTime.now().day;
-        final isSelected =
-            widget.selectedDay != null &&
-            date.year == widget.selectedDay!.year &&
-            date.month == widget.selectedDay!.month &&
-            date.day == widget.selectedDay!.day;
 
-        return GestureDetector(
-          onTap: () => widget.onDaySelected(date, date),
-          child: Container(
-            margin: const EdgeInsets.all(2.0),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? Colors.blue.shade300
-                  : isToday
-                  ? Colors.blue.shade100
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(12.0),
-            ),
-            child: Center(
-              child: Text(
-                '$dayNumber',
-                style: TextStyle(
-                  color: isSelected
-                      ? Colors.white
-                      : isToday
-                      ? Colors.blue.shade900
-                      : Colors.black87,
-                  fontWeight: isSelected || isToday
-                      ? FontWeight.bold
-                      : FontWeight.normal,
-                ),
+        return _DayCell(
+          date: date,
+          onDaySelected: widget.onDaySelected,
+          isSelected: widget.selectedDay != null &&
+              date.year == widget.selectedDay!.year &&
+              date.month == widget.selectedDay!.month &&
+              date.day == widget.selectedDay!.day,
+          isToday: date.year == DateTime.now().year &&
+              date.month == DateTime.now().month &&
+              date.day == DateTime.now().day,
+        );
+      },
+    );
+  }
+}
+
+class _DayCell extends StatefulWidget {
+  final DateTime date;
+  final Function(DateTime, DateTime) onDaySelected;
+  final bool isSelected;
+  final bool isToday;
+
+  const _DayCell({
+    required this.date,
+    required this.onDaySelected,
+    required this.isSelected,
+    required this.isToday,
+  });
+
+  @override
+  State<_DayCell> createState() => _DayCellState();
+}
+
+class _DayCellState extends State<_DayCell> {
+  bool _isHovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovering = true),
+      onExit: (_) => setState(() => _isHovering = false),
+      child: GestureDetector(
+        onTap: () => widget.onDaySelected(widget.date, widget.date),
+        child: Container(
+          margin: const EdgeInsets.all(2.0),
+          decoration: BoxDecoration(
+            color: widget.isSelected
+                ? Colors.blue.shade300
+                : _isHovering
+                ? Theme.of(context).hoverColor
+                : widget.isToday
+                ? Colors.blue.shade100
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(12.0),
+          ),
+          child: Center(
+            child: Text(
+              '${widget.date.day}',
+              style: TextStyle(
+                color: widget.isSelected
+                    ? Colors.white
+                    : widget.isToday
+                    ? Colors.blue.shade900
+                    : isDarkMode
+                    ? Colors.white
+                    : Colors.black87,
+                fontWeight: widget.isSelected || widget.isToday
+                    ? FontWeight.bold
+                    : FontWeight.normal,
               ),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

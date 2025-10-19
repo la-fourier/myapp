@@ -22,7 +22,6 @@ class NotificationService {
       requestAlertPermission: true,
       requestBadgePermission: true,
       requestSoundPermission: true,
-      onDidReceiveLocalNotification: (id, title, body, payload) async {},
     );
 
     final InitializationSettings initializationSettings = InitializationSettings(

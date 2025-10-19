@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:myapp/notification_service.dart';
+import 'package:myapp/theme_provider.dart';
+import 'package:myapp/views/calendar_view.dart';
+import 'package:myapp/views/data_view.dart';
 import 'package:myapp/views/lock_screen_view.dart';
-import 'package:myapp/views/month_view.dart';
-import 'package:myapp/views/week_view.dart';
-import 'package:myapp/views/year_view.dart';
+import 'package:myapp/views/people_view.dart';
+import 'package:myapp/views/settings_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,108 +21,90 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Calendar',
-      theme: ThemeData(
-        primarySwatch: Colors.indigo,
-        colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.indigo).copyWith(
-          secondary: Colors.green.shade300,
-        ),
-        inputDecorationTheme: const InputDecorationTheme(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(12.0)),
-          ),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.0),
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: themeNotifier,
+      builder: (_, ThemeMode currentMode, __) {
+        return MaterialApp(
+          title: 'Flutter Calendar',
+          theme: ThemeData(
+            primarySwatch: Colors.indigo,
+            colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.indigo).copyWith(
+              secondary: Colors.green.shade300,
+              brightness: Brightness.light,
+            ),
+            inputDecorationTheme: const InputDecorationTheme(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(12.0)),
+              ),
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+              ),
+            ),
+            cardTheme: CardThemeData(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.0),
+              ),
             ),
           ),
-        ),
-        cardTheme: CardThemeData(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.0),
+          darkTheme: ThemeData.dark().copyWith(
+            primaryColor: Colors.indigo,
+            colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.indigo).copyWith(
+              secondary: Colors.green.shade300,
+              brightness: Brightness.dark,
+            ),
+            textTheme: ThemeData.dark().textTheme.apply(
+                  bodyColor: Colors.white,
+                  displayColor: Colors.white,
+                ),
+            inputDecorationTheme: const InputDecorationTheme(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(12.0)),
+              ),
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+              ),
+            ),
+             cardTheme: CardThemeData(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.0),
+              ),
+              color: Colors.grey[800], // Darker card color
+            ),
           ),
-        ),
-      ),
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('en', ''), // English, no country code
-      ],
-      home: const CalendarApp(),
+          themeMode: currentMode,
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('en', ''), // English, no country code
+            Locale('de', ''), // German, no country code
+          ],
+          home: const CalendarAppHome(),
+        );
+      },
     );
   }
 }
 
-enum CalendarView { week, month, year }
-
-class CalendarApp extends StatefulWidget {
-  const CalendarApp({super.key});
+class CalendarAppHome extends StatefulWidget {
+  const CalendarAppHome({super.key});
 
   @override
-  State<CalendarApp> createState() => _CalendarAppState();
+  State<CalendarAppHome> createState() => _CalendarAppHomeState();
 }
 
-class _CalendarAppState extends State<CalendarApp> {
-  DateTime _focusedDay = DateTime.now();
-  DateTime? _selectedDay;
-  CalendarView _currentView = CalendarView.month;
+class _CalendarAppHomeState extends State<CalendarAppHome> {
   final NotificationService _notificationService = NotificationService();
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedDay = _focusedDay;
-  }
-
-  void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
-    setState(() {
-      _selectedDay = selectedDay;
-      _focusedDay = focusedDay;
-    });
-  }
-
-  Widget _buildView() {
-    switch (_currentView) {
-      case CalendarView.week:
-        return WeekView(focusedDay: _focusedDay);
-      case CalendarView.month:
-        return SingleChildScrollView(
-          child: Column(
-            children: [
-              MonthView(
-                focusedDay: _focusedDay,
-                selectedDay: _selectedDay,
-                onDaySelected: _onDaySelected,
-              ),
-              if (_selectedDay != null)
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    'Selected Day: ${_selectedDay!.toLocal()}'
-                        .split(' ')[0],
-                  ),
-                ),
-            ],
-          ),
-        );
-      case CalendarView.year:
-        return YearView(
-          onDaySelected: (day) {
-            setState(() {
-              _focusedDay = day;
-              _selectedDay = day;
-              _currentView = CalendarView.month;
-            });
-          },
-        );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -138,15 +122,27 @@ class _CalendarAppState extends State<CalendarApp> {
               );
             },
           ),
+          IconButton(
+            icon: Icon(themeNotifier.value == ThemeMode.light
+                ? Icons.dark_mode
+                : Icons.light_mode),
+            onPressed: () {
+              setState(() {
+                themeNotifier.value = themeNotifier.value == ThemeMode.light
+                    ? ThemeMode.dark
+                    : ThemeMode.light;
+              });
+            },
+          ),
         ],
       ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blue),
-              child: Text(
+            DrawerHeader(
+              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
+              child: const Text(
                 'Menu',
                 style: TextStyle(color: Colors.white, fontSize: 24),
               ),
@@ -159,17 +155,36 @@ class _CalendarAppState extends State<CalendarApp> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.today),
-              title: const Text('Today'),
+              leading: const Icon(Icons.people),
+              title: const Text('People'),
               onTap: () {
-                setState(() {
-                  _focusedDay = DateTime.now();
-                  _selectedDay = DateTime.now();
-                });
-                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const PeopleView()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.data_usage),
+              title: const Text('Data'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const DataView()),
+                );
               },
             ),
             const Divider(),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SettingsView()),
+                );
+              },
+            ),
             ListTile(
               leading: const Icon(Icons.notifications),
               title: const Text('Test Notification'),
@@ -185,45 +200,7 @@ class _CalendarAppState extends State<CalendarApp> {
           ],
         ),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ToggleButtons(
-              borderRadius: BorderRadius.circular(12.0),
-              isSelected: [
-                _currentView == CalendarView.week,
-                _currentView == CalendarView.month,
-                _currentView == CalendarView.year,
-              ],
-              onPressed: (index) {
-                setState(() {
-                  final newView = CalendarView.values[index];
-                  if (newView == CalendarView.week) {
-                    _focusedDay = DateTime.now();
-                  }
-                  _currentView = newView;
-                });
-              },
-              children: const [
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text('Week'),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text('Month'),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text('Year'),
-                ),
-              ],
-            ),
-          ),
-          Expanded(child: _buildView()),
-        ],
-      ),
+      body: const CalendarView(),
     );
   }
 }
