@@ -23,15 +23,24 @@ class _MonthViewState extends State<MonthView> {
   @override
   void initState() {
     super.initState();
-    _currentMonth = DateTime(widget.focusedDay.year, widget.focusedDay.month, 1);
+    _currentMonth = DateTime(
+      widget.focusedDay.year,
+      widget.focusedDay.month,
+      1,
+    );
   }
 
   @override
   void didUpdateWidget(covariant MonthView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.focusedDay.month != _currentMonth.month || widget.focusedDay.year != _currentMonth.year) {
+    if (widget.focusedDay.month != _currentMonth.month ||
+        widget.focusedDay.year != _currentMonth.year) {
       setState(() {
-        _currentMonth = DateTime(widget.focusedDay.year, widget.focusedDay.month, 1);
+        _currentMonth = DateTime(
+          widget.focusedDay.year,
+          widget.focusedDay.month,
+          1,
+        );
       });
     }
   }
@@ -51,11 +60,7 @@ class _MonthViewState extends State<MonthView> {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: [
-        _buildHeader(),
-        _buildWeekDays(),
-        _buildCalendarGrid(),
-      ],
+      children: [_buildHeader(), _buildWeekDays(), _buildCalendarGrid()],
     );
   }
 
@@ -101,8 +106,16 @@ class _MonthViewState extends State<MonthView> {
   }
 
   Widget _buildCalendarGrid() {
-    final daysInMonth = DateTime(_currentMonth.year, _currentMonth.month + 1, 0).day;
-    final firstDayOfMonth = DateTime(_currentMonth.year, _currentMonth.month, 1);
+    final daysInMonth = DateTime(
+      _currentMonth.year,
+      _currentMonth.month + 1,
+      0,
+    ).day;
+    final firstDayOfMonth = DateTime(
+      _currentMonth.year,
+      _currentMonth.month,
+      1,
+    );
     // Adjust for Monday start: weekday returns 1 for Monday, 7 for Sunday.
     final dayOffset = firstDayOfMonth.weekday - 1;
 
@@ -120,11 +133,17 @@ class _MonthViewState extends State<MonthView> {
         }
 
         final dayNumber = index - dayOffset + 1;
-        final date = DateTime(_currentMonth.year, _currentMonth.month, dayNumber);
-        final isToday = date.year == DateTime.now().year &&
+        final date = DateTime(
+          _currentMonth.year,
+          _currentMonth.month,
+          dayNumber,
+        );
+        final isToday =
+            date.year == DateTime.now().year &&
             date.month == DateTime.now().month &&
             date.day == DateTime.now().day;
-        final isSelected = widget.selectedDay != null &&
+        final isSelected =
+            widget.selectedDay != null &&
             date.year == widget.selectedDay!.year &&
             date.month == widget.selectedDay!.month &&
             date.day == widget.selectedDay!.day;
@@ -137,8 +156,8 @@ class _MonthViewState extends State<MonthView> {
               color: isSelected
                   ? Colors.blue.shade300
                   : isToday
-                      ? Colors.blue.shade100
-                      : Colors.transparent,
+                  ? Colors.blue.shade100
+                  : Colors.transparent,
               borderRadius: BorderRadius.circular(8.0),
               border: Border.all(
                 color: isToday ? Colors.blue.shade400 : Colors.transparent,
@@ -152,9 +171,11 @@ class _MonthViewState extends State<MonthView> {
                   color: isSelected
                       ? Colors.white
                       : isToday
-                          ? Colors.blue.shade900
-                          : Colors.black87,
-                  fontWeight: isSelected || isToday ? FontWeight.bold : FontWeight.normal,
+                      ? Colors.blue.shade900
+                      : Colors.black87,
+                  fontWeight: isSelected || isToday
+                      ? FontWeight.bold
+                      : FontWeight.normal,
                 ),
               ),
             ),

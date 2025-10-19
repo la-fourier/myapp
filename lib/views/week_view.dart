@@ -21,18 +21,23 @@ class WeekView extends StatelessWidget {
         Row(
           children: [
             const SizedBox(width: 60), // Spacer for time column
-            ...weekDays.map((day) => Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    alignment: Alignment.center,
-                    child: Column(
-                      children: [
-                        Text(DateFormat('E').format(day).substring(0, 3), style: headerStyle), // e.g., 'Mon'
-                        Text(day.day.toString(), style: headerStyle),
-                      ],
-                    ),
+            ...weekDays.map(
+              (day) => Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  alignment: Alignment.center,
+                  child: Column(
+                    children: [
+                      Text(
+                        DateFormat('E').format(day).substring(0, 3),
+                        style: headerStyle,
+                      ), // e.g., 'Mon'
+                      Text(day.day.toString(), style: headerStyle),
+                    ],
                   ),
-                )),
+                ),
+              ),
+            ),
           ],
         ),
         const Divider(),
@@ -57,13 +62,20 @@ class WeekView extends StatelessWidget {
                             child: Container(
                               decoration: BoxDecoration(
                                 border: Border(
-                                  top: const BorderSide(color: Colors.grey, width: 0.5),
+                                  top: const BorderSide(
+                                    color: Colors.grey,
+                                    width: 0.5,
+                                  ),
                                   left: dayIndex == 0
                                       ? BorderSide.none
-                                      : const BorderSide(color: Colors.grey, width: 0.5),
+                                      : const BorderSide(
+                                          color: Colors.grey,
+                                          width: 0.5,
+                                        ),
                                 ),
                               ),
-                              child: const SizedBox.shrink(), // Placeholder for events
+                              child:
+                                  const SizedBox.shrink(), // Placeholder for events
                             ),
                           );
                         }),
