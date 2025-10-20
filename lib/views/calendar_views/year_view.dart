@@ -3,8 +3,9 @@ import 'package:intl/intl.dart';
 
 class YearView extends StatefulWidget {
   final void Function(DateTime) onDaySelected;
+  final DateTime focusedDay;
 
-  const YearView({super.key, required this.onDaySelected});
+  const YearView({super.key, required this.onDaySelected, required this.focusedDay});
 
   @override
   State<YearView> createState() => _YearViewState();
@@ -16,8 +17,19 @@ class _YearViewState extends State<YearView> {
   @override
   void initState() {
     super.initState();
-    _currentYear = DateTime.now();
+    _currentYear = widget.focusedDay;
   }
+
+    @override
+  void didUpdateWidget(YearView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.focusedDay.year != oldWidget.focusedDay.year) {
+      setState(() {
+        _currentYear = widget.focusedDay;
+      });
+    }
+  }
+
 
   void _previousYear() {
     setState(() {

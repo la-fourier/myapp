@@ -1,0 +1,184 @@
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:myapp/models/appointment.dart';
+
+class AppointmentEditorDialog extends StatefulWidget {
+  final DateTime startTime;
+  final Function(Appointment) onSave;
+
+  const AppointmentEditorDialog({
+    super.key,
+    required this.startTime,
+    required this.onSave,
+  });
+
+  @override
+  State<AppointmentEditorDialog> createState() => _AppointmentEditorDialogState();
+}
+
+class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
+  final _formKey = GlobalKey<FormState>();
+  String _title = '';
+  String _description = '';
+  late DateTime _startDate;
+  late DateTime _endDate;
+  late TimeOfDay _startTime;
+  late TimeOfDay _endTime;
+
+  @override
+  void initState() {
+    super.initState();
+    _startDate = widget.startTime;
+    _endDate = widget.startTime.add(const Duration(hours: 1));
+    _startTime = TimeOfDay.fromDateTime(widget.startTime);
+    _endTime = TimeOfDay.fromDateTime(_endDate);
+  }
+
+  Future<void> _selectDate(BuildContext context, bool isStart) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: isStart ? _startDate : _endDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null && picked != (isStart ? _startDate : _endDate)) {
+      setState(() {
+        if (isStart) {
+          _startDate = picked;
+        } else {
+          _endDate = picked;
+        }
+      });
+    }
+  }
+
+  Future<void> _selectTime(BuildContext context, bool isStart) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: isStart ? _startTime : _endTime,
+    );
+    if (picked != null && picked != (isStart ? _startTime : _endTime)) {
+      setState(() {
+        if (isStart) {
+          _startTime = picked;
+        } else {
+          _endTime = picked;
+        }
+      });
+    }
+  }
+
+  void _saveForm() {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+
+      final finalStartDate = DateTime(
+        _startDate.year,
+        _startDate.month,
+        _startDate.day,
+        _startTime.hour,
+        _startTime.minute,
+      );
+
+      final finalEndDate = DateTime(
+        _endDate.year,
+        _endDate.month,
+        _endDate.day,
+        _endTime.hour,
+        _endTime.minute,
+      );
+
+      final newAppointment = Appointment(
+        title: _title,
+        description: _description,
+        start: finalStartDate,
+        end: finalEndDate,
+      );
+
+      widget.onSave(newAppointment);
+      Navigator.of(context).pop();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Create Appointment'),
+      content: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                decoration: const InputDecoration(labelText: 'Title'),
+                validator: (value) => value!.isEmpty ? 'Please enter a title' : null,
+                onSaved: (value) => _title = value!,
+              ),
+              TextFormField(
+                decoration: const InputDecoration(labelText: 'Description'),
+                onSaved: (value) => _description = value ?? '',
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text('Start: ${DateFormat.yMd().format(_startDate)}'),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.calendar_today),
+                    onPressed: () => _selectDate(context, true),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text('Start Time: ${_startTime.format(context)}'),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.access_time),
+                    onPressed: () => _selectTime(context, true),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text('End: ${DateFormat.yMd().format(_endDate)}'),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.calendar_today),
+                    onPressed: () => _selectDate(context, false),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text('End Time: ${_endTime.format(context)}'),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.access_time),
+                    onPressed: () => _selectTime(context, false),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: _saveForm,
+          child: const Text('Save'),
+        ),
+      ],
+    );
+  }
+}

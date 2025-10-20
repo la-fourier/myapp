@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/views/calendar_views/month_view.dart';
 import 'package:myapp/views/calendar_views/tasks_list_view.dart';
+import 'package:myapp/views/calendar_views/week_view.dart';
 import 'package:myapp/views/calendar_views/year_view.dart';
 
-enum CalendarViewType { tasks, month, year }
+enum CalendarViewType { tasks, week, month, year }
 
 class CalendarView extends StatefulWidget {
   const CalendarView({super.key});
@@ -30,10 +31,19 @@ class _CalendarViewState extends State<CalendarView> {
     });
   }
 
+  void _jumpToToday() {
+    setState(() {
+      _focusedDay = DateTime.now();
+      _selectedDay = DateTime.now();
+    });
+  }
+
   Widget _buildView() {
     switch (_currentView) {
       case CalendarViewType.tasks:
-        return const TasksListView();
+        return TasksListView(focusedDay: _focusedDay);
+      case CalendarViewType.week:
+        return WeekView(focusedDay: _focusedDay);
       case CalendarViewType.month:
         return SingleChildScrollView(
           child: Column(
@@ -56,6 +66,7 @@ class _CalendarViewState extends State<CalendarView> {
         );
       case CalendarViewType.year:
         return YearView(
+          focusedDay: _focusedDay,
           onDaySelected: (day) {
             setState(() {
               _focusedDay = day;
@@ -76,30 +87,55 @@ class _CalendarViewState extends State<CalendarView> {
       children: [
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: ToggleButtons(
-            borderRadius: BorderRadius.circular(12.0),
-            isSelected: [
-              _currentView == CalendarViewType.tasks,
-              _currentView == CalendarViewType.month,
-              _currentView == CalendarViewType.year,
-            ],
-            onPressed: (index) {
-              setState(() {
-                _currentView = CalendarViewType.values[index];
-              });
-            },
+          child: Stack(
+            alignment: Alignment.center,
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text('Tasks list', style: TextStyle(color: onSurfaceColor)),
+              Align(
+                alignment: Alignment.center,
+                child: ToggleButtons(
+                  borderRadius: BorderRadius.circular(12.0),
+                  isSelected: [
+                    _currentView == CalendarViewType.tasks,
+                    _currentView == CalendarViewType.week,
+                    _currentView == CalendarViewType.month,
+                    _currentView == CalendarViewType.year,
+                  ],
+                  onPressed: (index) {
+                    setState(() {
+                      _currentView = CalendarViewType.values[index];
+                    });
+                  },
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Text('Tasks list', style: TextStyle(color: onSurfaceColor)),
+                    ),
+                     Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Text('Week', style: TextStyle(color: onSurfaceColor)),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Text('Month', style: TextStyle(color: onSurfaceColor)),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Text('Year', style: TextStyle(color: onSurfaceColor)),
+                    ),
+                  ],
+                ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text('Month', style: TextStyle(color: onSurfaceColor)),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text('Year', style: TextStyle(color: onSurfaceColor)),
+              Align(
+                alignment: Alignment.centerRight,
+                child: OutlinedButton(
+                  onPressed: _jumpToToday,
+                  style: OutlinedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                  ),
+                  child: const Text('Today'),
+                ),
               ),
             ],
           ),

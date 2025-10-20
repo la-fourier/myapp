@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class TasksListView extends StatefulWidget {
-  const TasksListView({super.key});
+  final DateTime focusedDay;
+  const TasksListView({super.key, required this.focusedDay});
 
   @override
   State<TasksListView> createState() => _TasksListViewState();
@@ -14,7 +15,17 @@ class _TasksListViewState extends State<TasksListView> {
   @override
   void initState() {
     super.initState();
-    _currentWeek = _getMonday(DateTime.now());
+    _currentWeek = _getMonday(widget.focusedDay);
+  }
+
+  @override
+  void didUpdateWidget(TasksListView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.focusedDay != oldWidget.focusedDay) {
+      setState(() {
+        _currentWeek = _getMonday(widget.focusedDay);
+      });
+    }
   }
 
   DateTime _getMonday(DateTime date) {
