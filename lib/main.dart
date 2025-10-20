@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:myapp/notification_service.dart';
-import 'package:myapp/theme_provider.dart';
+import 'package:myapp/services/theme_provider.dart';
+import 'package:myapp/views/account_view.dart';
 import 'package:myapp/views/calendar_view.dart';
-import 'package:myapp/views/data_view.dart';
-import 'package:myapp/views/lock_screen_view.dart';
-import 'package:myapp/views/people_view.dart';
+import 'package:myapp/views/dashboard_view.dart';
 import 'package:myapp/views/settings_view.dart';
+import 'package:myapp/views/today_view.dart';
+import 'package:provider/provider.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  final NotificationService notificationService = NotificationService();
-  await notificationService.init();
-  await notificationService.requestPermissions();
+void main() {
   runApp(const MyApp());
 }
 
@@ -21,117 +16,79 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<ThemeMode>(
-      valueListenable: themeNotifier,
-      builder: (_, ThemeMode currentMode, __) {
-        return MaterialApp(
-          title: 'Flutter Calendar',
-          theme: ThemeData(
-            primarySwatch: Colors.indigo,
-            colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.indigo).copyWith(
-              secondary: Colors.green.shade300,
-              brightness: Brightness.light,
-            ),
-            inputDecorationTheme: const InputDecorationTheme(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12.0)),
-              ),
-            ),
-            elevatedButtonTheme: ElevatedButtonThemeData(
-              style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
-              ),
-            ),
-            cardTheme: CardThemeData(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.0),
-              ),
-            ),
-          ),
-          darkTheme: ThemeData.dark().copyWith(
-            primaryColor: Colors.indigo,
-            colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.indigo).copyWith(
-              secondary: Colors.green.shade300,
-              brightness: Brightness.dark,
-            ),
-            textTheme: ThemeData.dark().textTheme.apply(
-                  bodyColor: Colors.white,
-                  displayColor: Colors.white,
-                ),
-            inputDecorationTheme: const InputDecorationTheme(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12.0)),
-              ),
-            ),
-            elevatedButtonTheme: ElevatedButtonThemeData(
-              style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
-              ),
-            ),
-             cardTheme: CardThemeData(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.0),
-              ),
-              color: Colors.grey[800], // Darker card color
-            ),
-          ),
-          themeMode: currentMode,
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: const [
-            Locale('en', ''), // English, no country code
-            Locale('de', ''), // German, no country code
-          ],
-          home: const CalendarAppHome(),
-        );
-      },
+    return ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp(
+            title: 'Flutter Demo',
+            theme: themeProvider.getTheme(),
+            home: const MainScreen(),
+            debugShowCheckedModeBanner: false,
+          );
+        },
+      ),
     );
   }
 }
 
-class CalendarAppHome extends StatefulWidget {
-  const CalendarAppHome({super.key});
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
 
   @override
-  State<CalendarAppHome> createState() => _CalendarAppHomeState();
+  State<MainScreen> createState() => _MainScreenState();
 }
 
-class _CalendarAppHomeState extends State<CalendarAppHome> {
-  final NotificationService _notificationService = NotificationService();
+class _MainScreenState extends State<MainScreen> {
+  int _selectedIndex = 0;
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  static final List<Widget> _widgetOptions = <Widget>[
+    const DashboardView(),
+    const CalendarView(),
+    const TodayView(),
+    const AccountView(),
+    const SettingsView(),
+  ];
+
+  static const List<String> _widgetTitles = <String>[
+    'Dashboard',
+    'Calendar',
+    'Today',
+    'Account',
+    'Settings',
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    Navigator.of(context).pop(); // Close the drawer
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
-        title: const Text('Flutter Calendar'),
+        title: Text(_widgetTitles[_selectedIndex]),
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () {
+            _scaffoldKey.currentState?.openDrawer();
+          },
+        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.lock),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const LockScreenView()),
+          Consumer<ThemeProvider>(
+            builder: (context, themeProvider, child) {
+              return IconButton(
+                icon: Icon(
+                  themeProvider.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                ),
+                onPressed: () {
+                  themeProvider.toggleTheme();
+                },
               );
-            },
-          ),
-          IconButton(
-            icon: Icon(themeNotifier.value == ThemeMode.light
-                ? Icons.dark_mode
-                : Icons.light_mode),
-            onPressed: () {
-              setState(() {
-                themeNotifier.value = themeNotifier.value == ThemeMode.light
-                    ? ThemeMode.dark
-                    : ThemeMode.light;
-              });
             },
           ),
         ],
@@ -139,68 +96,46 @@ class _CalendarAppHomeState extends State<CalendarAppHome> {
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-              child: const Text(
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text(
                 'Menu',
                 style: TextStyle(color: Colors.white, fontSize: 24),
               ),
             ),
             ListTile(
+              leading: const Icon(Icons.dashboard),
+              title: const Text('Dashboard'),
+              onTap: () => _onItemTapped(0),
+            ),
+            ListTile(
               leading: const Icon(Icons.calendar_today),
               title: const Text('Calendar'),
-              onTap: () {
-                Navigator.pop(context);
-              },
+              onTap: () => _onItemTapped(1),
             ),
             ListTile(
-              leading: const Icon(Icons.people),
-              title: const Text('People'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const PeopleView()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.data_usage),
-              title: const Text('Data'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const DataView()),
-                );
-              },
+              leading: const Icon(Icons.today),
+              title: const Text('Today'),
+              onTap: () => _onItemTapped(2),
             ),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SettingsView()),
-                );
-              },
+              leading: const Icon(Icons.account_circle),
+              title: const Text('Account'),
+              onTap: () => _onItemTapped(3),
             ),
             ListTile(
-              leading: const Icon(Icons.notifications),
-              title: const Text('Test Notification'),
-              onTap: () {
-                _notificationService.showNotification(
-                  1,
-                  'Test Notification',
-                  'This is a test',
-                );
-                Navigator.pop(context);
-              },
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings'),
+              onTap: () => _onItemTapped(4),
             ),
           ],
         ),
       ),
-      body: const CalendarView(),
+      body: _widgetOptions.elementAt(_selectedIndex),
     );
   }
 }

@@ -58,7 +58,7 @@ class _MonthViewState extends State<MonthView> {
             );
           } else if (isToday) {
             decoration = BoxDecoration(
-              color: Theme.of(context).colorScheme.secondary.withOpacity(0.5),
+              color: Theme.of(context).colorScheme.secondary.withAlpha(128),
               borderRadius: BorderRadius.circular(8.0),
             );
           } else if (isHovered) {

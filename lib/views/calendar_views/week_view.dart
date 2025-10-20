@@ -16,7 +16,6 @@ class WeekView extends StatefulWidget {
 class _WeekViewState extends State<WeekView> {
   late DateTime _currentWeek;
   late Timer _timer;
-  bool _isHovering = false;
   Offset _hoverPosition = Offset.zero;
   final List<Appointment> _appointments = [];
 
@@ -200,7 +199,7 @@ class _WeekViewState extends State<WeekView> {
         child: Container(
           margin: const EdgeInsets.all(1.0),
           padding: const EdgeInsets.all(4.0),
-          decoration: BoxDecoration(color: app.color.withOpacity(0.8), borderRadius: BorderRadius.circular(4.0)),
+          decoration: BoxDecoration(color: app.color.withAlpha(204), borderRadius: BorderRadius.circular(4.0)),
           child: Text(app.title, style: const TextStyle(fontSize: 12, color: Colors.white), overflow: TextOverflow.ellipsis),
         ),
       );
