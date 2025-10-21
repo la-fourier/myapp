@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/views/calendar_views/month_view.dart';
 import 'package:myapp/views/calendar_views/week_view.dart';
+import 'package:myapp/views/calendar_views/year_view.dart';
 
 class CalendarView extends StatefulWidget {
   const CalendarView({super.key});
@@ -10,7 +11,7 @@ class CalendarView extends StatefulWidget {
 }
 
 class _CalendarViewState extends State<CalendarView> {
-  bool _isWeekView = false;
+  int _viewIndex = 0; // 0 for Month, 1 for Week, 2 for Year
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
 
@@ -40,24 +41,36 @@ class _CalendarViewState extends State<CalendarView> {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               ChoiceChip(
-                label: const Text('Month'),
-                selected: !_isWeekView,
+                label: const Text('Week'),
+                selected: _viewIndex == 1,
                 onSelected: (selected) {
                   if (selected) {
                     setState(() {
-                      _isWeekView = false;
+                      _viewIndex = 1;
                     });
                   }
                 },
               ),
               const SizedBox(width: 8),
               ChoiceChip(
-                label: const Text('Week'),
-                selected: _isWeekView,
+                label: const Text('Month'),
+                selected: _viewIndex == 0,
                 onSelected: (selected) {
                   if (selected) {
                     setState(() {
-                      _isWeekView = true;
+                      _viewIndex = 0;
+                    });
+                  }
+                },
+              ),
+              const SizedBox(width: 8),
+              ChoiceChip(
+                label: const Text('Year'),
+                selected: _viewIndex == 2,
+                onSelected: (selected) {
+                  if (selected) {
+                    setState(() {
+                      _viewIndex = 2;
                     });
                   }
                 },
@@ -66,13 +79,18 @@ class _CalendarViewState extends State<CalendarView> {
           ),
         ),
         Expanded(
-          child: _isWeekView
-              ? WeekView(focusedDay: _focusedDay)
-              : MonthView(
-                  focusedDay: _focusedDay,
-                  selectedDay: _selectedDay,
-                  onDaySelected: _onDaySelected,
-                ),
+          child: IndexedStack(
+            index: _viewIndex,
+            children: [
+              MonthView(
+                focusedDay: _focusedDay,
+                selectedDay: _selectedDay,
+                onDaySelected: _onDaySelected,
+              ),
+              WeekView(focusedDay: _focusedDay),
+              YearView(focusedDay: _focusedDay),
+            ],
+          ),
         ),
       ],
     );

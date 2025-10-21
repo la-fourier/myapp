@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-class PeopleView extends StatelessWidget {
-  const PeopleView({super.key});
+class StatsView extends StatelessWidget {
+  const StatsView({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const Center(
-      child: Text('People View'),
+      child: Text('Stats View'),
     );
   }
 }

@@ -50,6 +50,12 @@ class _WeekViewState extends State<WeekView> {
     return date.subtract(Duration(days: date.weekday - 1));
   }
 
+  int _getWeekNumber(DateTime date) {
+    final firstDayOfYear = DateTime(date.year, 1, 1);
+    final dayOfYear = date.difference(firstDayOfYear).inDays;
+    return (dayOfYear / 7).ceil();
+  }
+
   bool isSameDay(DateTime a, DateTime b) {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
@@ -93,7 +99,8 @@ class _WeekViewState extends State<WeekView> {
 
     return Column(
       children: [
-        _buildWeekHeader(arrowColor, weekDays),
+        _buildMonthHeader(arrowColor),
+        _buildWeekHeader(weekDays, timeColWidth),
         Expanded(
           child: SingleChildScrollView(
             child: MouseRegion(
@@ -127,33 +134,38 @@ class _WeekViewState extends State<WeekView> {
     );
   }
 
-  Widget _buildWeekHeader(Color arrowColor, List<DateTime> weekDays) {
+  Widget _buildMonthHeader(Color arrowColor) {
+    final weekNumber = _getWeekNumber(_currentWeek);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-      child: Column(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(icon: Icon(Icons.chevron_left, color: arrowColor), onPressed: _previousWeek),
-              Text(DateFormat.yMMMM().format(_currentWeek), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              IconButton(icon: Icon(Icons.chevron_right, color: arrowColor), onPressed: _nextWeek),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: List.generate(7, (index) {
-              final day = weekDays[index];
-              return Expanded(
-                child: Center(
-                  child: Column(
-                    children: [Text(DateFormat.E().format(day)), Text(DateFormat.d().format(day))],
-                  ),
-                ),
-              );
-            }),
-          ),
+          IconButton(icon: Icon(Icons.chevron_left, color: arrowColor), onPressed: _previousWeek),
+          Text('${DateFormat.yMMMM().format(_currentWeek)} - CW $weekNumber', style: const TextStyle(fontSize: 18)),
+          IconButton(icon: Icon(Icons.chevron_right, color: arrowColor), onPressed: _nextWeek),
         ],
+      ),
+    );
+  }
+
+  Widget _buildWeekHeader(List<DateTime> weekDays, double timeColWidth) {
+    return Padding(
+      padding: EdgeInsets.only(left: timeColWidth),
+      child: Row(
+        children: List.generate(7, (index) {
+          final day = weekDays[index];
+          return Expanded(
+            child: Center(
+              child: Column(
+                children: [
+                  Text(DateFormat.E().format(day), style: const TextStyle(color: Colors.grey)),
+                  Text(DateFormat.d().format(day), style: const TextStyle(color: Colors.grey)),
+                ],
+              ),
+            ),
+          );
+        }),
       ),
     );
   }

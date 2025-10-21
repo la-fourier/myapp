@@ -3,7 +3,9 @@ import 'package:myapp/services/theme_provider.dart';
 import 'package:myapp/views/account_view.dart';
 import 'package:myapp/views/calendar_view.dart';
 import 'package:myapp/views/dashboard_view.dart';
+import 'package:myapp/views/people_view.dart';
 import 'package:myapp/views/settings_view.dart';
+import 'package:myapp/views/stats_view.dart';
 import 'package:myapp/views/today_view.dart';
 import 'package:provider/provider.dart';
 
@@ -47,6 +49,8 @@ class _MainScreenState extends State<MainScreen> {
     const DashboardView(),
     const CalendarView(),
     const TodayView(),
+    const PeopleView(),
+    const StatsView(),
     const AccountView(),
     const SettingsView(),
   ];
@@ -55,6 +59,8 @@ class _MainScreenState extends State<MainScreen> {
     'Dashboard',
     'Calendar',
     'Today',
+    'People',
+    'Stats',
     'Account',
     'Settings',
   ];
@@ -94,43 +100,77 @@ class _MainScreenState extends State<MainScreen> {
         ],
       ),
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
+        child: Column(
           children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  DrawerHeader(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    child: const Text(
+                      'crealcraft',
+                      style: TextStyle(color: Colors.white, fontSize: 24),
+                    ),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.dashboard),
+                    title: const Text('Dashboard'),
+                    onTap: () => _onItemTapped(0),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.calendar_today),
+                    title: const Text('Calendar'),
+                    onTap: () => _onItemTapped(1),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.today),
+                    title: const Text('Today'),
+                    onTap: () => _onItemTapped(2),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.people),
+                    title: const Text('People'),
+                    onTap: () => _onItemTapped(3),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.bar_chart),
+                    title: const Text('Stats'),
+                    onTap: () => _onItemTapped(4),
+                  ),
+                ],
               ),
-              child: Text(
-                'Menu',
-                style: TextStyle(color: Colors.white, fontSize: 24),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.dashboard),
-              title: const Text('Dashboard'),
-              onTap: () => _onItemTapped(0),
-            ),
-            ListTile(
-              leading: const Icon(Icons.calendar_today),
-              title: const Text('Calendar'),
-              onTap: () => _onItemTapped(1),
-            ),
-            ListTile(
-              leading: const Icon(Icons.today),
-              title: const Text('Today'),
-              onTap: () => _onItemTapped(2),
             ),
             const Divider(),
-            ListTile(
-              leading: const Icon(Icons.account_circle),
-              title: const Text('Account'),
-              onTap: () => _onItemTapped(3),
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
-              onTap: () => _onItemTapped(4),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.settings),
+                    onPressed: () => _onItemTapped(6),
+                    tooltip: 'Settings',
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.account_circle),
+                    onPressed: () => _onItemTapped(5),
+                    tooltip: 'Account',
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.sync),
+                    onPressed: () {
+                      // TODO: Implement sync functionality
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Syncing data...')),
+                      );
+                    },
+                    tooltip: 'Sync',
+                  ),
+                ],
+              ),
             ),
           ],
         ),
