@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:myapp/services/theme_provider.dart';
 import 'package:myapp/views/account_view.dart';
 import 'package:myapp/views/calendar_view.dart';
+import 'package:myapp/views/calendar_views/day_view.dart';
 import 'package:myapp/views/dashboard_view.dart';
 import 'package:myapp/views/people_view.dart';
 import 'package:myapp/views/settings_view.dart';
 import 'package:myapp/views/stats_view.dart';
 import 'package:myapp/views/today_view.dart';
 import 'package:provider/provider.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 void main() {
   runApp(const MyApp());
@@ -34,6 +36,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
+
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -45,15 +48,46 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  static final List<Widget> _widgetOptions = <Widget>[
-    const DashboardView(),
-    const CalendarView(),
-    const TodayView(),
-    const PeopleView(),
-    const StatsView(),
-    const AccountView(),
-    const SettingsView(),
-  ];
+  void _handleDaySelected(DateTime day) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.6, // Start at 60% of the screen height
+          maxChildSize: 0.9, // Can expand up to 90%
+          minChildSize: 0.3, // Can shrink down to 30%
+          builder: (BuildContext context, ScrollController scrollController) {
+            return DayView(
+              selectedDay: day,
+              onBack: () => Navigator.of(context).pop(), // Close the sheet
+              scrollController: scrollController, // Pass the scroll controller
+            );
+          },
+        );
+      },
+    );
+  }
+
+  late final List<Widget> _widgetOptions;
+
+  @override
+  void initState() {
+    super.initState();
+    _widgetOptions = <Widget>[
+      const DashboardView(),
+      CalendarView(onDaySelected: _handleDaySelected),
+      const TodayView(),
+      const PeopleView(),
+      const StatsView(),
+      const AccountView(),
+      const SettingsView(),
+    ];
+  }
 
   static const List<String> _widgetTitles = <String>[
     'Dashboard',
@@ -69,7 +103,9 @@ class _MainScreenState extends State<MainScreen> {
     setState(() {
       _selectedIndex = index;
     });
-    Navigator.of(context).pop(); // Close the drawer
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop(); // Close the drawer if it's open
+    }
   }
 
   @override
@@ -162,9 +198,14 @@ class _MainScreenState extends State<MainScreen> {
                   IconButton(
                     icon: const Icon(Icons.sync),
                     onPressed: () {
-                      // TODO: Implement sync functionality
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Syncing data...')),
+                      Fluttertoast.showToast(
+                          msg: "Syncing data...",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.BOTTOM,
+                          timeInSecForIosWeb: 1,
+                          backgroundColor: Colors.black,
+                          textColor: Colors.white,
+                          fontSize: 16.0
                       );
                     },
                     tooltip: 'Sync',

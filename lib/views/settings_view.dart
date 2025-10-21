@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 class SettingsView extends StatelessWidget {
@@ -9,8 +10,56 @@ class SettingsView extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Settings'),
       ),
-      body: const Center(
-        child: Text('Settings View'),
+      body: ListView(
+        children: [
+          SwitchListTile(
+            title: const Text('Enable Notifications'),
+            value: true, // Example value
+            onChanged: (bool value) {
+              // Handle notification setting change
+            },
+            secondary: const Icon(Icons.notifications),
+          ),
+          ListTile(
+            leading: const Icon(Icons.color_lens),
+            title: const Text('Theme'),
+            subtitle: const Text('Light/Dark Mode'),
+            onTap: () {
+              // Show theme selection dialog
+            },
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.language),
+            title: const Text('Language'),
+            subtitle: const Text('English'),
+            onTap: () {
+              // Show language selection dialog
+            },
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.info_outline),
+            title: const Text('About'),
+            onTap: () {
+              // Navigate to about screen
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.privacy_tip_outlined),
+            title: const Text('Privacy Policy'),
+            onTap: () {
+              // Navigate to privacy policy screen
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.description_outlined),
+            title: const Text('Terms of Service'),
+            onTap: () {
+              // Navigate to terms of service screen
+            },
+          ),
+        ],
       ),
     );
   }

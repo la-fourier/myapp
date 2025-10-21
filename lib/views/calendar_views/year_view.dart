@@ -3,8 +3,9 @@ import 'package:intl/intl.dart';
 
 class YearView extends StatefulWidget {
   final DateTime focusedDay;
+  final Function(DateTime) onDaySelected;
 
-  const YearView({super.key, required this.focusedDay});
+  const YearView({super.key, required this.focusedDay, required this.onDaySelected});
 
   @override
   State<YearView> createState() => _YearViewState();
@@ -31,9 +32,6 @@ class _YearViewState extends State<YearView> {
   }
 
   Widget _buildMonth(BuildContext context, DateTime month) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDarkMode ? Colors.white : Colors.black;
-
     return Card(
       elevation: 2.0,
       margin: const EdgeInsets.all(8.0),
@@ -43,21 +41,23 @@ class _YearViewState extends State<YearView> {
             padding: const EdgeInsets.all(8.0),
             child: Text(
               DateFormat.MMMM().format(month),
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal, color: textColor),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
           ),
-          _buildMonthGrid(month, isDarkMode),
+          Expanded(
+            child: _buildMonthGrid(month),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildMonthGrid(DateTime month, bool isDarkMode) {
+  Widget _buildMonthGrid(DateTime month) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
     final firstDayOfMonth = DateTime(month.year, month.month, 1).weekday;
     final List<Widget> dayWidgets = [];
-    final baseColor = Theme.of(context).textTheme.bodySmall?.color ?? (isDarkMode ? Colors.white : Colors.black);
-    final subtleTextColor = baseColor.withOpacity(0.6);
+    final Color subtleTextColor = (isDarkMode ? Colors.white : Colors.black).withAlpha(128);
 
     // Add weekday headers
     for (var day in ['M', 'T', 'W', 'T', 'F', 'S', 'S']) {
@@ -65,7 +65,7 @@ class _YearViewState extends State<YearView> {
         Center(
           child: Text(
             day,
-            style: TextStyle(fontWeight: FontWeight.normal, color: subtleTextColor),
+            style: TextStyle(fontWeight: FontWeight.normal, color: subtleTextColor, fontSize: 12),
           ),
         ),
       );
@@ -79,29 +79,31 @@ class _YearViewState extends State<YearView> {
     // Add day cells
     for (int i = 1; i <= daysInMonth; i++) {
       final day = DateTime(month.year, month.month, i);
-      final isToday = day.year == DateTime.now().year && day.month == DateTime.now().month && day.day == DateTime.now().day;
-      final isHovered = _hoveredDay != null && _hoveredDay == day;
+      final isToday = isSameDay(day, DateTime.now());
+      final isHovered = isSameDay(day, _hoveredDay);
 
       dayWidgets.add(
         MouseRegion(
           onEnter: (_) => setState(() => _hoveredDay = day),
           onExit: (_) => setState(() => _hoveredDay = null),
           child: GestureDetector(
-            onTap: () {
-              // TODO: Handle day tap
-            },
+            onTap: () => widget.onDaySelected(day),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 150),
+              transform: isHovered ? (Matrix4.identity()..scale(1.1, 1.1)) : Matrix4.identity(),
+              transformAlignment: Alignment.center,
               decoration: BoxDecoration(
-                color: isToday ? Colors.red.withAlpha(128) : (isHovered ? Theme.of(context).hoverColor : Colors.transparent),
+                color: isToday
+                    ? Theme.of(context).colorScheme.tertiary.withAlpha(128)
+                    : (isHovered ? Theme.of(context).hoverColor : Colors.transparent),
                 borderRadius: BorderRadius.circular(4.0),
               ),
               child: Center(
                 child: Text(
                   '$i',
                   style: TextStyle(
+                    fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
                     color: isDarkMode ? Colors.white : Colors.black,
-                    fontWeight: FontWeight.normal,
                   ),
                 ),
               ),
@@ -117,5 +119,12 @@ class _YearViewState extends State<YearView> {
       physics: const NeverScrollableScrollPhysics(),
       children: dayWidgets,
     );
+  }
+
+  bool isSameDay(DateTime? a, DateTime? b) {
+    if (a == null || b == null) {
+      return false;
+    }
+    return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 }

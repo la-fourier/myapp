@@ -20,8 +20,8 @@ class MonthView extends StatefulWidget {
 class _MonthViewState extends State<MonthView> {
   DateTime? _hoveredDay;
 
-  bool isSameDay(DateTime? a, DateTime b) {
-    if (a == null) {
+  bool isSameDay(DateTime? a, DateTime? b) {
+    if (a == null || b == null) {
       return false;
     }
     return a.year == b.year && a.month == b.month && a.day == b.day;
@@ -63,10 +63,17 @@ class _MonthViewState extends State<MonthView> {
               decoration = BoxDecoration(
                 color: Theme.of(context).colorScheme.primary,
                 borderRadius: BorderRadius.circular(8.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(context).colorScheme.primary.withAlpha(128),
+                    blurRadius: 5,
+                    offset: const Offset(0, 3),
+                  )
+                ],
               );
             } else if (isToday) {
               decoration = BoxDecoration(
-                color: Colors.red.withAlpha(128),
+                color: Theme.of(context).colorScheme.tertiary.withAlpha(128),
                 borderRadius: BorderRadius.circular(8.0),
               );
             } else if (isHovered) {
@@ -78,17 +85,22 @@ class _MonthViewState extends State<MonthView> {
               decoration = const BoxDecoration(); // No decoration
             }
 
+            final scale = isSelected || isHovered ? 1.1 : 1.0;
+
             return MouseRegion(
               onEnter: (_) => setState(() => _hoveredDay = day),
               onExit: (_) => setState(() => _hoveredDay = null),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
                 margin: const EdgeInsets.all(4.0),
+                transform: Matrix4.identity()..scale(scale, scale),
+                transformAlignment: Alignment.center,
                 decoration: decoration,
                 child: Center(
                   child: Text(
                     '${day.day}',
                     style: TextStyle(
+                      fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
                       color: isSelected
                           ? Colors.white
                           : (isDarkMode ? Colors.white : Colors.black),

@@ -4,7 +4,9 @@ import 'package:myapp/views/calendar_views/week_view.dart';
 import 'package:myapp/views/calendar_views/year_view.dart';
 
 class CalendarView extends StatefulWidget {
-  const CalendarView({super.key});
+  final Function(DateTime) onDaySelected; // Expect the callback
+
+  const CalendarView({super.key, required this.onDaySelected});
 
   @override
   State<CalendarView> createState() => _CalendarViewState();
@@ -15,12 +17,14 @@ class _CalendarViewState extends State<CalendarView> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
 
+  // This internal handler now calls the main callback
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     if (!isSameDay(_selectedDay, selectedDay)) {
       setState(() {
         _selectedDay = selectedDay;
         _focusedDay = focusedDay;
       });
+      widget.onDaySelected(selectedDay); // Trigger the navigation
     }
   }
 
@@ -88,7 +92,10 @@ class _CalendarViewState extends State<CalendarView> {
                 onDaySelected: _onDaySelected,
               ),
               WeekView(focusedDay: _focusedDay),
-              YearView(focusedDay: _focusedDay),
+              YearView(
+                focusedDay: _focusedDay,
+                onDaySelected: widget.onDaySelected, // Pass callback to YearView
+              ),
             ],
           ),
         ),
