@@ -50,7 +50,7 @@ class DayView extends StatelessWidget {
                   ListTile(
                     leading: Icon(Icons.event, color: theme.colorScheme.secondary),
                     title: Text('Event ${i + 1}'),
-                    subtitle: const Text('Details for event ${i + 1}'),
+                    subtitle: Text('Details for event ${i + 1}'),
                     onTap: () {},
                   ),
               ],

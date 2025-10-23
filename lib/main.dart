@@ -4,12 +4,11 @@ import 'package:myapp/views/account_view.dart';
 import 'package:myapp/views/calendar_view.dart';
 import 'package:myapp/views/calendar_views/day_view.dart';
 import 'package:myapp/views/dashboard_view.dart';
-import 'package:myapp/views/people_view.dart';
+import 'package:myapp/views/login_view.dart';
 import 'package:myapp/views/settings_view.dart';
 import 'package:myapp/views/stats_view.dart';
 import 'package:myapp/views/today_view.dart';
 import 'package:provider/provider.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
 void main() {
   runApp(const MyApp());
@@ -27,7 +26,10 @@ class MyApp extends StatelessWidget {
           return MaterialApp(
             title: 'Flutter Demo',
             theme: themeProvider.getTheme(),
-            home: const MainScreen(),
+            home: const LoginView(),
+            routes: {
+              '/main': (context) => const MainScreen(),
+            },
             debugShowCheckedModeBanner: false,
           );
         },
@@ -35,7 +37,6 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -46,7 +47,6 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   void _handleDaySelected(DateTime day) {
     showModalBottomSheet(
@@ -73,19 +73,16 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  late final List<Widget> _widgetOptions;
+  late final List<Widget> _mainViews;
 
   @override
   void initState() {
     super.initState();
-    _widgetOptions = <Widget>[
+    _mainViews = <Widget>[
       const DashboardView(),
       CalendarView(onDaySelected: _handleDaySelected),
       const TodayView(),
-      const PeopleView(),
       const StatsView(),
-      const AccountView(),
-      const SettingsView(),
     ];
   }
 
@@ -93,34 +90,38 @@ class _MainScreenState extends State<MainScreen> {
     'Dashboard',
     'Calendar',
     'Today',
-    'People',
     'Stats',
-    'Account',
-    'Settings',
   ];
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
-    if (Navigator.of(context).canPop()) {
-      Navigator.of(context).pop(); // Close the drawer if it's open
-    }
+  }
+
+  void _navigateTo(Widget screen) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => screen),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey,
       appBar: AppBar(
         title: Text(_widgetTitles[_selectedIndex]),
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () {
-            _scaffoldKey.currentState?.openDrawer();
-          },
-        ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.account_circle),
+            onPressed: () => _navigateTo(const AccountView()),
+            tooltip: 'Account',
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () => _navigateTo(const SettingsView()),
+            tooltip: 'Settings',
+          ),
           Consumer<ThemeProvider>(
             builder: (context, themeProvider, child) {
               return IconButton(
@@ -135,88 +136,77 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
       ),
-      drawer: Drawer(
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  DrawerHeader(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    child: const Text(
-                      'crealcraft',
-                      style: TextStyle(color: Colors.white, fontSize: 24),
-                    ),
+      body: LayoutBuilder(builder: (context, constraints) {
+        if (constraints.maxWidth < 600) {
+          return _mainViews.elementAt(_selectedIndex);
+        } else {
+          return Row(
+            children: [
+              NavigationRail(
+                selectedIndex: _selectedIndex,
+                onDestinationSelected: _onItemTapped,
+                labelType: NavigationRailLabelType.all,
+                destinations: const <NavigationRailDestination>[
+                  NavigationRailDestination(
+                    icon: Icon(Icons.dashboard_outlined),
+                    selectedIcon: Icon(Icons.dashboard),
+                    label: Text('Dashboard'),
                   ),
-                  ListTile(
-                    leading: const Icon(Icons.dashboard),
-                    title: const Text('Dashboard'),
-                    onTap: () => _onItemTapped(0),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.calendar_today_outlined),
+                    selectedIcon: Icon(Icons.calendar_today),
+                    label: Text('Calendar'),
                   ),
-                  ListTile(
-                    leading: const Icon(Icons.calendar_today),
-                    title: const Text('Calendar'),
-                    onTap: () => _onItemTapped(1),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.today_outlined),
+                    selectedIcon: Icon(Icons.today),
+                    label: Text('Today'),
                   ),
-                  ListTile(
-                    leading: const Icon(Icons.today),
-                    title: const Text('Today'),
-                    onTap: () => _onItemTapped(2),
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.people),
-                    title: const Text('People'),
-                    onTap: () => _onItemTapped(3),
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.bar_chart),
-                    title: const Text('Stats'),
-                    onTap: () => _onItemTapped(4),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.bar_chart_outlined),
+                    selectedIcon: Icon(Icons.bar_chart),
+                    label: Text('Stats'),
                   ),
                 ],
               ),
-            ),
-            const Divider(),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.settings),
-                    onPressed: () => _onItemTapped(6),
-                    tooltip: 'Settings',
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.account_circle),
-                    onPressed: () => _onItemTapped(5),
-                    tooltip: 'Account',
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.sync),
-                    onPressed: () {
-                      Fluttertoast.showToast(
-                          msg: "Syncing data...",
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.BOTTOM,
-                          timeInSecForIosWeb: 1,
-                          backgroundColor: Colors.black,
-                          textColor: Colors.white,
-                          fontSize: 16.0
-                      );
-                    },
-                    tooltip: 'Sync',
-                  ),
-                ],
+              const VerticalDivider(thickness: 1, width: 1),
+              Expanded(child: _mainViews.elementAt(_selectedIndex)),
+            ],
+          );
+        }
+      }),
+      bottomNavigationBar: LayoutBuilder(builder: (context, constraints) {
+        if (constraints.maxWidth < 600) {
+          return NavigationBar(
+            onDestinationSelected: _onItemTapped,
+            selectedIndex: _selectedIndex,
+            destinations: const <Widget>[
+              NavigationDestination(
+                icon: Icon(Icons.dashboard_outlined),
+                selectedIcon: Icon(Icons.dashboard),
+                label: 'Dashboard',
               ),
-            ),
-          ],
-        ),
-      ),
-      body: _widgetOptions.elementAt(_selectedIndex),
+              NavigationDestination(
+                icon: Icon(Icons.calendar_today_outlined),
+                selectedIcon: Icon(Icons.calendar_today),
+                label: 'Calendar',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.today_outlined),
+                selectedIcon: Icon(Icons.today),
+                label: 'Today',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.bar_chart_outlined),
+                selectedIcon: Icon(Icons.bar_chart),
+                label: 'Stats',
+              ),
+            ],
+          );
+        } else {
+          return const SizedBox.shrink();
+        }
+      }),
     );
   }
 }
