@@ -16,22 +16,42 @@ class _YearViewState extends State<YearView> {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3, // 3 months per row
-        childAspectRatio: 0.8, // Adjust for taller month view
-        crossAxisSpacing: 4,
-        mainAxisSpacing: 4,
-      ),
-      itemCount: 12,
-      itemBuilder: (context, index) {
-        final month = DateTime(widget.focusedDay.year, index + 1);
-        return _buildMonth(context, month);
-      },
-    );
+    // Use LayoutBuilder to adapt how many month cards are shown per row
+    return LayoutBuilder(builder: (context, constraints) {
+      final double maxWidth = constraints.maxWidth;
+      // Determine crossAxisCount based on available width. For small screens show 2, medium 3, large 4.
+      int crossAxisCount;
+      if (maxWidth < 600) {
+        crossAxisCount = 2;
+      } else if (maxWidth < 1000) {
+        crossAxisCount = 3;
+      } else {
+        crossAxisCount = 4;
+      }
+
+      // Compute card width to help scale fonts inside month cards
+      final double cardWidth = (maxWidth - (crossAxisCount - 1) * 8) / crossAxisCount;
+
+      return GridView.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: crossAxisCount,
+          childAspectRatio: 0.9,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
+        ),
+        itemCount: 12,
+        itemBuilder: (context, index) {
+          final month = DateTime(widget.focusedDay.year, index + 1);
+          return _buildMonth(context, month, cardWidth);
+        },
+      );
+    });
   }
 
-  Widget _buildMonth(BuildContext context, DateTime month) {
+  Widget _buildMonth(BuildContext context, DateTime month, double cardWidth) {
+    // Derive font sizes from available card width
+    final double monthTitleSize = (cardWidth * 0.09).clamp(12.0, 20.0);
+
     return Card(
       elevation: 2.0,
       margin: const EdgeInsets.all(8.0),
@@ -41,31 +61,41 @@ class _YearViewState extends State<YearView> {
             padding: const EdgeInsets.all(8.0),
             child: Text(
               DateFormat.MMMM().format(month),
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: monthTitleSize,
+                  ),
             ),
           ),
           Expanded(
-            child: _buildMonthGrid(month),
+            child: _buildMonthGrid(month, cardWidth),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildMonthGrid(DateTime month) {
+  Widget _buildMonthGrid(DateTime month, double cardWidth) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
     final firstDayOfMonth = DateTime(month.year, month.month, 1).weekday;
     final List<Widget> dayWidgets = [];
     final Color subtleTextColor = (isDarkMode ? Colors.white : Colors.black).withAlpha(128);
 
+    // Compute cell font size based on card width. There are 7 columns; reserve padding.
+    final double effectiveCellWidth = (cardWidth - 16) / 7.0;
+    final double cellFontSize = (effectiveCellWidth * 0.35).clamp(8.0, 16.0);
+
     // Add weekday headers
     for (var day in ['M', 'T', 'W', 'T', 'F', 'S', 'S']) {
       dayWidgets.add(
         Center(
-          child: Text(
-            day,
-            style: TextStyle(fontWeight: FontWeight.normal, color: subtleTextColor, fontSize: 12),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              day,
+              style: TextStyle(fontWeight: FontWeight.normal, color: subtleTextColor, fontSize: cellFontSize * 0.9),
+            ),
           ),
         ),
       );
@@ -90,20 +120,24 @@ class _YearViewState extends State<YearView> {
             onTap: () => widget.onDaySelected(day),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 150),
-              transform: isHovered ? (Matrix4.identity()..scale(1.1, 1.1)) : Matrix4.identity(),
+              transform: isHovered ? Matrix4.diagonal3Values(1.05, 1.05, 1.0) : Matrix4.identity(),
               transformAlignment: Alignment.center,
               decoration: BoxDecoration(
                 color: isToday
                     ? Theme.of(context).colorScheme.tertiary.withAlpha(128)
                     : (isHovered ? Theme.of(context).hoverColor : Colors.transparent),
-                borderRadius: BorderRadius.circular(4.0),
+                borderRadius: BorderRadius.circular(8.0),
               ),
               child: Center(
-                child: Text(
-                  '$i',
-                  style: TextStyle(
-                    fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-                    color: isDarkMode ? Colors.white : Colors.black,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    '$i',
+                    style: TextStyle(
+                      fontSize: cellFontSize,
+                      fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
                   ),
                 ),
               ),

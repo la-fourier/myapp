@@ -82,7 +82,6 @@ class _WeekViewState extends State<WeekView> {
     showDialog(
       context: context,
       builder: (context) => AppointmentEditorDialog(
-        startTime: startTime,
         onSave: _addAppointment,
       ),
     );
@@ -97,40 +96,45 @@ class _WeekViewState extends State<WeekView> {
     const double hourHeight = 60.0;
     const double timeColWidth = 50.0;
 
-    return Column(
-      children: [
-        _buildMonthHeader(arrowColor),
-        _buildWeekHeader(weekDays, timeColWidth),
-        Expanded(
-          child: SingleChildScrollView(
-            child: MouseRegion(
-              onHover: (event) => setState(() => _hoverPosition = event.localPosition),
-              onExit: (event) => setState(() => _hoverPosition = Offset.zero),
-              child: LayoutBuilder(builder: (context, constraints) {
-                final dayWidth = (constraints.maxWidth - timeColWidth) / 7;
-                return GestureDetector(
-                  onTap: () {
-                    final hoverTime = _calculateHoverTime(_hoverPosition, dayWidth, weekDays, hourHeight, timeColWidth);
-                    if (hoverTime != null) {
-                      _showAppointmentEditor(hoverTime);
-                    }
-                  },
-                  child: Stack(
-                    children: [
-                      _buildTimeGrid(hourHeight, timeColWidth),
-                      ..._buildAppointments(dayWidth, hourHeight, timeColWidth),
-                      if (_hoverPosition != Offset.zero) ...[
-                        _buildHoverIndicator(dayWidth, hourHeight, timeColWidth, weekDays),
-                      ],
-                      _buildCurrentTimeIndicator(dayWidth, hourHeight, timeColWidth),
-                    ],
-                  ),
-                );
-              }),
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 900),
+        child: Column(
+          children: [
+            _buildMonthHeader(arrowColor),
+            _buildWeekHeader(weekDays, timeColWidth),
+            Expanded(
+              child: SingleChildScrollView(
+                child: MouseRegion(
+                  onHover: (event) => setState(() => _hoverPosition = event.localPosition),
+                  onExit: (event) => setState(() => _hoverPosition = Offset.zero),
+                  child: LayoutBuilder(builder: (context, constraints) {
+                    final dayWidth = (constraints.maxWidth - timeColWidth) / 7;
+                    return GestureDetector(
+                      onTap: () {
+                        final hoverTime = _calculateHoverTime(_hoverPosition, dayWidth, weekDays, hourHeight, timeColWidth);
+                        if (hoverTime != null) {
+                          _showAppointmentEditor(hoverTime);
+                        }
+                      },
+                      child: Stack(
+                        children: [
+                          _buildTimeGrid(hourHeight, timeColWidth),
+                          ..._buildAppointments(dayWidth, hourHeight, timeColWidth),
+                          if (_hoverPosition != Offset.zero) ...[
+                            _buildHoverIndicator(dayWidth, hourHeight, timeColWidth, weekDays),
+                          ],
+                          _buildCurrentTimeIndicator(dayWidth, hourHeight, timeColWidth),
+                        ],
+                      ),
+                    );
+                  }),
+                ),
+              ),
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 

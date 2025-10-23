@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:myapp/services/theme_provider.dart';
 import 'package:myapp/views/account_view.dart';
 import 'package:myapp/views/calendar_view.dart';
@@ -13,6 +14,21 @@ import 'package:provider/provider.dart';
 void main() {
   runApp(const MyApp());
 }
+
+// TODO
+
+// Wochentage noch anders hervorheben
+
+// Restliche Views implementieren
+// Reclaim Funktionalität               - Cards/Tiles im Week View anders
+// Account Settings, Settings allg
+// Sync Functionality Google Cloud, Local Storage, Firebase/Firestore, GitHub schlecht
+// Option Extraverschlüsselung
+
+// Abstraktes Action Concept, mehr Code Abstraction
+
+// vll Keybindings
+// schönere LadeAnimation/Animation allgemein
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -113,14 +129,29 @@ class _MainScreenState extends State<MainScreen> {
         title: Text(_widgetTitles[_selectedIndex]),
         actions: [
           IconButton(
-            icon: const Icon(Icons.account_circle),
-            onPressed: () => _navigateTo(const AccountView()),
-            tooltip: 'Account',
+            icon: const Icon(Icons.sync),
+            onPressed: () {
+              Fluttertoast.showToast(
+                  msg: "Syncing...",
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.BOTTOM,
+                  timeInSecForIosWeb: 1,
+                  backgroundColor: Colors.grey,
+                  textColor: Colors.white,
+                  fontSize: 16.0
+              );
+            },
+            tooltip: 'Sync',
           ),
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () => _navigateTo(const SettingsView()),
             tooltip: 'Settings',
+          ),
+          IconButton(
+            icon: const Icon(Icons.account_circle),
+            onPressed: () => _navigateTo(const AccountView()),
+            tooltip: 'Account',
           ),
           Consumer<ThemeProvider>(
             builder: (context, themeProvider, child) {

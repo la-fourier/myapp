@@ -20,12 +20,17 @@ class SettingsView extends StatelessWidget {
             ],
           ),
         ),
-        body: TabBarView(
-          children: [
-            _buildAppearanceSettings(context),
-            _buildLanguageSettings(),
-            _buildAboutSettings(),
-          ],
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: TabBarView(
+              children: [
+                _buildAppearanceSettings(context),
+                _buildLanguageSettings(),
+                _buildAboutSettings(),
+              ],
+            ),
+          ),
         ),
       ),
     );

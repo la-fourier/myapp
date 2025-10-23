@@ -3,14 +3,10 @@ import 'package:intl/intl.dart';
 import 'package:myapp/models/appointment.dart';
 
 class AppointmentEditorDialog extends StatefulWidget {
-  final DateTime startTime;
+  final Appointment? appointment;
   final Function(Appointment) onSave;
 
-  const AppointmentEditorDialog({
-    super.key,
-    required this.startTime,
-    required this.onSave,
-  });
+  const AppointmentEditorDialog({super.key, this.appointment, required this.onSave});
 
   @override
   State<AppointmentEditorDialog> createState() => _AppointmentEditorDialogState();
@@ -18,8 +14,8 @@ class AppointmentEditorDialog extends StatefulWidget {
 
 class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
   final _formKey = GlobalKey<FormState>();
-  String _title = '';
-  String _description = '';
+  late String _title;
+  late String _description;
   late DateTime _startDate;
   late DateTime _endDate;
   late TimeOfDay _startTime;
@@ -28,10 +24,21 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
   @override
   void initState() {
     super.initState();
-    _startDate = widget.startTime;
-    _endDate = widget.startTime.add(const Duration(hours: 1));
-    _startTime = TimeOfDay.fromDateTime(widget.startTime);
-    _endTime = TimeOfDay.fromDateTime(_endDate);
+    if (widget.appointment != null) {
+      _title = widget.appointment!.title;
+      _description = widget.appointment!.description ?? '';
+      _startDate = widget.appointment!.start;
+      _endDate = widget.appointment!.end;
+      _startTime = TimeOfDay.fromDateTime(_startDate);
+      _endTime = TimeOfDay.fromDateTime(_endDate);
+    } else {
+      _title = '';
+      _description = '';
+      _startDate = DateTime.now();
+      _endDate = DateTime.now().add(const Duration(hours: 1));
+      _startTime = TimeOfDay.fromDateTime(_startDate);
+      _endTime = TimeOfDay.fromDateTime(_endDate);
+    }
   }
 
   Future<void> _selectDate(BuildContext context, bool isStart) async {
@@ -103,7 +110,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Create Appointment'),
+      title: Text(widget.appointment == null ? 'Create Appointment' : 'Edit Appointment'),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -111,11 +118,13 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFormField(
+                initialValue: _title,
                 decoration: const InputDecoration(labelText: 'Title'),
                 validator: (value) => value!.isEmpty ? 'Please enter a title' : null,
                 onSaved: (value) => _title = value!,
               ),
               TextFormField(
+                initialValue: _description,
                 decoration: const InputDecoration(labelText: 'Description'),
                 onSaved: (value) => _description = value ?? '',
               ),
