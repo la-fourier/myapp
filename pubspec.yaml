@@ -42,6 +42,19 @@ dependencies:
   provider: ^6.1.5+1
   fluttertoast: ^9.0.0
 
+  # ---- Google Drive Integration ----
+  google_sign_in: ^6.2.1          # Google OAuth Login
+  googleapis: ^13.0.0             # Zugriff auf Drive API
+  http: ^1.2.2                    # HTTP Client für API Requests
+
+  # ---- GitHub Integration ----
+  flutter_web_auth_2: ^3.0.0      # Öffnet Browser für OAuth Login (GitHub)
+  
+  # ---- Lokale & sichere Speicherung ----
+  flutter_secure_storage: ^9.0.0  # Sichere Token-Speicherung (Keychain / Keystore)
+
+  json_annotation: ^4.9.0         # Sauberes JSON-Parsing (Modelle)
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

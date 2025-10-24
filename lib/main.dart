@@ -11,6 +11,9 @@ import 'package:myapp/views/main/stats_view.dart';
 import 'package:myapp/views/main/today_view.dart';
 import 'package:provider/provider.dart';
 
+import 'package:myapp/backend_integrations/google.dart';
+import 'package:myapp/backend_integrations/github.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -42,7 +45,7 @@ class MyApp extends StatelessWidget {
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
           return MaterialApp(
-            title: 'Flutter Demo',
+            title: 'Orgaa stuff',
             theme: themeProvider.getTheme(),
             home: const LoginView(),
             routes: {
@@ -65,6 +68,8 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
+  String syncService = 'google'; // or 'github' or 'none'
+  Map<String, dynamic> appData = {}; // Placeholder for app data to sync
 
   void _handleDaySelected(DateTime day) {
     showModalBottomSheet(
@@ -133,6 +138,16 @@ class _MainScreenState extends State<MainScreen> {
           IconButton(
             icon: const Icon(Icons.sync),
             onPressed: () {
+              final googleService = GoogleDriveService();
+              final githubService = GitHubService();
+
+              if (syncService == 'google') {
+                googleService.connect();
+                googleService.uploadJson('app_data.json', appData);
+              } else if (syncService == 'github') {
+                githubService.connect();
+                githubService.uploadJson('app_data.json', appData);
+              }
               Fluttertoast.showToast(
                   msg: "Syncing...",
                   toastLength: Toast.LENGTH_SHORT,
