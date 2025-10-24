@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'month_view.dart';
-import 'week_view.dart';
-import 'year_view.dart';
+import 'package:myapp/views/calendar/month_view.dart';
+import 'package:myapp/views/calendar/week_view.dart';
+import 'package:myapp/views/calendar/year_view.dart';
 
 class CalendarView extends StatefulWidget {
   final Function(DateTime) onDaySelected; // Expect the callback

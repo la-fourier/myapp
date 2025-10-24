@@ -1,4 +1,4 @@
-import 'appointment.dart';
+import 'package:myapp/models/calendar/appointment.dart';
 
 class Calendar {
   final List<Appointment> appointments;
