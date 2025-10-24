@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:myapp/services/theme_provider.dart';
-import 'package:myapp/views/account_view.dart';
-import 'package:myapp/views/calendar_view.dart';
-import 'package:myapp/views/calendar_views/day_view.dart';
-import 'package:myapp/views/dashboard_view.dart';
-import 'package:myapp/views/login_view.dart';
-import 'package:myapp/views/settings_view.dart';
-import 'package:myapp/views/stats_view.dart';
-import 'package:myapp/views/today_view.dart';
+import 'package:myapp/views/user/account_view.dart';
+import 'package:myapp/views/calendar/calendar_view.dart';
+import 'package:myapp/views/calendar/day_view.dart';
+import 'package:myapp/views/main/dashboard_view.dart';
+import 'package:myapp/views/auth/login_view.dart';
+import 'package:myapp/views/settings/settings_view.dart';
+import 'package:myapp/views/main/stats_view.dart';
+import 'package:myapp/views/main/today_view.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -22,10 +22,12 @@ void main() {
 // Restliche Views implementieren
 // Reclaim Funktionalität               - Cards/Tiles im Week View anders
 // Account Settings, Settings allg
-// Sync Functionality Google Cloud, Local Storage, Firebase/Firestore, GitHub schlecht
+// Sync Functionality Google Cloud, Local Storage, Firebase/Firestore, GitHub schlecht   mit Login Stuff!
 // Option Extraverschlüsselung
 
 // Abstraktes Action Concept, mehr Code Abstraction
+
+// Unterschiedliche Sprachen
 
 // vll Keybindings
 // schönere LadeAnimation/Animation allgemein

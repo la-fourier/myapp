@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:table_calendar/table_calendar.dart';
+import 'package:table_calendar/table_calendar.dart' as table_calendar;
 
 class MonthView extends StatefulWidget {
   final DateTime focusedDay;
@@ -46,14 +46,14 @@ class _MonthViewState extends State<MonthView> {
             final double dayFontSize = cellWidth * 0.35
                 .clamp(10.0, 20.0);
 
-            return TableCalendar(
+            return table_calendar.TableCalendar(
               firstDay: DateTime.utc(2010, 10, 16),
               lastDay: DateTime.utc(2030, 3, 14),
               focusedDay: widget.focusedDay,
               selectedDayPredicate: (day) => isSameDay(widget.selectedDay, day),
               onDaySelected: widget.onDaySelected,
-              calendarFormat: CalendarFormat.month,
-              headerStyle: HeaderStyle(
+              calendarFormat: table_calendar.CalendarFormat.month,
+              headerStyle: table_calendar.HeaderStyle(
                 formatButtonVisible: false,
                 titleCentered: true,
                 leftChevronIcon: Icon(
@@ -65,7 +65,7 @@ class _MonthViewState extends State<MonthView> {
                   color: isDarkMode ? Colors.white : Colors.black,
                 ),
               ),
-              calendarBuilders: CalendarBuilders(
+              calendarBuilders: table_calendar.CalendarBuilders(
                 prioritizedBuilder: (context, day, focusedDay) {
                   final isSelected = isSameDay(widget.selectedDay, day);
                   final isToday = isSameDay(day, DateTime.now());
@@ -135,7 +135,7 @@ class _MonthViewState extends State<MonthView> {
                 },
               ),
               // To avoid conflicts, use minimal calendarStyle and let the builder handle everything.
-              calendarStyle: const CalendarStyle(
+              calendarStyle: const table_calendar.CalendarStyle(
                 defaultDecoration: BoxDecoration(),
                 weekendDecoration: BoxDecoration(),
                 outsideDecoration: BoxDecoration(),

@@ -8,7 +8,7 @@ class SettingsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Settings'),
@@ -16,6 +16,7 @@ class SettingsView extends StatelessWidget {
             tabs: [
               Tab(icon: Icon(Icons.palette), text: 'Appearance'),
               Tab(icon: Icon(Icons.language), text: 'Language'),
+              Tab(icon: Icon(Icons.notifications), text: 'Notifications'),
               Tab(icon: Icon(Icons.info), text: 'About'),
             ],
           ),
@@ -27,6 +28,7 @@ class SettingsView extends StatelessWidget {
               children: [
                 _buildAppearanceSettings(context),
                 _buildLanguageSettings(),
+                _buildNotificationsSettings(),
                 _buildAboutSettings(),
               ],
             ),
@@ -65,6 +67,21 @@ class SettingsView extends StatelessWidget {
           onTap: () {
             // Show language selection dialog
           },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNotificationsSettings() {
+    return ListView(
+      children: [
+        ListTile(
+          leading: const Icon(Icons.message),
+          title: const Text('Enable Toast Notifications'),
+          trailing: Switch(
+            value: true,
+            onChanged: (value) {},
+          ),
         ),
       ],
     );

@@ -1,4 +1,4 @@
-import 'package:myapp/models/calendar.dart';
+import 'package:myapp/models/calendar/calendar.dart';
 import 'package:myapp/models/person.dart';
 
 class User {

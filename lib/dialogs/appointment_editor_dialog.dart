@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:myapp/models/appointment.dart';
+import 'package:myapp/models/calendar/appointment.dart';
 
 class AppointmentEditorDialog extends StatefulWidget {
   final Appointment? appointment;

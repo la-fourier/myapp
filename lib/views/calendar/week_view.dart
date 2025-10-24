@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:myapp/dialogs/appointment_editor_dialog.dart';
-import 'package:myapp/models/appointment.dart';
+import 'package:myapp/models/calendar/appointment.dart';
 
 class WeekView extends StatefulWidget {
   final DateTime focusedDay;
