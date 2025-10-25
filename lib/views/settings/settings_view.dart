@@ -3,36 +3,45 @@ import 'package:myapp/services/theme_provider.dart';
 import 'package:provider/provider.dart';
 
 class SettingsView extends StatelessWidget {
-  const SettingsView({super.key});
+  final ScrollController? scrollController;
+  const SettingsView({super.key, this.scrollController});
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 4,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Settings'),
-          bottom: const TabBar(
-            tabs: [
-              Tab(icon: Icon(Icons.palette), text: 'Appearance'),
-              Tab(icon: Icon(Icons.cloud), text: 'Integrations'),
-              Tab(icon: Icon(Icons.notifications), text: 'Notifications'),
-              Tab(icon: Icon(Icons.info), text: 'About'),
-            ],
-          ),
-        ),
-        body: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: TabBarView(
-              children: [
-                _buildAppearanceSettings(context),
-                _buildIntegrationSettions(context),
-                _buildNotificationsSettings(),
-                _buildAboutSettings(),
+      length: 3,
+      child: NestedScrollView(
+        controller: scrollController,
+        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+          return <Widget>[
+            SliverAppBar(
+              pinned: true,
+              floating: true,
+              automaticallyImplyLeading: false, // No back button
+              title: const Text('Settings'),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.of(context).pop(),
+                )
               ],
+              bottom: const TabBar(
+                isScrollable: true,
+                tabs: [
+                  Tab(text: 'Appearance'),
+                  Tab(text: 'Notifications'),
+                  Tab(text: 'About'),
+                ],
+              ),
             ),
-          ),
+          ];
+        },
+        body: TabBarView(
+          children: [
+            _buildAppearanceSettings(context),
+            _buildNotificationsSettings(),
+            _buildAboutSettings(),
+          ],
         ),
       ),
     );
@@ -97,74 +106,6 @@ class SettingsView extends StatelessWidget {
           },
         );
         })
-      ],
-    );
-  }
-
-  Widget _buildIntegrationSettions(BuildContext context) {
-    return ListView(
-      children: [
-        ListTile(
-          leading: const Icon(Icons.cloud),
-          title: const Text('Cloud Sync Service'),
-          subtitle: const Text('Google Drive'),
-          onTap: () {
-            // Show cloud sync service selection dialog
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: const Text('User'),
-                  content: SingleChildScrollView(
-                    child: ListBody(
-                      children: <Widget>[
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.person),
-                            TextField(
-                              decoration: const InputDecoration(
-                                hintText: 'Enter username',
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.email),
-                            const Text('Email: '),
-                            TextField(
-                              decoration: const InputDecoration(
-                                hintText: 'Enter email',
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            );
-          },
-        ),
-        ListTile(
-          leading: const Icon(Icons.grain),
-          title: const Text('Github Sync Service'),
-          // subtitle: const Text('2024'),
-          onTap: () {
-            // Show sync details
-          },
-        ),
-        ListTile(
-          leading: const Icon(Icons.sync),
-          title: const Text('Sync Now'),
-          onTap: () {
-            // Trigger sync action
-          },
-        ),
       ],
     );
   }

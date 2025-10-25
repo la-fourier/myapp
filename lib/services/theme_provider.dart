@@ -6,7 +6,11 @@ class ThemeProvider extends ChangeNotifier {
   bool get isDarkMode => _isDarkMode;
 
   ThemeData getTheme() {
-    return _isDarkMode ? ThemeData.dark() : ThemeData.light();
+    final baseTheme = _isDarkMode ? ThemeData.dark() : ThemeData.light();
+    return baseTheme.copyWith(
+      textTheme: baseTheme.textTheme.apply(fontFamily: 'Fredericka the Great'),
+      primaryTextTheme: baseTheme.primaryTextTheme.apply(fontFamily: 'Fredericka the Great'),
+    );
   }
 
   void toggleTheme() {

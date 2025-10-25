@@ -40,14 +40,14 @@ User _loadUserData(String _) {
 }
 
 class DashboardView extends StatefulWidget {
-  const DashboardView({super.key});
+  final Function(Widget Function(ScrollController)) showAsModalSheet;
+  const DashboardView({super.key, required this.showAsModalSheet});
 
   @override
   State<DashboardView> createState() => _DashboardViewState();
 }
 
 class _DashboardViewState extends State<DashboardView> {
-  int? _zoomedIndex;
   User? _user;
 
   @override
@@ -69,13 +69,16 @@ class _DashboardViewState extends State<DashboardView> {
     LoadingService().hide();
   }
 
-  void _setZoomedIndex(int? index) {
-    setState(() {
-      _zoomedIndex = index;
+  void _showDetailView(int index) {
+    widget.showAsModalSheet((scrollController) {
+      return SingleChildScrollView(
+        controller: scrollController,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: buildCardByIndex(index, isInModal: true),
+        ),
+      );
     });
-    if (index != null) {
-      _showToast('Zoomed in');
-    }
   }
 
   void _showToast(String message) {
@@ -89,10 +92,7 @@ class _DashboardViewState extends State<DashboardView> {
               icon: const Icon(Icons.settings),
               onPressed: () {
                 scaffold.hideCurrentSnackBar();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SettingsView()),
-                );
+                // This navigation is now handled by the main screen's modal
               },
             ),
           ],
@@ -290,86 +290,44 @@ class _DashboardViewState extends State<DashboardView> {
       return const SizedBox.shrink(); // Or a placeholder
     }
 
-    Widget buildCardByIndex(int idx) {
-      switch (idx) {
-        case 0:
-          return _buildModelCard(0, context, 'Users', _user!,
-              [
-                const DataColumn(label: Text('Name')),
-                const DataColumn(label: Text('date of birth')),
-                const DataColumn(label: Text('')),
-              ]);
-        case 1:
-          return _buildModelCard(1, context, 'People', _user!.contacts,
-              [
-                const DataColumn(label: Text('Name')),
-                const DataColumn(label: Text('date of birth')),
-                const DataColumn(label: Text('')),
-              ]);
-        case 2:
-        default:
-          return _buildModelCard(
-              2, context, 'Calendar', _user!.calendar.appointments, [
-            const DataColumn(label: Text('Title')),
-            const DataColumn(label: Text('Date')),
-            const DataColumn(label: Text('')),
-          ]);
-      }
-    }
-
-    return Stack(
+    return ListView(
+      padding: const EdgeInsets.all(8.0),
       children: [
-        ListView(
-          padding: const EdgeInsets.all(8.0),
-          children: [
-            buildCardByIndex(0),
-            buildCardByIndex(1),
-            buildCardByIndex(2),
-          ],
-        ),
-        if (_zoomedIndex != null)
-          GestureDetector(
-            onTap: () => _setZoomedIndex(null),
-            child: Container(
-              color: Colors.black.withAlpha(128),
-              child: Center(
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.9,
-                  height: MediaQuery.of(context).size.height * 0.8,
-                  child: Material(
-                    elevation: 12,
-                    borderRadius: BorderRadius.circular(12),
-                    child: Stack(
-                      children: [
-                        Positioned.fill(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: buildCardByIndex(_zoomedIndex!),
-                          ),
-                        ),
-                        Positioned(
-                          top: 8,
-                          right: 8,
-                          child: IconButton(
-                            icon: const Icon(Icons.close),
-                            onPressed: () => _setZoomedIndex(null),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
+        buildCardByIndex(0),
+        buildCardByIndex(1),
+        buildCardByIndex(2),
       ],
     );
   }
 
-  Widget _buildModelCard(
-      int index, BuildContext context, String title, dynamic data, List<DataColumn> columns) {
+  Widget buildCardByIndex(int idx, {bool isInModal = false}) {
+    switch (idx) {
+      case 0:
+        return _buildModelCard(0, context, 'Users', _user!, [
+          const DataColumn(label: Text('Name')),
+          const DataColumn(label: Text('date of birth')),
+          const DataColumn(label: Text('')),
+        ], isInModal: isInModal);
+      case 1:
+        return _buildModelCard(1, context, 'People', _user!.contacts, [
+          const DataColumn(label: Text('Name')),
+          const DataColumn(label: Text('date of birth')),
+          const DataColumn(label: Text('')),
+        ], isInModal: isInModal);
+      case 2:
+      default:
+        return _buildModelCard(2, context, 'Calendar', _user!.calendar.appointments, [
+          const DataColumn(label: Text('Title')),
+          const DataColumn(label: Text('Date')),
+          const DataColumn(label: Text('')),
+        ], isInModal: isInModal);
+    }
+  }
+
+  Widget _buildModelCard(int index, BuildContext context, String title, dynamic data,
+      List<DataColumn> columns, {bool isInModal = false}) {
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      margin: isInModal ? EdgeInsets.zero : const EdgeInsets.symmetric(vertical: 8.0),
       child: SingleChildScrollView(
         child: Column(
           children: [
@@ -382,10 +340,11 @@ class _DashboardViewState extends State<DashboardView> {
                     icon: const Icon(Icons.add),
                     onPressed: () => _openAddDialog(title, data),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.open_in_full),
-                    onPressed: () => _setZoomedIndex(index),
-                  ),
+                  if (!isInModal)
+                    IconButton(
+                      icon: const Icon(Icons.open_in_full),
+                      onPressed: () => _showDetailView(index),
+                    ),
                 ],
               ),
             ),

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+
 import 'package:myapp/dialogs/appointment_editor_dialog.dart';
 import 'package:myapp/dialogs/person_editor_dialog.dart';
 import 'package:myapp/dialogs/user_editor_dialog.dart';
@@ -52,7 +54,7 @@ class _DashboardViewState extends State<DashboardView> {
     }
   }
 
-  void _showToast(String message) {
+  void _showToast_old(String message) {
     final scaffold = ScaffoldMessenger.of(context);
     scaffold.showSnackBar(
       SnackBar(
@@ -73,6 +75,18 @@ class _DashboardViewState extends State<DashboardView> {
         ),
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
+    );
+  }
+
+  void _showToast(String message) {
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 1,
+      backgroundColor: Colors.grey,
+      textColor: Colors.white,
+      fontSize: 16.0
     );
   }
 

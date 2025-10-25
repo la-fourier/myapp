@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:myapp/services/theme_provider.dart';
@@ -20,6 +21,8 @@ void main() {
 }
 
 // TODO
+
+// Icon/ UX allg
 
 // Repariere Notifications :/ State/Thread stuff scheint nicht nur gutes/richtige zu tun
 
@@ -82,25 +85,49 @@ class _MainScreenState extends State<MainScreen> {
   Map<String, dynamic> appData = {}; // Placeholder for app data to sync
 
   void _handleDaySelected(DateTime day) {
+    _showAsModalSheet((scrollController) => DayView(
+          selectedDay: day,
+          onBack: () => Navigator.of(context).pop(),
+          scrollController: scrollController,
+        ));
+  }
+
+  void _showAsModalSheet(Widget Function(ScrollController) builder) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      backgroundColor: Colors.black.withOpacity(0.3),
+      barrierColor: Colors.transparent,
+      elevation: 0,
       builder: (context) {
-        return DraggableScrollableSheet(
-          expand: false,
-          initialChildSize: 0.6, // Start at 60% of the screen height
-          maxChildSize: 0.9, // Can expand up to 90%
-          minChildSize: 0.3, // Can shrink down to 30%
-          builder: (BuildContext context, ScrollController scrollController) {
-            return DayView(
-              selectedDay: day,
-              onBack: () => Navigator.of(context).pop(), // Close the sheet
-              scrollController: scrollController, // Pass the scroll controller
-            );
-          },
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => Navigator.of(context).pop(),
+            child: DraggableScrollableSheet(
+              initialChildSize: 0.8,
+              maxChildSize: 0.9,
+              minChildSize: 0.4,
+              expand: false,
+              builder: (BuildContext context, ScrollController scrollController) {
+                return GestureDetector(
+                  onTap: () {},
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 20, bottom: 40, left: 16, right: 16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).scaffoldBackgroundColor,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: builder(scrollController),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
         );
       },
     );
@@ -112,7 +139,7 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     _mainViews = <Widget>[
-      const DashboardView(),
+      DashboardView(showAsModalSheet: _showAsModalSheet),
       CalendarView(onDaySelected: _handleDaySelected),
       const TodayView(),
       const StatsView(),
@@ -132,17 +159,17 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
-  void _navigateTo(Widget screen) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => screen),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.logout),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          tooltip: 'Logout',
+        ),
         title: Text(_widgetTitles[_selectedIndex]),
         actions: [
           IconButton(
@@ -172,12 +199,12 @@ class _MainScreenState extends State<MainScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.settings),
-            onPressed: () => _navigateTo(const SettingsView()),
+            onPressed: () => _showAsModalSheet((controller) => SettingsView(scrollController: controller)),
             tooltip: 'Settings',
           ),
           IconButton(
             icon: const Icon(Icons.account_circle),
-            onPressed: () => _navigateTo(const AccountView()),
+            onPressed: () => _showAsModalSheet((controller) => AccountView(scrollController: controller)),
             tooltip: 'Account',
           ),
           Consumer<ThemeProvider>(
