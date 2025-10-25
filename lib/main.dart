@@ -15,7 +15,7 @@ import 'package:myapp/backend_integrations/google.dart';
 import 'package:myapp/backend_integrations/github.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 // TODO

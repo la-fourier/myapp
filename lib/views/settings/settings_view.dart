@@ -15,7 +15,7 @@ class SettingsView extends StatelessWidget {
           bottom: const TabBar(
             tabs: [
               Tab(icon: Icon(Icons.palette), text: 'Appearance'),
-              Tab(icon: Icon(Icons.language), text: 'Language'),
+              Tab(icon: Icon(Icons.cloud), text: 'Integrations'),
               Tab(icon: Icon(Icons.notifications), text: 'Notifications'),
               Tab(icon: Icon(Icons.info), text: 'About'),
             ],
@@ -27,7 +27,7 @@ class SettingsView extends StatelessWidget {
             child: TabBarView(
               children: [
                 _buildAppearanceSettings(context),
-                _buildLanguageSettings(),
+                _buildIntegrationSettions(context),
                 _buildNotificationsSettings(),
                 _buildAboutSettings(),
               ],
@@ -53,19 +53,116 @@ class SettingsView extends StatelessWidget {
             );
           },
         ),
-      ],
-    );
-  }
-
-  Widget _buildLanguageSettings() {
-    return ListView(
-      children: [
-        ListTile(
+        Consumer<ThemeProvider>(builder: (context, value, child) {
+          return ListTile(
           leading: const Icon(Icons.language),
           title: const Text('Language'),
           subtitle: const Text('English'),
           onTap: () {
             // Show language selection dialog
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: const Text('Select Language'),
+                  content: SingleChildScrollView(
+                    child: ListBody(
+                      children: <Widget>[
+                        GestureDetector(
+                          child: const Text('English'),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                        const SizedBox(height: 10),
+                        GestureDetector(
+                          child: const Text('German'),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                        const SizedBox(height: 10),
+                        GestureDetector(
+                          child: const Text('Spanish'),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        );
+        })
+      ],
+    );
+  }
+
+  Widget _buildIntegrationSettions(BuildContext context) {
+    return ListView(
+      children: [
+        ListTile(
+          leading: const Icon(Icons.cloud),
+          title: const Text('Cloud Sync Service'),
+          subtitle: const Text('Google Drive'),
+          onTap: () {
+            // Show cloud sync service selection dialog
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: const Text('User'),
+                  content: SingleChildScrollView(
+                    child: ListBody(
+                      children: <Widget>[
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.person),
+                            TextField(
+                              decoration: const InputDecoration(
+                                hintText: 'Enter username',
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.email),
+                            const Text('Email: '),
+                            TextField(
+                              decoration: const InputDecoration(
+                                hintText: 'Enter email',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.grain),
+          title: const Text('Github Sync Service'),
+          // subtitle: const Text('2024'),
+          onTap: () {
+            // Show sync details
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.sync),
+          title: const Text('Sync Now'),
+          onTap: () {
+            // Trigger sync action
           },
         ),
       ],
