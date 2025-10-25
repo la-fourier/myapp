@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/dialogs/appointment_editor_dialog.dart';
 import 'package:myapp/dialogs/person_editor_dialog.dart';
@@ -6,7 +7,37 @@ import 'package:myapp/models/user.dart';
 import 'package:myapp/models/person.dart';
 import 'package:myapp/models/calendar/calendar.dart';
 import 'package:myapp/models/calendar/appointment.dart';
+import 'package:myapp/services/loading_service.dart';
 import 'package:myapp/views/settings/settings_view.dart';
+
+// Top-level function for compute
+User _loadUserData(String _) {
+  // This is where you would do your heavy lifting, e.g., from a database or network.
+  // We add a delay to simulate a long-running operation.
+  // In a real app, you would not have this delay.
+  // Future.delayed(const Duration(seconds: 2)); // This doesn't work with compute
+
+  // Let's just return the data for now.
+  return User(
+    person: Person(fullName: 'John Doe', dateOfBirth: DateTime(1990, 1, 1)),
+    contacts: [
+      Person(fullName: 'Jane Smith', dateOfBirth: DateTime(1992, 5, 10)),
+      Person(fullName: 'Peter Jones', dateOfBirth: DateTime(1988, 11, 22)),
+    ],
+    calendar: Calendar(appointments: [
+      Appointment(
+        title: 'Meeting with team',
+        start: DateTime.now(),
+        end: DateTime.now().add(const Duration(hours: 1)),
+      ),
+      Appointment(
+        title: 'Lunch with Jane',
+        start: DateTime.now().add(const Duration(days: 1)),
+        end: DateTime.now().add(const Duration(days: 1, hours: 1)),
+      ),
+    ]),
+  );
+}
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
@@ -17,30 +48,25 @@ class DashboardView extends StatefulWidget {
 
 class _DashboardViewState extends State<DashboardView> {
   int? _zoomedIndex;
-  late User _user;
+  User? _user;
 
   @override
   void initState() {
     super.initState();
-    _user = User(
-      person: Person(fullName: 'John Doe', dateOfBirth: DateTime(1990, 1, 1)),
-      contacts: [
-        Person(fullName: 'Jane Smith', dateOfBirth: DateTime(1992, 5, 10)),
-        Person(fullName: 'Peter Jones', dateOfBirth: DateTime(1988, 11, 22)),
-      ],
-      calendar: Calendar(appointments: [
-        Appointment(
-          title: 'Meeting with team',
-          start: DateTime.now(),
-          end: DateTime.now().add(const Duration(hours: 1)),
-        ),
-        Appointment(
-          title: 'Lunch with Jane',
-          start: DateTime.now().add(const Duration(days: 1)),
-          end: DateTime.now().add(const Duration(days: 1, hours: 1)),
-        ),
-      ]),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData();
+    });
+  }
+
+  Future<void> _loadData() async {
+    LoadingService().show();
+    final user = await compute(_loadUserData, '');
+    if (mounted) {
+      setState(() {
+        _user = user;
+      });
+    }
+    LoadingService().hide();
   }
 
   void _setZoomedIndex(int? index) {
@@ -86,8 +112,8 @@ class _DashboardViewState extends State<DashboardView> {
               setState(() {
                 _user = User(
                   person: updatedPerson,
-                  contacts: _user.contacts,
-                  calendar: _user.calendar,
+                  contacts: _user!.contacts,
+                  calendar: _user!.calendar,
                 );
               });
               _showToast('User added');
@@ -101,7 +127,7 @@ class _DashboardViewState extends State<DashboardView> {
           builder: (context) => PersonEditorDialog(
             onSave: (newPerson) {
               setState(() {
-                _user.contacts.add(newPerson);
+                _user!.contacts.add(newPerson);
               });
               _showToast('Person added');
             },
@@ -114,7 +140,7 @@ class _DashboardViewState extends State<DashboardView> {
           builder: (context) => AppointmentEditorDialog(
             onSave: (newAppointment) {
               setState(() {
-                _user.calendar.appointments.add(newAppointment);
+                _user!.calendar.appointments.add(newAppointment);
               });
               _showToast('Appointment added');
             },
@@ -134,8 +160,8 @@ class _DashboardViewState extends State<DashboardView> {
               setState(() {
                 _user = User(
                   person: updatedPerson,
-                  contacts: _user.contacts,
-                  calendar: _user.calendar,
+                  contacts: _user!.contacts,
+                  calendar: _user!.calendar,
                 );
               });
               _showToast('User updated');
@@ -150,8 +176,8 @@ class _DashboardViewState extends State<DashboardView> {
             person: item,
             onSave: (updatedPerson) {
               setState(() {
-                final index = _user.contacts.indexOf(item);
-                _user.contacts[index] = updatedPerson;
+                final index = _user!.contacts.indexOf(item);
+                _user!.contacts[index] = updatedPerson;
               });
               _showToast('Person updated');
             },
@@ -165,8 +191,8 @@ class _DashboardViewState extends State<DashboardView> {
             appointment: item,
             onSave: (updatedAppointment) {
               setState(() {
-                final index = _user.calendar.appointments.indexOf(item);
-                _user.calendar.appointments[index] = updatedAppointment;
+                final index = _user!.calendar.appointments.indexOf(item);
+                _user!.calendar.appointments[index] = updatedAppointment;
               });
               _showToast('Appointment updated');
             },
@@ -202,9 +228,9 @@ class _DashboardViewState extends State<DashboardView> {
               onPressed: () {
                 setState(() {
                   if (item is Person) {
-                    _user.contacts.remove(item);
+                    _user!.contacts.remove(item);
                   } else if (item is Appointment) {
-                    _user.calendar.appointments.remove(item);
+                    _user!.calendar.appointments.remove(item);
                   }
                 });
                 Navigator.of(context).pop();
@@ -260,23 +286,30 @@ class _DashboardViewState extends State<DashboardView> {
 
   @override
   Widget build(BuildContext context) {
+    if (_user == null) {
+      return const SizedBox.shrink(); // Or a placeholder
+    }
+
     Widget buildCardByIndex(int idx) {
       switch (idx) {
         case 0:
-          return _buildModelCard(0, context, 'Users', _user, [
-            const DataColumn(label: Text('Name')),
-            const DataColumn(label: Text('date of birth')),
-            const DataColumn(label: Text('')),
-          ]);
+          return _buildModelCard(0, context, 'Users', _user!,
+              [
+                const DataColumn(label: Text('Name')),
+                const DataColumn(label: Text('date of birth')),
+                const DataColumn(label: Text('')),
+              ]);
         case 1:
-          return _buildModelCard(1, context, 'People', _user.contacts, [
-            const DataColumn(label: Text('Name')),
-            const DataColumn(label: Text('date of birth')),
-            const DataColumn(label: Text('')),
-          ]);
+          return _buildModelCard(1, context, 'People', _user!.contacts,
+              [
+                const DataColumn(label: Text('Name')),
+                const DataColumn(label: Text('date of birth')),
+                const DataColumn(label: Text('')),
+              ]);
         case 2:
         default:
-          return _buildModelCard(2, context, 'Calendar', _user.calendar.appointments, [
+          return _buildModelCard(
+              2, context, 'Calendar', _user!.calendar.appointments, [
             const DataColumn(label: Text('Title')),
             const DataColumn(label: Text('Date')),
             const DataColumn(label: Text('')),
@@ -333,7 +366,8 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
-  Widget _buildModelCard(int index, BuildContext context, String title, dynamic data, List<DataColumn> columns) {
+  Widget _buildModelCard(
+      int index, BuildContext context, String title, dynamic data, List<DataColumn> columns) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       child: SingleChildScrollView(

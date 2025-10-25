@@ -10,6 +10,7 @@ import 'package:myapp/views/settings/settings_view.dart';
 import 'package:myapp/views/main/stats_view.dart';
 import 'package:myapp/views/main/today_view.dart';
 import 'package:provider/provider.dart';
+import 'package:myapp/widgets/loading_overlay.dart';
 
 import 'package:myapp/backend_integrations/google.dart';
 import 'package:myapp/backend_integrations/github.dart';
@@ -19,6 +20,10 @@ void main() {
 }
 
 // TODO
+
+// Repariere Notifications :/ State/Thread stuff scheint nicht nur gutes/richtige zu tun
+
+// Backend stuff in own thread
 
 // Wochentage noch anders hervorheben
 
@@ -33,7 +38,7 @@ void main() {
 // Unterschiedliche Sprachen
 
 // vll Keybindings
-// schönere LadeAnimation/Animation allgemein
+// schönere LadeAnimation/Animation allgemeinx
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -47,6 +52,11 @@ class MyApp extends StatelessWidget {
           return MaterialApp(
             title: 'Orgaa stuff',
             theme: themeProvider.getTheme(),
+            builder: (context, child) {
+              return LoadingOverlay(
+                child: child!,
+              );
+            },
             home: const LoginView(),
             routes: {
               '/main': (context) => const MainScreen(),

@@ -5,8 +5,9 @@ import 'package:myapp/models/calendar/appointment.dart';
 class AppointmentEditorDialog extends StatefulWidget {
   final Appointment? appointment;
   final Function(Appointment) onSave;
+  final DateTime? startTime;
 
-  const AppointmentEditorDialog({super.key, this.appointment, required this.onSave});
+  const AppointmentEditorDialog({super.key, this.appointment, required this.onSave, this.startTime});
 
   @override
   State<AppointmentEditorDialog> createState() => _AppointmentEditorDialogState();
@@ -34,8 +35,8 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
     } else {
       _title = '';
       _description = '';
-      _startDate = DateTime.now();
-      _endDate = DateTime.now().add(const Duration(hours: 1));
+      _startDate = widget.startTime ?? DateTime.now();
+      _endDate = (widget.startTime ?? DateTime.now()).add(const Duration(hours: 1));
       _startTime = TimeOfDay.fromDateTime(_startDate);
       _endTime = TimeOfDay.fromDateTime(_endDate);
     }

@@ -82,6 +82,7 @@ class _WeekViewState extends State<WeekView> {
     showDialog(
       context: context,
       builder: (context) => AppointmentEditorDialog(
+        startTime: startTime,
         onSave: _addAppointment,
       ),
     );
@@ -111,8 +112,8 @@ class _WeekViewState extends State<WeekView> {
                   child: LayoutBuilder(builder: (context, constraints) {
                     final dayWidth = (constraints.maxWidth - timeColWidth) / 7;
                     return GestureDetector(
-                      onTap: () {
-                        final hoverTime = _calculateHoverTime(_hoverPosition, dayWidth, weekDays, hourHeight, timeColWidth);
+                      onTapDown: (details) {
+                        final hoverTime = _calculateHoverTime(details.localPosition, dayWidth, weekDays, hourHeight, timeColWidth);
                         if (hoverTime != null) {
                           _showAppointmentEditor(hoverTime);
                         }
@@ -175,6 +176,10 @@ class _WeekViewState extends State<WeekView> {
   }
 
   Widget _buildTimeGrid(double hourHeight, double timeColWidth) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final horizontalLineColor = isDarkMode ? Colors.grey.shade700 : Colors.grey.shade400;
+    final verticalLineColor = isDarkMode ? Colors.grey.shade800 : Colors.grey.shade300;
+
     return Row(
       children: [
         _TimeColumn(hourHeight: hourHeight, timeColWidth: timeColWidth),
@@ -183,10 +188,10 @@ class _WeekViewState extends State<WeekView> {
             children: List.generate(24, (hour) {
               return Container(
                 height: hourHeight,
-                decoration: BoxDecoration(border: Border(top: BorderSide(color: Colors.grey.shade300, width: 0.5))),
+                decoration: BoxDecoration(border: Border(top: BorderSide(color: horizontalLineColor, width: 0.5))),
                 child: Row(
                   children: List.generate(7, (day) {
-                    return Expanded(child: Container(decoration: BoxDecoration(border: Border(left: BorderSide(color: Colors.grey.shade200, width: 0.5)))));
+                    return Expanded(child: Container(decoration: BoxDecoration(border: Border(left: BorderSide(color: verticalLineColor, width: 0.5)))));
                   }),
                 ),
               );
