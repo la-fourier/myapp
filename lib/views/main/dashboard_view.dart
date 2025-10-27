@@ -8,16 +8,9 @@ import 'package:myapp/models/person.dart';
 import 'package:myapp/models/calendar/calendar.dart';
 import 'package:myapp/models/calendar/appointment.dart';
 import 'package:myapp/services/loading_service.dart';
-import 'package:myapp/views/settings/settings_view.dart';
 
 // Top-level function for compute
 User _loadUserData(String _) {
-  // This is where you would do your heavy lifting, e.g., from a database or network.
-  // We add a delay to simulate a long-running operation.
-  // In a real app, you would not have this delay.
-  // Future.delayed(const Duration(seconds: 2)); // This doesn't work with compute
-
-  // Let's just return the data for now.
   return User(
     person: Person(fullName: 'John Doe', dateOfBirth: DateTime(1990, 1, 1)),
     contacts: [
@@ -49,6 +42,8 @@ class DashboardView extends StatefulWidget {
 
 class _DashboardViewState extends State<DashboardView> {
   User? _user;
+  List<Map<String, dynamic>> _columnLeft = [];
+  List<Map<String, dynamic>> _columnRight = [];
 
   @override
   void initState() {
@@ -64,18 +59,96 @@ class _DashboardViewState extends State<DashboardView> {
     if (mounted) {
       setState(() {
         _user = user;
+        _initializeCards();
       });
     }
     LoadingService().hide();
   }
 
-  void _showDetailView(int index) {
+  void _initializeCards() {
+    if (_user == null) return;
+    final allCards = [
+      {
+        'id': 'users',
+        'title': 'Users',
+        'data': _user!,
+        'columns': [
+          const DataColumn(label: Text('Name')),
+          const DataColumn(label: Text('Date of Birth')),
+          const DataColumn(label: Text('')),
+        ],
+      },
+      {
+        'id': 'people',
+        'title': 'People',
+        'data': _user!.contacts,
+        'columns': [
+          const DataColumn(label: Text('Name')),
+          const DataColumn(label: Text('Date of Birth')),
+          const DataColumn(label: Text('')),
+        ],
+      },
+      {
+        'id': 'calendar',
+        'title': 'Calendar',
+        'data': _user!.calendar.appointments,
+        'columns': [
+          const DataColumn(label: Text('Title')),
+          const DataColumn(label: Text('Date')),
+          const DataColumn(label: Text('')),
+        ],
+      },
+      {
+        'id': 'tasks',
+        'title': 'Tasks',
+        'data': [Appointment(title: 'Buy groceries', start: DateTime.now(), end: DateTime.now())],
+        'columns': [
+          const DataColumn(label: Text('Task')),
+          const DataColumn(label: Text('Due Date')),
+          const DataColumn(label: Text('')),
+        ],
+      },
+      {
+        'id': 'notes',
+        'title': 'Notes',
+        'data': [Person(fullName: 'Remember to call mom', dateOfBirth: DateTime.now())], // Using Person as dummy data
+        'columns': [
+          const DataColumn(label: Text('Note')),
+          const DataColumn(label: Text('Created')),
+          const DataColumn(label: Text('')),
+        ],
+      },
+    ];
+
+    // Distribute cards into two columns
+    _columnLeft = [];
+    _columnRight = [];
+    for (int i = 0; i < allCards.length; i++) {
+      if (i.isEven) {
+        _columnLeft.add(allCards[i]);
+      } else {
+        _columnRight.add(allCards[i]);
+      }
+    }
+  }
+
+  void _onReorder(List<Map<String, dynamic>> column, int oldIndex, int newIndex) {
+    setState(() {
+      if (newIndex > oldIndex) {
+        newIndex -= 1;
+      }
+      final item = column.removeAt(oldIndex);
+      column.insert(newIndex, item);
+    });
+  }
+
+  void _showDetailView(Map<String, dynamic> cardData) {
     widget.showAsModalSheet((scrollController) {
       return SingleChildScrollView(
         controller: scrollController,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: buildCardByIndex(index, isInModal: true),
+          child: _buildModelCard(cardData, context, 0, isInModal: true),
         ),
       );
     });
@@ -92,7 +165,6 @@ class _DashboardViewState extends State<DashboardView> {
               icon: const Icon(Icons.settings),
               onPressed: () {
                 scaffold.hideCurrentSnackBar();
-                // This navigation is now handled by the main screen's modal
               },
             ),
           ],
@@ -115,6 +187,7 @@ class _DashboardViewState extends State<DashboardView> {
                   contacts: _user!.contacts,
                   calendar: _user!.calendar,
                 );
+                _initializeCards();
               });
               _showToast('User added');
             },
@@ -128,6 +201,7 @@ class _DashboardViewState extends State<DashboardView> {
             onSave: (newPerson) {
               setState(() {
                 _user!.contacts.add(newPerson);
+                _initializeCards();
               });
               _showToast('Person added');
             },
@@ -141,34 +215,21 @@ class _DashboardViewState extends State<DashboardView> {
             onSave: (newAppointment) {
               setState(() {
                 _user!.calendar.appointments.add(newAppointment);
+                _initializeCards();
               });
               _showToast('Appointment added');
             },
           ),
         );
         break;
+      default:
+        _showToast('Add action not available for this card type.');
     }
   }
 
   void _openEditDialog(String title, dynamic item) {
     switch (title) {
       case 'Users':
-        showDialog(
-          context: context,
-          builder: (context) => UserEditorDialog(
-            onSave: (updatedPerson) {
-              setState(() {
-                _user = User(
-                  person: updatedPerson,
-                  contacts: _user!.contacts,
-                  calendar: _user!.calendar,
-                );
-              });
-              _showToast('User updated');
-            },
-          ),
-        );
-        break;
       case 'People':
         showDialog(
           context: context,
@@ -176,10 +237,19 @@ class _DashboardViewState extends State<DashboardView> {
             person: item,
             onSave: (updatedPerson) {
               setState(() {
-                final index = _user!.contacts.indexOf(item);
-                _user!.contacts[index] = updatedPerson;
+                if (item is User) {
+                  _user = User(
+                    person: updatedPerson,
+                    contacts: _user!.contacts,
+                    calendar: _user!.calendar,
+                  );
+                } else {
+                  final index = _user!.contacts.indexOf(item);
+                  _user!.contacts[index] = updatedPerson;
+                }
+                _initializeCards();
               });
-              _showToast('Person updated');
+              _showToast('Item updated');
             },
           ),
         );
@@ -193,19 +263,22 @@ class _DashboardViewState extends State<DashboardView> {
               setState(() {
                 final index = _user!.calendar.appointments.indexOf(item);
                 _user!.calendar.appointments[index] = updatedAppointment;
+                _initializeCards();
               });
               _showToast('Appointment updated');
             },
           ),
         );
         break;
+      default:
+        _showToast('Edit action not available for this card type.');
     }
   }
 
   Future<void> _showDeleteConfirmationDialog(String title, dynamic item) async {
     return showDialog<void>(
       context: context,
-      barrierDismissible: false, // user must tap button!
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Delete ${title.substring(0, title.length - 1)}'),
@@ -232,6 +305,7 @@ class _DashboardViewState extends State<DashboardView> {
                   } else if (item is Appointment) {
                     _user!.calendar.appointments.remove(item);
                   }
+                  _initializeCards();
                 });
                 Navigator.of(context).pop();
                 _showToast('Item deleted');
@@ -287,160 +361,195 @@ class _DashboardViewState extends State<DashboardView> {
   @override
   Widget build(BuildContext context) {
     if (_user == null) {
-      return const SizedBox.shrink(); // Or a placeholder
+      return const Center(child: CircularProgressIndicator());
     }
 
-    return ListView(
-      padding: const EdgeInsets.all(8.0),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        buildCardByIndex(0),
-        buildCardByIndex(1),
-        buildCardByIndex(2),
+        Expanded(
+          child: ReorderableListView.builder(
+            padding: const EdgeInsets.all(8.0),
+            itemCount: _columnLeft.length,
+            itemBuilder: (context, index) {
+              final cardData = _columnLeft[index];
+              return _buildModelCard(cardData, context, index, key: ValueKey(cardData['id']!));
+            },
+            onReorder: (oldIndex, newIndex) => _onReorder(_columnLeft, oldIndex, newIndex),
+          ),
+        ),
+        const VerticalDivider(width: 1),
+        Expanded(
+          child: ReorderableListView.builder(
+            padding: const EdgeInsets.all(8.0),
+            itemCount: _columnRight.length,
+            itemBuilder: (context, index) {
+              final cardData = _columnRight[index];
+              return _buildModelCard(cardData, context, index, key: ValueKey(cardData['id']!));
+            },
+            onReorder: (oldIndex, newIndex) => _onReorder(_columnRight, oldIndex, newIndex),
+          ),
+        ),
       ],
     );
   }
 
-  Widget buildCardByIndex(int idx, {bool isInModal = false}) {
-    switch (idx) {
-      case 0:
-        return _buildModelCard(0, context, 'Users', _user!, [
-          const DataColumn(label: Text('Name')),
-          const DataColumn(label: Text('date of birth')),
-          const DataColumn(label: Text('')),
-        ], isInModal: isInModal);
-      case 1:
-        return _buildModelCard(1, context, 'People', _user!.contacts, [
-          const DataColumn(label: Text('Name')),
-          const DataColumn(label: Text('date of birth')),
-          const DataColumn(label: Text('')),
-        ], isInModal: isInModal);
-      case 2:
-      default:
-        return _buildModelCard(2, context, 'Calendar', _user!.calendar.appointments, [
-          const DataColumn(label: Text('Title')),
-          const DataColumn(label: Text('Date')),
-          const DataColumn(label: Text('')),
-        ], isInModal: isInModal);
-    }
-  }
+  Widget _buildModelCard(Map<String, dynamic> cardData, BuildContext context, int index,
+      {Key? key, bool isInModal = false}) {
+    final String title = cardData['title']!;
+    final dynamic data = cardData['data']!;
+    final List<DataColumn> columns = cardData['columns']!;
 
-  Widget _buildModelCard(int index, BuildContext context, String title, dynamic data,
-      List<DataColumn> columns, {bool isInModal = false}) {
     return Card(
+      key: key,
       margin: isInModal ? EdgeInsets.zero : const EdgeInsets.symmetric(vertical: 8.0),
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            ListTile(
-              title: Text(title, style: Theme.of(context).textTheme.titleLarge),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
+      child: Column(
+        mainAxisSize: MainAxisSize.min, // This makes the card's height intrinsic
+        children: [
+          ListTile(
+            title: Text(title, style: Theme.of(context).textTheme.titleLarge),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: () => _openAddDialog(title, data),
+                ),
+                if (!isInModal)
                   IconButton(
-                    icon: const Icon(Icons.add),
-                    onPressed: () => _openAddDialog(title, data),
+                    icon: const Icon(Icons.open_in_full),
+                    onPressed: () => _showDetailView(cardData),
                   ),
-                  if (!isInModal)
-                    IconButton(
-                      icon: const Icon(Icons.open_in_full),
-                      onPressed: () => _showDetailView(index),
-                    ),
-                ],
-              ),
+                if (!isInModal)
+                  ReorderableDragStartListener(
+                    index: index,
+                    child: const Icon(Icons.drag_handle),
+                  ),
+              ],
             ),
-            SizedBox(
-              width: double.infinity,
-              child: DataTable(
-                columns: columns,
-                rows: _getRows(data, title),
-              ),
-            ),
-          ],
-        ),
+          ),
+          DataTable(
+            columns: columns,
+            rows: _getRows(data, title),
+          ),
+        ],
       ),
     );
   }
 
   List<DataRow> _getRows(dynamic data, String title) {
-    if (data is User) {
-      return [
-        DataRow(cells: [
-          DataCell(Text(data.person.fullName)),
-          DataCell(Text(data.person.dateOfBirth.toIso8601String().substring(0, 10))),
-          DataCell(
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () => _openEditDialog(title, data.person),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: null, // Deleting user is not allowed
-                ),
-                IconButton(
-                  icon: const Icon(Icons.visibility),
-                  onPressed: () => _showViewDialog(title, data.person),
-                ),
-              ],
+    switch (title) {
+      case 'Users':
+        final user = data as User;
+        return [
+          DataRow(cells: [
+            DataCell(Text(user.person.fullName)),
+            DataCell(Text(user.person.dateOfBirth.toIso8601String().substring(0, 10))),
+            DataCell(
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () => _openEditDialog(title, user.person),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: null, // Deleting user is not allowed
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.visibility),
+                    onPressed: () => _showViewDialog(title, user.person),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ])
-      ];
-    } else if (data is List<Person>) {
-      return data.map((person) {
-        return DataRow(cells: [
-          DataCell(Text(person.fullName)),
-          DataCell(Text(person.dateOfBirth.toIso8601String().substring(0, 10))),
-          DataCell(
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () => _openEditDialog(title, person),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () => _showDeleteConfirmationDialog(title, person),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.visibility),
-                  onPressed: () => _showViewDialog(title, person),
-                ),
-              ],
+          ])
+        ];
+      case 'People':
+        final people = data as List<Person>;
+        return people.map((person) {
+          return DataRow(cells: [
+            DataCell(Text(person.fullName)),
+            DataCell(Text(person.dateOfBirth.toIso8601String().substring(0, 10))),
+            DataCell(
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () => _openEditDialog(title, person),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () => _showDeleteConfirmationDialog(title, person),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.visibility),
+                    onPressed: () => _showViewDialog(title, person),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ]);
-      }).toList();
-    } else if (data is List<Appointment>) {
-      return data.map((appointment) {
-        return DataRow(cells: [
-          DataCell(Text(appointment.title)),
-          DataCell(Text(appointment.start.toIso8601String().substring(0, 10))),
-          DataCell(
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () => _openEditDialog(title, appointment),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () => _showDeleteConfirmationDialog(title, appointment),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.visibility),
-                  onPressed: () => _showViewDialog(title, appointment),
-                ),
-              ],
+          ]);
+        }).toList();
+      case 'Calendar':
+      case 'Tasks': // Tasks use the same data structure as Appointments for now
+        final appointments = data as List<Appointment>;
+        return appointments.map((appointment) {
+          return DataRow(cells: [
+            DataCell(Text(appointment.title)),
+            DataCell(Text(appointment.start.toIso8601String().substring(0, 10))),
+            DataCell(
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () => _openEditDialog(title, appointment),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () => _showDeleteConfirmationDialog(title, appointment),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.visibility),
+                    onPressed: () => _showViewDialog(title, appointment),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ]);
-      }).toList();
+          ]);
+        }).toList();
+      case 'Notes':
+        final notes = data as List<Person>; // Using Person as dummy data model
+        return notes.map((note) {
+          return DataRow(cells: [
+            DataCell(Text(note.fullName)), // Re-using fullName as the note content
+            DataCell(Text(note.dateOfBirth.toIso8601String().substring(0, 10))), // Re-using dateOfBirth as created date
+            DataCell(
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () => _showToast('Edit not available for notes'),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () => _showDeleteConfirmationDialog(title, note),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.visibility),
+                    onPressed: () => _showViewDialog(title, note),
+                  ),
+                ],
+              ),
+            ),
+          ]);
+        }).toList();
+      default:
+        return [];
     }
-    return [];
   }
 }

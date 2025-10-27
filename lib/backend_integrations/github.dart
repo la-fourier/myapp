@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -6,13 +7,20 @@ class GitHubService {
   String? _accessToken;
 
   Future<void> connect() async {
+    // TODO: Replace with your own GitHub client ID and secret.
     final clientId = 'YOUR_GITHUB_CLIENT_ID';
     final clientSecret = 'YOUR_GITHUB_CLIENT_SECRET';
-    final redirectUrl = 'myapp://callback';
+
+    // The callbackUrlScheme is a required parameter.
+    // For mobile, it's the custom scheme you've registered (e.g., 'myapp').
+    // For web, this value is not used for the redirect, but a non-empty
+    // string is required by the library. The actual redirect URL is configured
+    // in your GitHub OAuth App settings.
+    final callbackUrlScheme = kIsWeb ? 'app' : 'myapp';
 
     final result = await FlutterWebAuth2.authenticate(
       url: 'https://github.com/login/oauth/authorize?client_id=$clientId&scope=gist',
-      callbackUrlScheme: 'myapp',
+      callbackUrlScheme: callbackUrlScheme,
     );
 
     final code = Uri.parse(result).queryParameters['code'];
@@ -29,6 +37,8 @@ class GitHubService {
   }
 
   Future<void> uploadJson(String fileName, Map<String, dynamic> data) async {
+    if (_accessToken == null) throw Exception("Not connected to GitHub");
+
     final gist = {
       'description': 'App Backup',
       'public': false,
@@ -48,6 +58,8 @@ class GitHubService {
   }
 
   Future<Map<String, dynamic>?> downloadJson(String gistId, String fileName) async {
+    if (_accessToken == null) throw Exception("Not connected to GitHub");
+
     final response = await http.get(
       Uri.parse('https://api.github.com/gists/$gistId'),
       headers: {'Authorization': 'token $_accessToken'},

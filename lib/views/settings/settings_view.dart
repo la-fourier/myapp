@@ -1,17 +1,50 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:myapp/services/theme_provider.dart';
 import 'package:provider/provider.dart';
 
-class SettingsView extends StatelessWidget {
+class SettingsView extends StatefulWidget {
   final ScrollController? scrollController;
   const SettingsView({super.key, this.scrollController});
+
+  @override
+  State<SettingsView> createState() => _SettingsViewState();
+}
+
+class _SettingsViewState extends State<SettingsView> {
+  // TODO: This is a local state for demonstration. For a real app,
+  // this should be managed by a proper state management solution.
+  bool _toastNotificationsEnabled = true;
+
+  void _showLanguageToast(String language) {
+    Fluttertoast.showToast(msg: "Language set to $language (not implemented)");
+    Navigator.of(context).pop();
+  }
+
+  void _showInfoDialog(String title, String content) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(content),
+          actions: [ 
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 3,
       child: NestedScrollView(
-        controller: scrollController,
+        controller: widget.scrollController,
         headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
           return <Widget>[
             SliverAppBar(
@@ -62,11 +95,10 @@ class SettingsView extends StatelessWidget {
             );
           },
         ),
-        Consumer<ThemeProvider>(builder: (context, value, child) {
-          return ListTile(
+        ListTile(
           leading: const Icon(Icons.language),
           title: const Text('Language'),
-          subtitle: const Text('English'),
+          subtitle: const Text('English'), // This is static, would need a provider to be dynamic
           onTap: () {
             // Show language selection dialog
             showDialog(
@@ -77,25 +109,17 @@ class SettingsView extends StatelessWidget {
                   content: SingleChildScrollView(
                     child: ListBody(
                       children: <Widget>[
-                        GestureDetector(
-                          child: const Text('English'),
-                          onTap: () {
-                            Navigator.of(context).pop();
-                          },
+                        ListTile(
+                          title: const Text('English'),
+                          onTap: () => _showLanguageToast('English'),
                         ),
-                        const SizedBox(height: 10),
-                        GestureDetector(
-                          child: const Text('German'),
-                          onTap: () {
-                            Navigator.of(context).pop();
-                          },
+                        ListTile(
+                          title: const Text('German'),
+                          onTap: () => _showLanguageToast('German'),
                         ),
-                        const SizedBox(height: 10),
-                        GestureDetector(
-                          child: const Text('Spanish'),
-                          onTap: () {
-                            Navigator.of(context).pop();
-                          },
+                        ListTile(
+                          title: const Text('Spanish'),
+                          onTap: () => _showLanguageToast('Spanish'),
                         ),
                       ],
                     ),
@@ -104,8 +128,7 @@ class SettingsView extends StatelessWidget {
               },
             );
           },
-        );
-        })
+        ),
       ],
     );
   }
@@ -113,13 +136,16 @@ class SettingsView extends StatelessWidget {
   Widget _buildNotificationsSettings() {
     return ListView(
       children: [
-        ListTile(
-          leading: const Icon(Icons.message),
+        SwitchListTile(
           title: const Text('Enable Toast Notifications'),
-          trailing: Switch(
-            value: true,
-            onChanged: (value) {},
-          ),
+          value: _toastNotificationsEnabled,
+          onChanged: (value) {
+            setState(() {
+              _toastNotificationsEnabled = value;
+            });
+            Fluttertoast.showToast(msg: "Toast notifications are now ${value ? 'enabled' : 'disabled'}");
+          },
+          secondary: const Icon(Icons.message),
         ),
       ],
     );
@@ -131,23 +157,17 @@ class SettingsView extends StatelessWidget {
         ListTile(
           leading: const Icon(Icons.info_outline),
           title: const Text('About'),
-          onTap: () {
-            // Navigate to about screen
-          },
+          onTap: () => _showInfoDialog('About Orgaa', 'Version 1.0.0\n\nThis is a sample application.'),
         ),
         ListTile(
           leading: const Icon(Icons.privacy_tip_outlined),
           title: const Text('Privacy Policy'),
-          onTap: () {
-            // Navigate to privacy policy screen
-          },
+          onTap: () => _showInfoDialog('Privacy Policy', 'This is a placeholder for the privacy policy.'),
         ),
         ListTile(
           leading: const Icon(Icons.description_outlined),
           title: const Text('Terms of Service'),
-          onTap: () {
-            // Navigate to terms of service screen
-          },
+          onTap: () => _showInfoDialog('Terms of Service', 'This is a placeholder for the terms of service.'),
         ),
       ],
     );

@@ -15,6 +15,7 @@ import 'package:myapp/widgets/loading_overlay.dart';
 
 import 'package:myapp/backend_integrations/google.dart';
 import 'package:myapp/backend_integrations/github.dart';
+import 'package:myapp/services/loading_service.dart';
 
 void main() {
   runApp(MyApp());
@@ -159,6 +160,44 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
+  Future<void> _syncData() async {
+    final loadingService = LoadingService();
+    loadingService.show();
+    try {
+      final googleService = GoogleDriveService();
+      final githubService = GitHubService();
+
+      if (syncService == 'google') {
+        await googleService.connect();
+        await googleService.uploadJson('app_data.json', appData);
+      } else if (syncService == 'github') {
+        await githubService.connect();
+        await githubService.uploadJson('app_data.json', appData);
+      }
+      Fluttertoast.showToast(
+        msg: "Sync successful",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: "Sync failed: ${e.toString()}",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    } finally {
+      loadingService.hide();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -174,27 +213,7 @@ class _MainScreenState extends State<MainScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.sync),
-            onPressed: () {
-              final googleService = GoogleDriveService();
-              final githubService = GitHubService();
-
-              if (syncService == 'google') {
-                googleService.connect();
-                googleService.uploadJson('app_data.json', appData);
-              } else if (syncService == 'github') {
-                githubService.connect();
-                githubService.uploadJson('app_data.json', appData);
-              }
-              Fluttertoast.showToast(
-                  msg: "Syncing...",
-                  toastLength: Toast.LENGTH_SHORT,
-                  gravity: ToastGravity.BOTTOM,
-                  timeInSecForIosWeb: 1,
-                  backgroundColor: Colors.grey,
-                  textColor: Colors.white,
-                  fontSize: 16.0
-              );
-            },
+            onPressed: _syncData,
             tooltip: 'Sync',
           ),
           IconButton(
