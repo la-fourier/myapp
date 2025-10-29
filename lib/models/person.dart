@@ -4,6 +4,7 @@ class Person {
   final String? nickname;
   final String? profilePictureUrl;
   final String? address;
+  final String? email;
 
   Person({
     required this.fullName,
@@ -11,5 +12,6 @@ class Person {
     this.nickname,
     this.profilePictureUrl,
     this.address,
+    this.email,
   });
 }

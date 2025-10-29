@@ -2,7 +2,7 @@ import 'package:myapp/models/calendar/calendar.dart';
 import 'package:myapp/models/person.dart';
 
 class User {
-  final Person person;
+  Person person;
   final List<Person> contacts;
   final Calendar calendar;
 

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:myapp/services/app_state.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -9,20 +11,18 @@ class LoginView extends StatefulWidget {
 
 class _LoginViewState extends State<LoginView> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final _emailController = TextEditingController(text: 'test@debug.com');
+  final _passwordController = TextEditingController(text: 'debug123');
 
-  void _login() {
+  Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
-      // Debug login credentials
-      final email = _emailController.text;
-      final password = _passwordController.text;
-      
-      // Test credentials for debugging
-      if (email == 'test@debug.com' && password == 'debug123') {
-        Navigator.of(context).pushReplacementNamed('/main');
-      } else {
-        // Show error message for invalid credentials
+      final appState = Provider.of<AppState>(context, listen: false);
+      final success = await appState.login(
+        _emailController.text,
+        _passwordController.text,
+      );
+
+      if (!success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Invalid credentials. Use test@debug.com / debug123 for testing.'),
@@ -30,6 +30,7 @@ class _LoginViewState extends State<LoginView> {
           ),
         );
       }
+      // The AuthWrapper will handle navigation automatically upon state change.
     }
   }
 
