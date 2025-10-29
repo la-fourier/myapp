@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:myapp/models/calendar/appointment.dart';
+import 'package:myapp/models/calendar/category.dart';
 
 class AppointmentEditorDialog extends StatefulWidget {
   final Appointment? appointment;
@@ -21,6 +22,13 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
   late DateTime _endDate;
   late TimeOfDay _startTime;
   late TimeOfDay _endTime;
+  late Category _category;
+
+  final List<Category> _categories = [
+    Category(name: 'Work', color: Colors.blue),
+    Category(name: 'Personal', color: Colors.green),
+    Category(name: 'Urgent', color: Colors.red),
+  ];
 
   @override
   void initState() {
@@ -32,6 +40,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
       _endDate = widget.appointment!.end;
       _startTime = TimeOfDay.fromDateTime(_startDate);
       _endTime = TimeOfDay.fromDateTime(_endDate);
+      _category = widget.appointment!.category;
     } else {
       _title = '';
       _description = '';
@@ -39,6 +48,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
       _endDate = (widget.startTime ?? DateTime.now()).add(const Duration(hours: 1));
       _startTime = TimeOfDay.fromDateTime(_startDate);
       _endTime = TimeOfDay.fromDateTime(_endDate);
+      _category = _categories.first;
     }
   }
 
@@ -101,6 +111,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
         description: _description,
         start: finalStartDate,
         end: finalEndDate,
+        category: _category,
       );
 
       widget.onSave(newAppointment);
@@ -128,6 +139,21 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                 initialValue: _description,
                 decoration: const InputDecoration(labelText: 'Description'),
                 onSaved: (value) => _description = value ?? '',
+              ),
+              DropdownButtonFormField<Category>(
+                value: _category,
+                items: _categories.map((Category category) {
+                  return DropdownMenuItem<Category>(
+                    value: category,
+                    child: Text(category.name),
+                  );
+                }).toList(),
+                onChanged: (Category? newValue) {
+                  setState(() {
+                    _category = newValue!;
+                  });
+                },
+                decoration: const InputDecoration(labelText: 'Category'),
               ),
               const SizedBox(height: 20),
               Row(

@@ -38,7 +38,7 @@ class _MainScreenState extends State<MainScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.black.withOpacity(0.3),
+      backgroundColor: Colors.black.withValues(alpha: 0.3),
       barrierColor: Colors.transparent,
       elevation: 0,
       builder: (context) {

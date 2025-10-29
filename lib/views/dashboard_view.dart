@@ -8,7 +8,6 @@ import 'package:myapp/models/user.dart';
 import 'package:myapp/models/person.dart';
 import 'package:myapp/models/calendar/calendar.dart';
 import 'package:myapp/models/calendar/appointment.dart';
-import 'package:myapp/views/settings/settings_view.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
@@ -52,30 +51,6 @@ class _DashboardViewState extends State<DashboardView> {
     if (index != null) {
       _showToast('Zoomed in');
     }
-  }
-
-  void _showToast_old(String message) {
-    final scaffold = ScaffoldMessenger.of(context);
-    scaffold.showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Expanded(child: Text(message)),
-            IconButton(
-              icon: const Icon(Icons.settings),
-              onPressed: () {
-                scaffold.hideCurrentSnackBar();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SettingsView()),
-                );
-              },
-            ),
-          ],
-        ),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-      ),
-    );
   }
 
   void _showToast(String message) {

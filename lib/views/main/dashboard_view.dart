@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/services/app_state.dart';
-import 'package:myapp/dialogs/appointment_editor_dialog.dart';
-import 'package:myapp/dialogs/person_editor_dialog.dart';
-import 'package:myapp/dialogs/user_editor_dialog.dart';
 import 'package:myapp/models/user.dart';
 import 'package:myapp/models/person.dart';
 import 'package:myapp/models/calendar/appointment.dart';
@@ -17,8 +14,8 @@ class DashboardView extends StatefulWidget {
 }
 
 class _DashboardViewState extends State<DashboardView> {
-  List<Map<String, dynamic>> _columnLeft = [];
-  List<Map<String, dynamic>> _columnRight = [];
+  final List<Map<String, dynamic>> _columnLeft = [];
+  final List<Map<String, dynamic>> _columnRight = [];
 
   // Using didChangeDependencies to initialize data from Provider
   @override

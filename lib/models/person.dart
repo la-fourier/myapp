@@ -14,4 +14,26 @@ class Person {
     this.address,
     this.email,
   });
+
+  factory Person.fromJson(Map<String, dynamic> json) {
+    return Person(
+      fullName: json['fullName'],
+      dateOfBirth: DateTime.parse(json['dateOfBirth']),
+      nickname: json['nickname'],
+      profilePictureUrl: json['profilePictureUrl'],
+      address: json['address'],
+      email: json['email'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'fullName': fullName,
+      'dateOfBirth': dateOfBirth.toIso8601String(),
+      'nickname': nickname,
+      'profilePictureUrl': profilePictureUrl,
+      'address': address,
+      'email': email,
+    };
+  }
 }

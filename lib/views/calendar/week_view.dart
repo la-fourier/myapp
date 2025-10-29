@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:myapp/dialogs/appointment_editor_dialog.dart';
 import 'package:myapp/models/calendar/appointment.dart';
+import 'package:myapp/services/app_state.dart';
+import 'package:myapp/utils/date_utils.dart';
+import 'package:provider/provider.dart';
 
 class WeekView extends StatefulWidget {
   final DateTime focusedDay;
@@ -17,7 +20,6 @@ class _WeekViewState extends State<WeekView> {
   late DateTime _currentWeek;
   late Timer _timer;
   Offset _hoverPosition = Offset.zero;
-  final List<Appointment> _appointments = [];
 
   @override
   void initState() {
@@ -56,10 +58,6 @@ class _WeekViewState extends State<WeekView> {
     return (dayOfYear / 7).ceil();
   }
 
-  bool isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
-  }
-
   void _previousWeek() {
     setState(() {
       _currentWeek = _currentWeek.subtract(const Duration(days: 7));
@@ -72,24 +70,23 @@ class _WeekViewState extends State<WeekView> {
     });
   }
 
-  void _addAppointment(Appointment appointment) {
-    setState(() {
-      _appointments.add(appointment);
-    });
-  }
-
   void _showAppointmentEditor(DateTime startTime) {
+    final appState = Provider.of<AppState>(context, listen: false);
     showDialog(
       context: context,
       builder: (context) => AppointmentEditorDialog(
         startTime: startTime,
-        onSave: _addAppointment,
+        onSave: (appointment) {
+          appState.addAppointment(appointment);
+        },
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final appState = Provider.of<AppState>(context);
+    final appointments = appState.loggedInUser?.calendar.appointments ?? [];
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final arrowColor = isDarkMode ? Colors.white : Colors.black;
     final weekDays = List.generate(7, (index) => _currentWeek.add(Duration(days: index)));
@@ -121,7 +118,7 @@ class _WeekViewState extends State<WeekView> {
                       child: Stack(
                         children: [
                           _buildTimeGrid(hourHeight, timeColWidth),
-                          ..._buildAppointments(dayWidth, hourHeight, timeColWidth),
+                          ..._buildAppointments(appointments, dayWidth, hourHeight, timeColWidth),
                           if (_hoverPosition != Offset.zero) ...[
                             _buildHoverIndicator(dayWidth, hourHeight, timeColWidth, weekDays),
                           ],
@@ -202,8 +199,8 @@ class _WeekViewState extends State<WeekView> {
     );
   }
 
-  List<Widget> _buildAppointments(double dayWidth, double hourHeight, double timeColWidth) {
-    return _appointments.where((app) {
+  List<Widget> _buildAppointments(List<Appointment> appointments, double dayWidth, double hourHeight, double timeColWidth) {
+    return appointments.where((app) {
       final weekEnd = _currentWeek.add(const Duration(days: 7));
       return app.start.isBefore(weekEnd) && app.end.isAfter(_currentWeek);
     }).map((app) {
@@ -220,7 +217,7 @@ class _WeekViewState extends State<WeekView> {
         child: Container(
           margin: const EdgeInsets.all(1.0),
           padding: const EdgeInsets.all(4.0),
-          decoration: BoxDecoration(color: app.color.withAlpha(204), borderRadius: BorderRadius.circular(4.0)),
+          decoration: BoxDecoration(color: app.category.color.withAlpha(204), borderRadius: BorderRadius.circular(4.0)),
           child: Text(app.title, style: const TextStyle(fontSize: 12, color: Colors.white), overflow: TextOverflow.ellipsis),
         ),
       );

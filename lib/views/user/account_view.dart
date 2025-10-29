@@ -60,7 +60,7 @@ class AccountView extends StatelessWidget {
   Widget _buildProfilePage(BuildContext context, AppState appState, User user) {
     final person = user.person;
 
-    void _showEditDialog(String title, String initialValue, Function(String) onSave) {
+    void showEditDialog(String title, String initialValue, Function(String) onSave) {
       final controller = TextEditingController(text: initialValue);
       showDialog(
         context: context,
@@ -84,7 +84,7 @@ class AccountView extends StatelessWidget {
       );
     }
 
-    Future<void> _pickDate(BuildContext context) async {
+    Future<void> pickDate(BuildContext context) async {
       final newDate = await showDatePicker(
         context: context,
         initialDate: person.dateOfBirth,
@@ -109,11 +109,11 @@ class AccountView extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          _buildEditableRow(context, 'Name', person.fullName, (newValue) => appState.updateUserName(newValue), _showEditDialog),
-          _buildEditableRow(context, 'Nickname', person.nickname ?? 'N/A', (newValue) => appState.updateUserNickname(newValue), _showEditDialog),
-          _buildEditableRow(context, 'Email', person.email ?? 'N/A', (newValue) => appState.updateUserEmail(newValue), _showEditDialog),
-          _buildEditableRow(context, 'Address', person.address ?? 'N/A', (newValue) => appState.updateUserAddress(newValue), _showEditDialog),
-          _buildDateRow(context, 'Birthday', person.dateOfBirth, _pickDate),
+          _buildEditableRow(context, 'Name', person.fullName, (newValue) => appState.updateUserName(newValue), showEditDialog),
+          _buildEditableRow(context, 'Nickname', person.nickname ?? 'N/A', (newValue) => appState.updateUserNickname(newValue), showEditDialog),
+          _buildEditableRow(context, 'Email', person.email ?? 'N/A', (newValue) => appState.updateUserEmail(newValue), showEditDialog),
+          _buildEditableRow(context, 'Address', person.address ?? 'N/A', (newValue) => appState.updateUserAddress(newValue), showEditDialog),
+          _buildDateRow(context, 'Birthday', person.dateOfBirth, pickDate),
           const SizedBox(height: 24),
           ListTile(
             leading: const Icon(Icons.lock),

@@ -3,20 +3,38 @@ import 'package:myapp/models/user.dart';
 import 'package:myapp/models/person.dart';
 import 'package:myapp/models/calendar/calendar.dart';
 import 'package:myapp/models/calendar/appointment.dart';
+import 'package:myapp/services/storage_service.dart';
 
 class AppState extends ChangeNotifier {
   User? _loggedInUser;
-  final List<User> _users = [];
+  List<User> _users = [];
+  final StorageService _storageService = StorageService();
 
   User? get loggedInUser => _loggedInUser;
+  List<User> get users => _users;
 
   AppState() {
-    // Create dummy users for the app
-    _initializeUsers();
+    _loadUsers();
+  }
+
+  Future<void> _loadUsers() async {
+    _users = await _storageService.readUsers();
+    if (_users.isEmpty) {
+      _initializeUsers();
+    } else {
+      // If there is a logged in user, we need to find the user object from the newly loaded list
+      if (_loggedInUser != null) {
+        _loggedInUser = _users.firstWhere((user) => user.person.email == _loggedInUser!.person.email);
+      }
+    }
+    notifyListeners();
+  }
+
+  Future<void> _saveUsers() async {
+    await _storageService.saveUsers(_users);
   }
 
   void _initializeUsers() {
-    // The debug user from the login screen
     final user1 = User(
       person: Person(fullName: 'Test User', dateOfBirth: DateTime(1995, 5, 23), email: 'test@debug.com'),
       contacts: [
@@ -43,11 +61,10 @@ class AppState extends ChangeNotifier {
     );
 
     _users.add(user1);
-    // Add more dummy users if needed
+    _saveUsers();
   }
 
   Future<bool> login(String email, String password) async {
-    // In a real app, you'd verify the password hash. Here, we just check the debug password.
     if (password == 'debug123') {
       try {
         _loggedInUser = _users.firstWhere((user) => user.person.email == email);
@@ -67,6 +84,33 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void addAppointment(Appointment appointment) {
+    if (_loggedInUser != null) {
+      _loggedInUser!.calendar.appointments.add(appointment);
+      _saveUsers();
+      notifyListeners();
+    }
+  }
+
+  void updateAppointment(Appointment oldAppointment, Appointment newAppointment) {
+    if (_loggedInUser != null) {
+      final index = _loggedInUser!.calendar.appointments.indexOf(oldAppointment);
+      if (index != -1) {
+        _loggedInUser!.calendar.appointments[index] = newAppointment;
+        _saveUsers();
+        notifyListeners();
+      }
+    }
+  }
+
+  void deleteAppointment(Appointment appointment) {
+    if (_loggedInUser != null) {
+      _loggedInUser!.calendar.appointments.remove(appointment);
+      _saveUsers();
+      notifyListeners();
+    }
+  }
+
   void updateUserName(String newName) {
     if (_loggedInUser != null) {
       _loggedInUser!.person = Person(
@@ -77,6 +121,7 @@ class AppState extends ChangeNotifier {
         address: _loggedInUser!.person.address,
         profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
       );
+      _saveUsers();
       notifyListeners();
     }
   }
@@ -91,6 +136,7 @@ class AppState extends ChangeNotifier {
         address: _loggedInUser!.person.address,
         profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
       );
+      _saveUsers();
       notifyListeners();
     }
   }
@@ -105,6 +151,7 @@ class AppState extends ChangeNotifier {
         address: _loggedInUser!.person.address,
         profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
       );
+      _saveUsers();
       notifyListeners();
     }
   }
@@ -119,6 +166,7 @@ class AppState extends ChangeNotifier {
         address: newAddress,
         profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
       );
+      _saveUsers();
       notifyListeners();
     }
   }
@@ -133,6 +181,7 @@ class AppState extends ChangeNotifier {
         address: _loggedInUser!.person.address,
         profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
       );
+      _saveUsers();
       notifyListeners();
     }
   }

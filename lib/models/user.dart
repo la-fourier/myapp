@@ -11,4 +11,22 @@ class User {
     required this.contacts,
     required this.calendar,
   });
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      person: Person.fromJson(json['person']),
+      contacts: (json['contacts'] as List)
+          .map((e) => Person.fromJson(e))
+          .toList(),
+      calendar: Calendar.fromJson(json['calendar']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'person': person.toJson(),
+      'contacts': contacts.map((e) => e.toJson()).toList(),
+      'calendar': calendar.toJson(),
+    };
+  }
 }

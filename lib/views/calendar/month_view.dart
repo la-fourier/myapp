@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:myapp/models/calendar/appointment.dart';
+import 'package:myapp/services/app_state.dart';
+import 'package:myapp/utils/date_utils.dart';
+import 'package:myapp/views/calendar/day_view.dart';
+import 'package:myapp/widgets/pie_chart_painter.dart';
+import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart' as table_calendar;
 
 class MonthView extends StatefulWidget {
@@ -20,16 +26,27 @@ class MonthView extends StatefulWidget {
 class _MonthViewState extends State<MonthView> {
   DateTime? _hoveredDay;
 
-  bool isSameDay(DateTime? a, DateTime? b) {
-    if (a == null || b == null) {
-      return false;
-    }
-    return a.year == b.year && a.month == b.month && a.day == b.day;
+  void _showDayView(BuildContext context, DateTime day) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: DayView(
+          selectedDay: day,
+          onBack: () => Navigator.of(context).pop(),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final appState = Provider.of<AppState>(context);
+    final appointments = appState.loggedInUser?.calendar.appointments ?? [];
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    List<Appointment> getEventsForDay(DateTime day) {
+      return appointments.where((event) => isSameDay(event.start, day)).toList();
+    }
 
     // Constrain the calendar width so it doesn't stretch on very wide displays.
     // Use LayoutBuilder to compute per-day cell size and scale text accordingly.
@@ -51,7 +68,11 @@ class _MonthViewState extends State<MonthView> {
               lastDay: DateTime.utc(2030, 3, 14),
               focusedDay: widget.focusedDay,
               selectedDayPredicate: (day) => isSameDay(widget.selectedDay, day),
-              onDaySelected: widget.onDaySelected,
+              onDaySelected: (selectedDay, focusedDay) {
+                widget.onDaySelected(selectedDay, focusedDay);
+                _showDayView(context, selectedDay);
+              },
+              eventLoader: getEventsForDay,
               calendarFormat: table_calendar.CalendarFormat.month,
               headerStyle: table_calendar.HeaderStyle(
                 formatButtonVisible: false,
@@ -66,6 +87,16 @@ class _MonthViewState extends State<MonthView> {
                 ),
               ),
               calendarBuilders: table_calendar.CalendarBuilders(
+                markerBuilder: (context, day, events) {
+                  if (events.isNotEmpty) {
+                    return Positioned(
+                      right: 1,
+                      bottom: 1,
+                      child: _buildEventsMarker(day, events as List<Appointment>),
+                    );
+                  }
+                  return null;
+                },
                 prioritizedBuilder: (context, day, focusedDay) {
                   final isSelected = isSameDay(widget.selectedDay, day);
                   final isToday = isSameDay(day, DateTime.now());
@@ -146,6 +177,14 @@ class _MonthViewState extends State<MonthView> {
           }),
         ),
       ),
+    );
+  }
+
+  Widget _buildEventsMarker(DateTime day, List<Appointment> events) {
+    final colors = events.map((e) => e.category.color).toList();
+    return CustomPaint(
+      painter: PieChartPainter(colors: colors),
+      size: const Size(16, 16),
     );
   }
 }

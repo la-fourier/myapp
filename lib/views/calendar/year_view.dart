@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:myapp/services/app_state.dart';
+import 'package:myapp/utils/date_utils.dart';
+import 'package:myapp/views/calendar/day_view.dart';
+import 'package:myapp/widgets/pie_chart_painter.dart';
+import 'package:provider/provider.dart';
 
 class YearView extends StatefulWidget {
   final DateTime focusedDay;
@@ -13,6 +18,18 @@ class YearView extends StatefulWidget {
 
 class _YearViewState extends State<YearView> {
   DateTime? _hoveredDay;
+
+  void _showDayView(BuildContext context, DateTime day) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: DayView(
+          selectedDay: day,
+          onBack: () => Navigator.of(context).pop(),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +93,8 @@ class _YearViewState extends State<YearView> {
   }
 
   Widget _buildMonthGrid(DateTime month, double cardWidth) {
+    final appState = Provider.of<AppState>(context);
+    final appointments = appState.loggedInUser?.calendar.appointments ?? [];
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
     final firstDayOfMonth = DateTime(month.year, month.month, 1).weekday;
@@ -111,13 +130,14 @@ class _YearViewState extends State<YearView> {
       final day = DateTime(month.year, month.month, i);
       final isToday = isSameDay(day, DateTime.now());
       final isHovered = isSameDay(day, _hoveredDay);
+      final hasAppointment = appointments.any((app) => isSameDay(app.start, day));
 
       dayWidgets.add(
         MouseRegion(
           onEnter: (_) => setState(() => _hoveredDay = day),
           onExit: (_) => setState(() => _hoveredDay = null),
           child: GestureDetector(
-            onTap: () => widget.onDaySelected(day),
+            onTap: () => _showDayView(context, day),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 150),
               transform: isHovered ? Matrix4.diagonal3Values(1.05, 1.05, 1.0) : Matrix4.identity(),
@@ -128,18 +148,34 @@ class _YearViewState extends State<YearView> {
                     : (isHovered ? Theme.of(context).hoverColor : Colors.transparent),
                 borderRadius: BorderRadius.circular(8.0),
               ),
-              child: Center(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    '$i',
-                    style: TextStyle(
-                      fontSize: cellFontSize,
-                      fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-                      color: isDarkMode ? Colors.white : Colors.black,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      '$i',
+                      style: TextStyle(
+                        fontSize: cellFontSize,
+                        fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                        color: isDarkMode ? Colors.white : Colors.black,
+                      ),
                     ),
                   ),
-                ),
+                  if (hasAppointment)
+                    Positioned(
+                      bottom: 4,
+                      child: CustomPaint(
+                        painter: PieChartPainter(
+                          colors: appointments
+                              .where((app) => isSameDay(app.start, day))
+                              .map((e) => e.category.color)
+                              .toList(),
+                        ),
+                        size: const Size(8, 8),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
@@ -153,12 +189,5 @@ class _YearViewState extends State<YearView> {
       physics: const NeverScrollableScrollPhysics(),
       children: dayWidgets,
     );
-  }
-
-  bool isSameDay(DateTime? a, DateTime? b) {
-    if (a == null || b == null) {
-      return false;
-    }
-    return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 }

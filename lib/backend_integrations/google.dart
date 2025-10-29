@@ -49,7 +49,7 @@ class GoogleDriveService {
 
     final fileId = files.files!.first.id!;
     final media = await _driveApi!.files.get(fileId, downloadOptions: drive.DownloadOptions.fullMedia) as drive.Media;
-    final data = await media.stream.toString();
+    final data = media.stream.toString();
     return jsonDecode(data);
   }
 }

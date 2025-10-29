@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/services/app_state.dart';
+import 'package:myapp/utils/date_utils.dart';
 import 'package:myapp/views/calendar/month_view.dart';
 import 'package:myapp/views/calendar/week_view.dart';
 import 'package:myapp/views/calendar/year_view.dart';
@@ -27,13 +28,6 @@ class _CalendarViewState extends State<CalendarView> {
       });
       widget.onDaySelected(selectedDay);
     }
-  }
-
-  bool isSameDay(DateTime? a, DateTime b) {
-    if (a == null) {
-      return false;
-    }
-    return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
   @override
@@ -98,7 +92,6 @@ class _CalendarViewState extends State<CalendarView> {
                     focusedDay: _focusedDay,
                     selectedDay: _selectedDay,
                     onDaySelected: _onDaySelected,
-                    appointments: user.calendar.appointments,
                   ),
                   WeekView(focusedDay: _focusedDay),
                   YearView(

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:myapp/dialogs/appointment_editor_dialog.dart';
+import 'package:myapp/models/calendar/appointment.dart';
+import 'package:myapp/services/app_state.dart';
+import 'package:provider/provider.dart';
 
 class DayView extends StatelessWidget {
   final DateTime selectedDay;
@@ -13,9 +17,31 @@ class DayView extends StatelessWidget {
     this.scrollController,
   });
 
+  void _showAppointmentEditor(BuildContext context, AppState appState, [Appointment? appointment]) {
+    showDialog(
+      context: context,
+      builder: (context) => AppointmentEditorDialog(
+        appointment: appointment,
+        startTime: selectedDay,
+        onSave: (newAppointment) {
+          if (appointment != null) {
+            appState.updateAppointment(appointment, newAppointment);
+          } else {
+            appState.addAppointment(newAppointment);
+          }
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final appState = Provider.of<AppState>(context);
+    final appointments = appState.loggedInUser?.calendar.appointments
+            .where((app) => app.start.year == selectedDay.year && app.start.month == selectedDay.month && app.start.day == selectedDay.day)
+            .toList() ??
+        [];
 
     return NestedScrollView(
       controller: scrollController,
@@ -42,36 +68,33 @@ class DayView extends StatelessWidget {
         ];
       },
       body: Scaffold(
-        body: ListView(
-          // The controller is now on the NestedScrollView
-          children: [
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+        body: ListView.builder(
+          itemCount: appointments.length,
+          itemBuilder: (context, index) {
+            final appointment = appointments[index];
+            return ListTile(
+              leading: Icon(Icons.event, color: appointment.category.color),
+              title: Text(appointment.title),
+              subtitle: Text('${DateFormat.jm().format(appointment.start)} - ${DateFormat.jm().format(appointment.end)}'),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    'Events for ${DateFormat.yMd().format(selectedDay)}',
-                    style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () => _showAppointmentEditor(context, appState, appointment),
                   ),
-                  const SizedBox(height: 20),
-                  const Text('// TODO: Display a list of events here.'),
-                  // Add more content to make it scrollable
-                  for (int i = 0; i < 20; i++)
-                    ListTile(
-                      leading: Icon(Icons.event, color: theme.colorScheme.secondary),
-                      title: Text('Event ${i + 1}'),
-                      subtitle: Text('Details for event ${i + 1}'),
-                      onTap: () {},
-                    ),
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () => appState.deleteAppointment(appointment),
+                  ),
                 ],
               ),
-            ),
-          ],
+              onTap: () => _showAppointmentEditor(context, appState, appointment),
+            );
+          },
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            // TODO: Implement functionality to add a new event.
-          },
+          onPressed: () => _showAppointmentEditor(context, appState),
           tooltip: 'Add Event',
           child: const Icon(Icons.add),
         ),
