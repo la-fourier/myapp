@@ -104,25 +104,39 @@ class AppointmentCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8.0),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      clipBehavior: Clip.hardEdge, // Ensures the corners are clipped
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              appointment.title,
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            Container(
+              width: 5,
+              color: appointment.category.color,
             ),
-            const SizedBox(height: 4),
-            Text(
-              '${timeFormat.format(appointment.start)} - ${timeFormat.format(appointment.end)}',
-              style: theme.textTheme.bodyMedium,
-            ),
-            if (appointment.description != null && appointment.description!.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Text(appointment.description!),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      appointment.title,
+                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${timeFormat.format(appointment.start)} - ${timeFormat.format(appointment.end)}',
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                    if (appointment.description != null && appointment.description!.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(appointment.description!),
+                      ),
+                  ],
+                ),
               ),
+            ),
           ],
         ),
       ),

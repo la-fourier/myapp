@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:myapp/models/calendar/appointment.dart';
 import 'package:myapp/services/app_state.dart';
 import 'package:myapp/utils/date_utils.dart';
-import 'package:myapp/views/calendar/day_view.dart';
 import 'package:myapp/widgets/pie_chart_painter.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart' as table_calendar;
@@ -25,18 +24,6 @@ class MonthView extends StatefulWidget {
 
 class _MonthViewState extends State<MonthView> {
   DateTime? _hoveredDay;
-
-  void _showDayView(BuildContext context, DateTime day) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        child: DayView(
-          selectedDay: day,
-          onBack: () => Navigator.of(context).pop(),
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +57,6 @@ class _MonthViewState extends State<MonthView> {
               selectedDayPredicate: (day) => isSameDay(widget.selectedDay, day),
               onDaySelected: (selectedDay, focusedDay) {
                 widget.onDaySelected(selectedDay, focusedDay);
-                _showDayView(context, selectedDay);
               },
               eventLoader: getEventsForDay,
               calendarFormat: table_calendar.CalendarFormat.month,

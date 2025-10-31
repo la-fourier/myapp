@@ -164,7 +164,7 @@ class _MainScreenState extends State<MainScreen> {
             tooltip: 'Settings',
           ),
           IconButton(
-            icon: const Icon(Icons.account_circle),
+            icon: const Icon(Icons.account_box_rounded),
             onPressed: () => _showAsModalSheet((controller) => AccountView(scrollController: controller)),
             tooltip: 'Account',
           ),

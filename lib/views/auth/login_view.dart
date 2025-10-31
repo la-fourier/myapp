@@ -13,6 +13,8 @@ class _LoginViewState extends State<LoginView> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController(text: 'test@debug.com');
   final _passwordController = TextEditingController(text: 'debug123');
+  bool obscurePassword = true;
+  bool showInfoDialog = false;
 
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
@@ -60,21 +62,74 @@ class _LoginViewState extends State<LoginView> {
                     },
                   ),
                   const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _passwordController,
-                    decoration: const InputDecoration(labelText: 'Password'),
-                    obscureText: true,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
-                      }
-                      return null;
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                      controller: _passwordController,
+                      decoration: const InputDecoration(labelText: 'Password'),
+                      obscureText: obscurePassword,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your password';
+                        }
+                        return null;
+                      },
+                    ),
+                      ),
+                  const SizedBox(width: 12),
+                  IconButton(
+                    icon: obscurePassword ? const Icon(Icons.visibility_rounded) : const Icon(Icons.visibility_off_rounded),
+                    tooltip: obscurePassword ? 'Show Password' : 'Hide Password',
+                    onPressed: () {
+                      setState(() {
+                        obscurePassword = !obscurePassword;
+                      });
                     },
+                  ),
+                    ],
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: _login,
                     child: const Text('Login'),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pushNamed('/signup');
+                    },
+                    child: const Text('Sign Up'),
+                  ),
+                  const SizedBox(height: 20),
+                  IconButton(
+                    icon: const Icon(Icons.info_outline_rounded),
+                    tooltip: 'Info',
+                    onPressed: () {
+                      setState(() {
+                        showInfoDialog = true;
+                      });
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text('Test Account Info'),
+                            content: const Text('Use test@debug.com / debug123 for testing.'),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  setState(() {
+                                    showInfoDialog = false;
+                                  });
+                                },
+                                child: const Text('Close'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
                   ),
                 ],
               ),

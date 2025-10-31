@@ -109,7 +109,10 @@ class _WeekViewState extends State<WeekView> {
                   child: LayoutBuilder(builder: (context, constraints) {
                     final dayWidth = (constraints.maxWidth - timeColWidth) / 7;
                     return GestureDetector(
-                      onTapDown: (details) {
+                      onTap: () {
+                        setState(() => _hoverPosition = Offset.zero);
+                      },
+                      onDoubleTapDown: (details) {
                         final hoverTime = _calculateHoverTime(details.localPosition, dayWidth, weekDays, hourHeight, timeColWidth);
                         if (hoverTime != null) {
                           _showAppointmentEditor(hoverTime);

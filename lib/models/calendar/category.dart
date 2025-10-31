@@ -16,7 +16,18 @@ class Category {
   Map<String, dynamic> toJson() {
     return {
       'name': name,
-      'color': color.toARGB32(),
+      'color': color.value,
     };
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Category &&
+          runtimeType == other.runtimeType &&
+          name == other.name &&
+          color == other.color;
+
+  @override
+  int get hashCode => name.hashCode ^ color.hashCode;
 }

@@ -73,7 +73,10 @@ class DayView extends StatelessWidget {
           itemBuilder: (context, index) {
             final appointment = appointments[index];
             return ListTile(
-              leading: Icon(Icons.event, color: appointment.category.color),
+              leading: Container(
+              width: 5,
+              color: appointment.category.color,
+            ),
               title: Text(appointment.title),
               subtitle: Text('${DateFormat.jm().format(appointment.start)} - ${DateFormat.jm().format(appointment.end)}'),
               trailing: Row(

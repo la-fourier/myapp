@@ -19,18 +19,6 @@ class YearView extends StatefulWidget {
 class _YearViewState extends State<YearView> {
   DateTime? _hoveredDay;
 
-  void _showDayView(BuildContext context, DateTime day) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        child: DayView(
-          selectedDay: day,
-          onBack: () => Navigator.of(context).pop(),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     // Use LayoutBuilder to adapt how many month cards are shown per row
@@ -137,7 +125,7 @@ class _YearViewState extends State<YearView> {
           onEnter: (_) => setState(() => _hoveredDay = day),
           onExit: (_) => setState(() => _hoveredDay = null),
           child: GestureDetector(
-            onTap: () => _showDayView(context, day),
+            onTap: () => widget.onDaySelected(day),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 150),
               transform: isHovered ? Matrix4.diagonal3Values(1.05, 1.05, 1.0) : Matrix4.identity(),
