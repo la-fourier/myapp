@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 
 // A helper class to define a column, its data, and its sorting behavior.
@@ -18,15 +19,15 @@ class SortableColumn<T> {
 }
 
 class DataCard<T> extends StatefulWidget {
-  final String title;
   final List<T> data;
   final List<SortableColumn<T>> columns;
+  final String? filterText;
 
   const DataCard({
     super.key,
-    required this.title,
     required this.data,
     required this.columns,
+    this.filterText,
   });
 
   @override
@@ -37,32 +38,39 @@ class _DataCardState<T> extends State<DataCard<T>> {
   int? _sortColumnIndex;
   bool _sortAscending = true;
   late List<T> _sortedData;
+  late Map<String, bool> _columnVisibility;
+  late List<SortableColumn<T>> _orderedColumns;
 
   @override
   void initState() {
     super.initState();
     _sortedData = List.from(widget.data);
+    _columnVisibility = {for (var col in widget.columns) col.label: true};
+    _orderedColumns = List.from(widget.columns);
   }
 
   @override
   void didUpdateWidget(covariant DataCard<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // If the data from the parent widget changes, we need to update our local copy.
     if (widget.data != oldWidget.data) {
       setState(() {
         _sortedData = List.from(widget.data);
-        // Reset sorting when data changes
         _sortColumnIndex = null;
         _sortAscending = true;
       });
     }
+    if (widget.columns != oldWidget.columns) {
+       setState(() {
+        _columnVisibility = {for (var col in widget.columns) col.label: true};
+        _orderedColumns = List.from(widget.columns);
+       });
+    }
   }
 
-  void _sort(int columnIndex, bool ascending) {
-    final column = widget.columns[columnIndex];
+  void _sort(Comparable Function(T item) getField, int columnIndex, bool ascending) {
     _sortedData.sort((a, b) {
-      final aValue = column.getField(a);
-      final bValue = column.getField(b);
+      final aValue = getField(a);
+      final bValue = getField(b);
       return ascending
           ? Comparable.compare(aValue, bValue)
           : Comparable.compare(bValue, aValue);
@@ -73,49 +81,149 @@ class _DataCardState<T> extends State<DataCard<T>> {
     });
   }
 
+  void _showColumnSettings(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Visible Columns'),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return SizedBox(
+                width: double.maxFinite,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: widget.columns.length,
+                  itemBuilder: (context, index) {
+                    final column = widget.columns[index];
+                    return CheckboxListTile(
+                      title: Text(column.label),
+                      value: _columnVisibility[column.label] ?? true,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          _columnVisibility[column.label] = value ?? false;
+                        });
+                        // This setState is for the dialog, we need to call the main setState as well
+                        this.setState(() {});
+                      },
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Done'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.all(8.0),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.title,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            SingleChildScrollView(
+    final visibleColumns = _orderedColumns.where((c) => _columnVisibility[c.label] ?? true).toList();
+
+    List<T> filteredData = _sortedData;
+    if (widget.filterText != null && widget.filterText!.isNotEmpty) {
+      final filter = widget.filterText!.toLowerCase();
+      filteredData = _sortedData.where((item) {
+        for (var column in visibleColumns) {
+          final cellWidget = column.cellBuilder(item);
+          if (cellWidget is Text) {
+            if (cellWidget.data!.toLowerCase().contains(filter)) {
+              return true;
+            }
+          } else if (cellWidget is Icon) {
+            // Cannot filter on icon, so we skip
+          } else {
+            // For other widgets, we can try a generic toString()
+            // This is not ideal but a fallback
+            try {
+              if (item.toString().toLowerCase().contains(filter)) {
+                return true;
+              }
+            } catch (e) { /* ignore */ }
+          }
+        }
+        return false;
+      }).toList();
+    }
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.view_column_outlined),
+                tooltip: 'Visible Columns',
+                onPressed: () => _showColumnSettings(context),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: DataTable(
                 sortColumnIndex: _sortColumnIndex,
                 sortAscending: _sortAscending,
-                columns: List.generate(
-                  widget.columns.length,
-                  (index) {
-                    final column = widget.columns[index];
-                    return DataColumn(
-                      label: Text(column.label),
-                      tooltip: column.tooltip,
-                      numeric: column.numeric,
-                      onSort: (columnIndex, ascending) => _sort(columnIndex, ascending),
-                    );
-                  },
-                ),
-                rows: _sortedData.map((item) {
+                columns: visibleColumns.map((column) {
+                  return DataColumn(
+                    label: DragTarget<SortableColumn<T>>(
+                      builder: (context, candidateData, rejectedData) {
+                        return Draggable<SortableColumn<T>>(
+                          data: column,
+                          feedback: Material(
+                            elevation: 4.0,
+                            child: Container(
+                              padding: const EdgeInsets.all(8.0),
+                              color: Theme.of(context).colorScheme.surfaceVariant,
+                              child: Text(column.label),
+                            ),
+                          ),
+                          child: Text(column.label),
+                        );
+                      },
+                      onWillAccept: (data) => data != null,
+                      onAccept: (draggedColumn) {
+                        setState(() {
+                          final draggedIndex = _orderedColumns.indexOf(draggedColumn);
+                          final targetIndex = _orderedColumns.indexOf(column);
+                          if (draggedIndex != -1 && targetIndex != -1) {
+                            final item = _orderedColumns.removeAt(draggedIndex);
+                            _orderedColumns.insert(targetIndex, item);
+                          }
+                        });
+                      },
+                    ),
+                    tooltip: column.tooltip,
+                    numeric: column.numeric,
+                    onSort: (columnIndex, ascending) {
+                      _sort(column.getField, visibleColumns.indexOf(column), ascending);
+                    },
+                  );
+                }).toList(),
+                rows: filteredData.map((item) {
                   return DataRow(
-                    cells: widget.columns.map((column) {
+                    cells: visibleColumns.map((column) {
                       return DataCell(column.cellBuilder(item));
                     }).toList(),
                   );
                 }).toList(),
               ),
             ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }

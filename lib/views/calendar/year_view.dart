@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:myapp/services/app_state.dart';
 import 'package:myapp/utils/date_utils.dart';
-import 'package:myapp/views/calendar/day_view.dart';
 import 'package:myapp/widgets/pie_chart_painter.dart';
 import 'package:provider/provider.dart';
 

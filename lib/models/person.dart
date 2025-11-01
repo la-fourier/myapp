@@ -36,4 +36,15 @@ class Person {
       'email': email,
     };
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Person &&
+          runtimeType == other.runtimeType &&
+          fullName == other.fullName &&
+          dateOfBirth == other.dateOfBirth;
+
+  @override
+  int get hashCode => fullName.hashCode ^ dateOfBirth.hashCode;
 }

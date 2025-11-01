@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/services/app_state.dart';
-import 'package:myapp/models/user.dart';
 import 'package:myapp/models/person.dart';
 import 'package:myapp/models/calendar/appointment.dart';
 import 'package:myapp/models/calendar/category.dart';
+import 'package:myapp/models/calendar/tracked_activity.dart';
 import 'package:myapp/widgets/data_card.dart';
 import 'package:myapp/dialogs/category_editor_dialog.dart';
+import 'package:myapp/dialogs/person_editor_dialog.dart';
+import 'package:myapp/dialogs/appointment_editor_dialog.dart';
 
 class DashboardView extends StatefulWidget {
   final Function(Widget Function(ScrollController)) showAsModalSheet;
@@ -17,87 +19,7 @@ class DashboardView extends StatefulWidget {
 }
 
 class _DashboardViewState extends State<DashboardView> {
-  final List<Map<String, dynamic>> _columnLeft = [];
-  final List<Map<String, dynamic>> _columnRight = [];
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _initializeCards();
-  }
-
-  void _initializeCards() {
-    final appState = Provider.of<AppState>(context, listen: false);
-    final user = appState.loggedInUser;
-    if (user == null) return;
-
-    if (_columnLeft.isNotEmpty || _columnRight.isNotEmpty) return;
-
-    final allCards = [
-      {
-        'id': 'users',
-        'title': 'Users',
-        'data': user,
-      },
-      {
-        'id': 'people',
-        'title': 'People',
-        'data': user.contacts,
-      },
-      {
-        'id': 'calendar',
-        'title': 'Calendar',
-        'data': user.calendar.appointments,
-      },
-      {
-        'id': 'categories',
-        'title': 'Categories',
-        'data': user.customCategories,
-      },
-      {
-        'id': 'tasks',
-        'title': 'Tasks',
-        'data': [Appointment(title: 'Buy groceries', start: DateTime.now(), end: DateTime.now())],
-      },
-      {
-        'id': 'notes',
-        'title': 'Notes',
-        'data': [Person(fullName: 'Remember to call mom', dateOfBirth: DateTime.now())], // Using Person as dummy data
-      },
-    ];
-
-    setState(() {
-      for (int i = 0; i < allCards.length; i++) {
-        if (i.isEven) {
-          _columnLeft.add(allCards[i]);
-        } else {
-          _columnRight.add(allCards[i]);
-        }
-      }
-    });
-  }
-
-  void _onReorder(List<Map<String, dynamic>> column, int oldIndex, int newIndex) {
-    setState(() {
-      if (newIndex > oldIndex) {
-        newIndex -= 1;
-      }
-      final item = column.removeAt(oldIndex);
-      column.insert(newIndex, item);
-    });
-  }
-
-  void _showDetailView(Map<String, dynamic> cardData) {
-    widget.showAsModalSheet((scrollController) {
-      return SingleChildScrollView(
-        controller: scrollController,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: _buildModelCard(cardData, context, 0, isInModal: true),
-        ),
-      );
-    });
-  }
+  String _selectedDataSourceId = 'people';
 
   void _showCategoryEditor({Category? category}) async {
     final appState = Provider.of<AppState>(context, listen: false);
@@ -115,236 +37,225 @@ class _DashboardViewState extends State<DashboardView> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final appState = Provider.of<AppState>(context);
-    if (appState.loggedInUser == null) {
-      return const Center(child: Text('No user logged in.'));
-    }
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: ReorderableListView.builder(
-            padding: const EdgeInsets.all(8.0),
-            itemCount: _columnLeft.length,
-            itemBuilder: (context, index) {
-              final cardData = _columnLeft[index];
-              return _buildModelCard(cardData, context, index, key: ValueKey(cardData['id']!));
-            },
-            onReorder: (oldIndex, newIndex) => _onReorder(_columnLeft, oldIndex, newIndex),
-          ),
-        ),
-        const VerticalDivider(width: 1),
-        Expanded(
-          child: ReorderableListView.builder(
-            padding: const EdgeInsets.all(8.0),
-            itemCount: _columnRight.length,
-            itemBuilder: (context, index) {
-              final cardData = _columnRight[index];
-              return _buildModelCard(cardData, context, index, key: ValueKey(cardData['id']!));
-            },
-            onReorder: (oldIndex, newIndex) => _onReorder(_columnRight, oldIndex, newIndex),
-          ),
-        ),
-      ],
+  void _showPersonEditor({Person? person}) async {
+    final appState = Provider.of<AppState>(context, listen: false);
+    await showDialog(
+      context: context,
+      builder: (context) => PersonEditorDialog(
+        person: person,
+        onSave: (newPerson) {
+          if (person == null) {
+            appState.addPerson(newPerson);
+          } else {
+            // Person model needs to implement == for this to work correctly
+            appState.updatePerson(person, newPerson);
+          }
+        },
+      ),
     );
   }
 
-  Widget _buildModelCard(Map<String, dynamic> cardData, BuildContext context, int index,
-      {Key? key, bool isInModal = false}) {
-    final String id = cardData['id']!;
-    final String title = cardData['title']!;
+  void _showAppointmentEditor({Appointment? appointment}) async {
+    final appState = Provider.of<AppState>(context, listen: false);
+    await showDialog(
+      context: context,
+      builder: (context) => AppointmentEditorDialog(
+        appointment: appointment,
+        onSave: (newAppointment) {
+          if (appointment == null) {
+            appState.addAppointment(newAppointment);
+          } else {
+            appState.updateAppointment(appointment, newAppointment);
+          }
+        },
+      ),
+    );
+  }
 
-    return Card(
-      key: key,
-      margin: isInModal ? EdgeInsets.zero : const EdgeInsets.symmetric(vertical: 8.0),
+  @override
+  Widget build(BuildContext context) {
+    final appState = Provider.of<AppState>(context);
+    final user = appState.loggedInUser;
+    if (user == null) {
+      return const Center(child: Text('No user logged in.'));
+    }
+
+    final Map<String, Map<String, dynamic>> dataSources = {
+      'people': {
+        'title': 'People',
+        'data': user.contacts,
+        'add_new': () => _showPersonEditor(),
+      },
+      'calendar': {
+        'title': 'Appointments',
+        'data': user.calendar.appointments,
+        'add_new': () => _showAppointmentEditor(),
+      },
+      'categories': {
+        'title': 'Categories',
+        'data': user.customCategories,
+        'add_new': () => _showCategoryEditor(),
+      },
+      'tracked_activities': {
+        'title': 'Tracked Activities',
+        'data': user.calendar.trackedActivities,
+        'add_new': null,
+      },
+    };
+
+    final selectedSource = dataSources[_selectedDataSourceId]!;
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ListTile(
-            title: Text(title, style: Theme.of(context).textTheme.titleLarge),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (id == 'categories')
-                  IconButton(
-                    icon: const Icon(Icons.add),
-                    onPressed: () => _showCategoryEditor(),
-                  ),
-                if (!isInModal)
-                  IconButton(
-                    icon: const Icon(Icons.open_in_full),
-                    onPressed: () => _showDetailView(cardData),
-                  ),
-              ],
+          Row(
+            children: [
+              DropdownButton<String>(
+                value: _selectedDataSourceId,
+                onChanged: (String? newValue) {
+                  if (newValue != null) {
+                    setState(() {
+                      _selectedDataSourceId = newValue;
+                    });
+                  }
+                },
+                items: dataSources.keys.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(dataSources[value]!['title']! as String),
+                  );
+                }).toList(),
+              ),
+              const Spacer(),
+              if (selectedSource['add_new'] != null)
+                IconButton(
+                  icon: const Icon(Icons.add_circle_outline),
+                  tooltip: 'Add New',
+                  onPressed: selectedSource['add_new'] as void Function(),
+                ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: Card(
+              elevation: 2,
+              child: _buildConfiguredDataCard(appState, _selectedDataSourceId, selectedSource['data']!),
             ),
           ),
-          _buildConfiguredDataCard(cardData),
         ],
       ),
     );
   }
 
-  Widget _buildConfiguredDataCard(Map<String, dynamic> cardData) {
-    final String id = cardData['id']!;
-    final dynamic data = cardData['data']!;
-    final appState = Provider.of<AppState>(context, listen: false);
-
+  Widget _buildConfiguredDataCard(AppState appState, String id, dynamic data) {
     switch (id) {
-      case 'users':
-        final user = data as User;
-        return DataCard<Person>(
-          title: 'Users',
-          data: [user.person],
-          columns: [
-            SortableColumn(
-              label: 'Name',
-              getField: (person) => person.fullName,
-              cellBuilder: (person) => Text(person.fullName),
-            ),
-            SortableColumn(
-              label: 'Date of Birth',
-              getField: (person) => person.dateOfBirth,
-              cellBuilder: (person) => Text(person.dateOfBirth.toIso8601String().substring(0, 10)),
-            ),
-            SortableColumn(
-              label: '',
-              getField: (person) => '', // Not sortable
-              cellBuilder: (person) => Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(icon: const Icon(Icons.edit), onPressed: () {}),
-                  IconButton(icon: const Icon(Icons.delete), onPressed: null),
-                  IconButton(icon: const Icon(Icons.visibility), onPressed: () {}),
-                ],
-              ),
-            ),
-          ],
-        );
       case 'people':
-        final people = data as List<Person>;
         return DataCard<Person>(
-          title: 'People',
-          data: people,
+          data: data as List<Person>,
           columns: [
             SortableColumn(
               label: 'Name',
-              getField: (person) => person.fullName,
-              cellBuilder: (person) => Text(person.fullName),
+              getField: (item) => item.fullName,
+              cellBuilder: (item) => Text(item.fullName),
             ),
             SortableColumn(
               label: 'Date of Birth',
-              getField: (person) => person.dateOfBirth,
-              cellBuilder: (person) => Text(person.dateOfBirth.toIso8601String().substring(0, 10)),
+              getField: (item) => item.dateOfBirth,
+              cellBuilder: (item) => Text(item.dateOfBirth.toIso8601String().substring(0, 10)),
             ),
             SortableColumn(
-              label: '',
-              getField: (person) => '', // Not sortable
-              cellBuilder: (person) => Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(icon: const Icon(Icons.edit), onPressed: () {}),
-                  IconButton(icon: const Icon(Icons.delete), onPressed: () {}),
-                  IconButton(icon: const Icon(Icons.visibility), onPressed: () {}),
-                ],
-              ),
+              label: 'Actions',
+              getField: (item) => '',
+              cellBuilder: (item) => Row(mainAxisSize: MainAxisSize.min, children: [
+                IconButton(icon: const Icon(Icons.edit), onPressed: () => _showPersonEditor(person: item)),
+                IconButton(icon: const Icon(Icons.delete), onPressed: () => appState.deletePerson(item)),
+              ]),
             ),
           ],
         );
       case 'calendar':
-      case 'tasks':
-        final appointments = data as List<Appointment>;
         return DataCard<Appointment>(
-          title: id == 'calendar' ? 'Calendar' : 'Tasks',
-          data: appointments,
+          data: data as List<Appointment>,
           columns: [
             SortableColumn(
               label: 'Title',
-              getField: (appointment) => appointment.title,
-              cellBuilder: (appointment) => Text(appointment.title),
+              getField: (item) => item.title,
+              cellBuilder: (item) => Text(item.title),
             ),
             SortableColumn(
-              label: 'Date',
-              getField: (appointment) => appointment.start,
-              cellBuilder: (appointment) => Text(appointment.start.toIso8601String().substring(0, 10)),
+              label: 'Start Date',
+              getField: (item) => item.start,
+              cellBuilder: (item) => Text(item.start.toIso8601String().substring(0, 10)),
             ),
             SortableColumn(
-              label: '',
-              getField: (appointment) => '', // Not sortable
-              cellBuilder: (appointment) => Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(icon: const Icon(Icons.edit), onPressed: () {}),
-                  IconButton(icon: const Icon(Icons.delete), onPressed: () {}),
-                  IconButton(icon: const Icon(Icons.visibility), onPressed: () {}),
-                ],
-              ),
-            ),
-          ],
-        );
-      case 'notes':
-        final notes = data as List<Person>; // Dummy data
-        return DataCard<Person>(
-          title: 'Notes',
-          data: notes,
-          columns: [
-            SortableColumn(
-              label: 'Note',
-              getField: (note) => note.fullName,
-              cellBuilder: (note) => Text(note.fullName),
-            ),
-            SortableColumn(
-              label: 'Created',
-              getField: (note) => note.dateOfBirth,
-              cellBuilder: (note) => Text(note.dateOfBirth.toIso8601String().substring(0, 10)),
-            ),
-            SortableColumn(
-              label: '',
-              getField: (note) => '', // Not sortable
-              cellBuilder: (note) => Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(icon: const Icon(Icons.edit), onPressed: () {}),
-                  IconButton(icon: const Icon(Icons.delete), onPressed: () {}),
-                  IconButton(icon: const Icon(Icons.visibility), onPressed: () {}),
-                ],
-              ),
+              label: 'Actions',
+              getField: (item) => '',
+              cellBuilder: (item) => Row(mainAxisSize: MainAxisSize.min, children: [
+                IconButton(icon: const Icon(Icons.edit), onPressed: () => _showAppointmentEditor(appointment: item)),
+                IconButton(icon: const Icon(Icons.delete), onPressed: () => appState.deleteAppointment(item)),
+              ]),
             ),
           ],
         );
       case 'categories':
-        final categories = data as List<Category>;
         return DataCard<Category>(
-          title: 'Categories',
-          data: categories,
+          data: data as List<Category>,
           columns: [
             SortableColumn(
               label: 'Color',
-              getField: (category) => category.color.value.toString(),
-              cellBuilder: (category) => Icon(Icons.circle, color: category.color),
+              getField: (item) => item.color.value.toString(),
+              cellBuilder: (item) => Icon(Icons.circle, color: item.color),
             ),
             SortableColumn(
               label: 'Name',
-              getField: (category) => category.name,
-              cellBuilder: (category) => Text(category.name),
+              getField: (item) => item.name,
+              cellBuilder: (item) => Text(item.name),
             ),
             SortableColumn(
-              label: '',
-              getField: (category) => '', // Not sortable
-              cellBuilder: (category) => Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(icon: const Icon(Icons.edit), onPressed: () => _showCategoryEditor(category: category)),
-                  IconButton(icon: const Icon(Icons.delete), onPressed: () => appState.deleteCustomCategory(category)),
-                ],
-              ),
+              label: 'Actions',
+              getField: (item) => '',
+              cellBuilder: (item) => Row(mainAxisSize: MainAxisSize.min, children: [
+                IconButton(icon: const Icon(Icons.edit), onPressed: () => _showCategoryEditor(category: item)),
+                IconButton(icon: const Icon(Icons.delete), onPressed: () => appState.deleteCustomCategory(item)),
+              ]),
+            ),
+          ],
+        );
+      case 'tracked_activities':
+        return DataCard<TrackedActivity>(
+          data: data as List<TrackedActivity>,
+          columns: [
+            SortableColumn(
+              label: 'Name',
+              getField: (item) => item.name,
+              cellBuilder: (item) => Text(item.name),
+            ),
+            SortableColumn(
+              label: 'Category',
+              getField: (item) => item.category.name,
+              cellBuilder: (item) => Text(item.category.name),
+            ),
+            SortableColumn(
+              label: 'Start Time',
+              getField: (item) => item.startTime,
+              cellBuilder: (item) => Text(item.startTime.toIso8601String().substring(11, 16)),
+            ),
+            SortableColumn(
+              label: 'End Time',
+              getField: (item) => item.endTime,
+              cellBuilder: (item) => Text(item.endTime.toIso8601String().substring(11, 16)),
+            ),
+             SortableColumn(
+              label: 'Duration (Mins)',
+              getField: (item) => item.endTime.difference(item.startTime).inMinutes,
+              cellBuilder: (item) => Text(item.endTime.difference(item.startTime).inMinutes.toString()),
             ),
           ],
         );
       default:
-        return const SizedBox.shrink();
+        return const Center(child: Text("No data view available."));
     }
   }
 }

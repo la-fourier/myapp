@@ -52,6 +52,7 @@ class _LoginViewState extends State<LoginView> {
                   Text('Login', style: Theme.of(context).textTheme.headlineMedium),
                   const SizedBox(height: 20),
                   TextFormField(
+                    keyboardType: TextInputType.emailAddress,
                     controller: _emailController,
                     decoration: const InputDecoration(labelText: 'Email'),
                     validator: (value) {
@@ -77,7 +78,6 @@ class _LoginViewState extends State<LoginView> {
                       },
                     ),
                       ),
-                  const SizedBox(width: 12),
                   IconButton(
                     icon: obscurePassword ? const Icon(Icons.visibility_rounded) : const Icon(Icons.visibility_off_rounded),
                     tooltip: obscurePassword ? 'Show Password' : 'Hide Password',
@@ -90,18 +90,19 @@ class _LoginViewState extends State<LoginView> {
                     ],
                   ),
                   const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
                   ElevatedButton(
                     onPressed: _login,
                     child: const Text('Login'),
                   ),
-                  const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
                       Navigator.of(context).pushNamed('/signup');
                     },
                     child: const Text('Sign Up'),
                   ),
-                  const SizedBox(height: 20),
                   IconButton(
                     icon: const Icon(Icons.info_outline_rounded),
                     tooltip: 'Info',
@@ -130,6 +131,8 @@ class _LoginViewState extends State<LoginView> {
                         },
                       );
                     },
+                  ),
+                  ],
                   ),
                 ],
               ),

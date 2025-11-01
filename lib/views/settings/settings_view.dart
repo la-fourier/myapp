@@ -42,7 +42,7 @@ class _SettingsViewState extends State<SettingsView> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: NestedScrollView(
         controller: widget.scrollController,
         headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
@@ -63,6 +63,7 @@ class _SettingsViewState extends State<SettingsView> {
                 tabs: [
                   Tab(text: 'Appearance'),
                   Tab(text: 'Notifications'),
+                  Tab(text: 'Advanced'),
                   Tab(text: 'About'),
                 ],
               ),
@@ -73,6 +74,7 @@ class _SettingsViewState extends State<SettingsView> {
           children: [
             _buildAppearanceSettings(context),
             _buildNotificationsSettings(),
+            _buildAdvancedSettings(context),
             _buildAboutSettings(),
           ],
         ),
@@ -146,6 +148,26 @@ class _SettingsViewState extends State<SettingsView> {
             Fluttertoast.showToast(msg: "Toast notifications are now ${value ? 'enabled' : 'disabled'}");
           },
           secondary: const Icon(Icons.message),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAdvancedSettings(BuildContext context) {
+    return ListView(
+      children: [
+        Consumer<ThemeProvider>(
+          builder: (context, themeProvider, child) {
+            return SwitchListTile(
+              title: const Text('Show Advanced Query Field'),
+              subtitle: const Text('Display a text field for filtering data in the dashboard.'),
+              value: themeProvider.showQueryField,
+              onChanged: (value) {
+                themeProvider.toggleShowQueryField();
+              },
+              secondary: const Icon(Icons.code),
+            );
+          },
         ),
       ],
     );

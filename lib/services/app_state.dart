@@ -202,6 +202,34 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  // PERSON (CONTACT) MANAGEMENT
+  void addPerson(Person person) {
+    if (_loggedInUser != null) {
+      _loggedInUser!.contacts.add(person);
+      _saveUsers();
+      notifyListeners();
+    }
+  }
+
+  void updatePerson(Person oldPerson, Person newPerson) {
+    if (_loggedInUser != null) {
+      final index = _loggedInUser!.contacts.indexOf(oldPerson);
+      if (index != -1) {
+        _loggedInUser!.contacts[index] = newPerson;
+        _saveUsers();
+        notifyListeners();
+      }
+    }
+  }
+
+  void deletePerson(Person person) {
+    if (_loggedInUser != null) {
+      _loggedInUser!.contacts.remove(person);
+      _saveUsers();
+      notifyListeners();
+    }
+  }
+
   // USER PROFILE MANAGEMENT
   void updateUserName(String newName) {
     if (_loggedInUser != null) {
