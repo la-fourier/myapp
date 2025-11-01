@@ -4,7 +4,9 @@ import 'package:myapp/services/app_state.dart';
 import 'package:myapp/models/user.dart';
 import 'package:myapp/models/person.dart';
 import 'package:myapp/models/calendar/appointment.dart';
+import 'package:myapp/models/calendar/category.dart';
 import 'package:myapp/widgets/data_card.dart';
+import 'package:myapp/dialogs/category_editor_dialog.dart';
 
 class DashboardView extends StatefulWidget {
   final Function(Widget Function(ScrollController)) showAsModalSheet;
@@ -46,6 +48,11 @@ class _DashboardViewState extends State<DashboardView> {
         'id': 'calendar',
         'title': 'Calendar',
         'data': user.calendar.appointments,
+      },
+      {
+        'id': 'categories',
+        'title': 'Categories',
+        'data': user.customCategories,
       },
       {
         'id': 'tasks',
@@ -92,8 +99,20 @@ class _DashboardViewState extends State<DashboardView> {
     });
   }
 
-  void _showToast(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  void _showCategoryEditor({Category? category}) async {
+    final appState = Provider.of<AppState>(context, listen: false);
+    final result = await showDialog<Category>(
+      context: context,
+      builder: (context) => CategoryEditorDialog(category: category),
+    );
+
+    if (result != null) {
+      if (category == null) {
+        appState.addCustomCategory(result);
+      } else {
+        appState.updateCustomCategory(category, result);
+      }
+    }
   }
 
   @override
@@ -135,6 +154,7 @@ class _DashboardViewState extends State<DashboardView> {
 
   Widget _buildModelCard(Map<String, dynamic> cardData, BuildContext context, int index,
       {Key? key, bool isInModal = false}) {
+    final String id = cardData['id']!;
     final String title = cardData['title']!;
 
     return Card(
@@ -148,10 +168,11 @@ class _DashboardViewState extends State<DashboardView> {
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                IconButton(
-                  icon: const Icon(Icons.add),
-                  onPressed: () => _showToast('Add not implemented in this view yet.'),
-                ),
+                if (id == 'categories')
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    onPressed: () => _showCategoryEditor(),
+                  ),
                 if (!isInModal)
                   IconButton(
                     icon: const Icon(Icons.open_in_full),
@@ -168,15 +189,15 @@ class _DashboardViewState extends State<DashboardView> {
 
   Widget _buildConfiguredDataCard(Map<String, dynamic> cardData) {
     final String id = cardData['id']!;
-    final String title = cardData['title']!;
     final dynamic data = cardData['data']!;
+    final appState = Provider.of<AppState>(context, listen: false);
 
     switch (id) {
       case 'users':
         final user = data as User;
         return DataCard<Person>(
-          title: title,
-          data: [user.person], // DataCard expects a List
+          title: 'Users',
+          data: [user.person],
           columns: [
             SortableColumn(
               label: 'Name',
@@ -205,7 +226,7 @@ class _DashboardViewState extends State<DashboardView> {
       case 'people':
         final people = data as List<Person>;
         return DataCard<Person>(
-          title: title,
+          title: 'People',
           data: people,
           columns: [
             SortableColumn(
@@ -236,7 +257,7 @@ class _DashboardViewState extends State<DashboardView> {
       case 'tasks':
         final appointments = data as List<Appointment>;
         return DataCard<Appointment>(
-          title: title,
+          title: id == 'calendar' ? 'Calendar' : 'Tasks',
           data: appointments,
           columns: [
             SortableColumn(
@@ -266,7 +287,7 @@ class _DashboardViewState extends State<DashboardView> {
       case 'notes':
         final notes = data as List<Person>; // Dummy data
         return DataCard<Person>(
-          title: title,
+          title: 'Notes',
           data: notes,
           columns: [
             SortableColumn(
@@ -288,6 +309,35 @@ class _DashboardViewState extends State<DashboardView> {
                   IconButton(icon: const Icon(Icons.edit), onPressed: () {}),
                   IconButton(icon: const Icon(Icons.delete), onPressed: () {}),
                   IconButton(icon: const Icon(Icons.visibility), onPressed: () {}),
+                ],
+              ),
+            ),
+          ],
+        );
+      case 'categories':
+        final categories = data as List<Category>;
+        return DataCard<Category>(
+          title: 'Categories',
+          data: categories,
+          columns: [
+            SortableColumn(
+              label: 'Color',
+              getField: (category) => category.color.value.toString(),
+              cellBuilder: (category) => Icon(Icons.circle, color: category.color),
+            ),
+            SortableColumn(
+              label: 'Name',
+              getField: (category) => category.name,
+              cellBuilder: (category) => Text(category.name),
+            ),
+            SortableColumn(
+              label: '',
+              getField: (category) => '', // Not sortable
+              cellBuilder: (category) => Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(icon: const Icon(Icons.edit), onPressed: () => _showCategoryEditor(category: category)),
+                  IconButton(icon: const Icon(Icons.delete), onPressed: () => appState.deleteCustomCategory(category)),
                 ],
               ),
             ),

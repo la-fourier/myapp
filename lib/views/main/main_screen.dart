@@ -14,6 +14,7 @@ import 'package:myapp/services/loading_service.dart';
 import 'package:myapp/backend_integrations/google.dart';
 import 'package:myapp/backend_integrations/github.dart';
 import 'package:myapp/services/app_state.dart';
+import 'package:myapp/widgets/play_bar.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -38,7 +39,7 @@ class _MainScreenState extends State<MainScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.black.withValues(alpha: 0.3),
+      backgroundColor: Colors.black.withOpacity(0.3),
       barrierColor: Colors.transparent,
       elevation: 0,
       builder: (context) {
@@ -142,117 +143,126 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.logout),
-          onPressed: () {
-            Provider.of<AppState>(context, listen: false).logout();
-          },
-          tooltip: 'Logout',
-        ),
-        title: Text(_widgetTitles[_selectedIndex]),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.sync),
-            onPressed: _syncData,
-            tooltip: 'Sync',
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () => _showAsModalSheet((controller) => SettingsView(scrollController: controller)),
-            tooltip: 'Settings',
-          ),
-          IconButton(
-            icon: const Icon(Icons.account_box_rounded),
-            onPressed: () => _showAsModalSheet((controller) => AccountView(scrollController: controller)),
-            tooltip: 'Account',
-          ),
-          Consumer<ThemeProvider>(
-            builder: (context, themeProvider, child) {
-              return IconButton(
-                icon: Icon(
-                  themeProvider.isDarkMode ? Icons.light_mode : Icons.dark_mode,
-                ),
-                onPressed: () {
-                  themeProvider.toggleTheme();
-                },
-              );
+    return LayoutBuilder(builder: (context, constraints) {
+      final isMobile = constraints.maxWidth < 600;
+
+      return Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              Provider.of<AppState>(context, listen: false).logout();
             },
+            tooltip: 'Logout',
           ),
-        ],
-      ),
-      body: LayoutBuilder(builder: (context, constraints) {
-        if (constraints.maxWidth < 600) {
-          return _mainViews.elementAt(_selectedIndex);
-        } else {
-          return Row(
-            children: [
-              NavigationRail(
-                selectedIndex: _selectedIndex,
-                onDestinationSelected: _onItemTapped,
-                labelType: NavigationRailLabelType.all,
-                destinations: const <NavigationRailDestination>[
-                  NavigationRailDestination(
-                    icon: Icon(Icons.dashboard_outlined),
-                    selectedIcon: Icon(Icons.dashboard),
-                    label: Text('Dashboard'),
+          title: Text(_widgetTitles[_selectedIndex]),
+          actions: [
+            if (!isMobile)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                  child: SizedBox(
+                    width: 350,
+                    child: PlayBar(viewType: PlayBarViewType.full),
                   ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.calendar_today_outlined),
-                    selectedIcon: Icon(Icons.calendar_today),
-                    label: Text('Calendar'),
+                ),
+              ),
+            IconButton(
+              icon: const Icon(Icons.sync),
+              onPressed: _syncData,
+              tooltip: 'Sync',
+            ),
+            IconButton(
+              icon: const Icon(Icons.settings),
+              onPressed: () => _showAsModalSheet((controller) => SettingsView(scrollController: controller)),
+              tooltip: 'Settings',
+            ),
+            IconButton(
+              icon: const Icon(Icons.account_box_rounded),
+              onPressed: () => _showAsModalSheet((controller) => AccountView(scrollController: controller)),
+              tooltip: 'Account',
+            ),
+            Consumer<ThemeProvider>(
+              builder: (context, themeProvider, child) {
+                return IconButton(
+                  icon: Icon(
+                    themeProvider.isDarkMode ? Icons.light_mode : Icons.dark_mode,
                   ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.today_outlined),
-                    selectedIcon: Icon(Icons.today),
-                    label: Text('Today'),
+                  onPressed: () {
+                    themeProvider.toggleTheme();
+                  },
+                );
+              },
+            ),
+          ],
+        ),
+        body: isMobile
+            ? _mainViews.elementAt(_selectedIndex)
+            : Row(
+                children: [
+                  NavigationRail(
+                    selectedIndex: _selectedIndex,
+                    onDestinationSelected: _onItemTapped,
+                    labelType: NavigationRailLabelType.all,
+                    destinations: const <NavigationRailDestination>[
+                      NavigationRailDestination(
+                        icon: Icon(Icons.dashboard_outlined),
+                        selectedIcon: Icon(Icons.dashboard),
+                        label: Text('Dashboard'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.calendar_today_outlined),
+                        selectedIcon: Icon(Icons.calendar_today),
+                        label: Text('Calendar'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.today_outlined),
+                        selectedIcon: Icon(Icons.today),
+                        label: Text('Today'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.bar_chart_outlined),
+                        selectedIcon: Icon(Icons.bar_chart),
+                        label: Text('Stats'),
+                      ),
+                    ],
                   ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.bar_chart_outlined),
-                    selectedIcon: Icon(Icons.bar_chart),
-                    label: Text('Stats'),
-                  ),
+                  const VerticalDivider(thickness: 1, width: 1),
+                  Expanded(child: _mainViews.elementAt(_selectedIndex)),
                 ],
               ),
-              const VerticalDivider(thickness: 1, width: 1),
-              Expanded(child: _mainViews.elementAt(_selectedIndex)),
-            ],
-          );
-        }
-      }),
-      bottomNavigationBar: LayoutBuilder(builder: (context, constraints) {
-        if (constraints.maxWidth < 600) {
-          return NavigationBar(
-            onDestinationSelected: _onItemTapped,
-            selectedIndex: _selectedIndex,
-            destinations: const <Widget>[
-              NavigationDestination(
-                icon: Icon(Icons.dashboard_outlined),
-                selectedIcon: Icon(Icons.dashboard),
-                label: 'Dashboard',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.calendar_today_outlined),
-                selectedIcon: Icon(Icons.calendar_today),
-                label: 'Calendar',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.today_outlined),
-                selectedIcon: Icon(Icons.today),
-                label: 'Today',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.bar_chart_outlined),
-                selectedIcon: Icon(Icons.bar_chart),
-                label: 'Stats',
-              ),
-            ],
-          );
-        } else {
-          return const SizedBox.shrink();
-        }
-      }),
-    );
+        floatingActionButton: isMobile
+            ? const PlayBar(viewType: PlayBarViewType.compact)
+            : null,
+        bottomNavigationBar: isMobile
+            ? NavigationBar(
+                onDestinationSelected: _onItemTapped,
+                selectedIndex: _selectedIndex,
+                destinations: const <Widget>[
+                  NavigationDestination(
+                    icon: Icon(Icons.dashboard_outlined),
+                    selectedIcon: Icon(Icons.dashboard),
+                    label: 'Dashboard',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.calendar_today_outlined),
+                    selectedIcon: Icon(Icons.calendar_today),
+                    label: 'Calendar',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.today_outlined),
+                    selectedIcon: Icon(Icons.today),
+                    label: 'Today',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.bar_chart_outlined),
+                    selectedIcon: Icon(Icons.bar_chart),
+                    label: 'Stats',
+                  ),
+                ],
+              )
+            : const SizedBox.shrink(),
+      );
+    });
   }
 }
