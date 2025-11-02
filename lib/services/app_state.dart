@@ -34,6 +34,25 @@ class AppState extends ChangeNotifier {
     _loadUsers();
   }
 
+  Future<bool> signup(String email, String password) async {
+    try {
+      final existingUser = _users.firstWhere((user) => user.person.email == email);
+      return false; // User already exists
+    } catch (e) {
+      final newUser = User(
+        person: Person(fullName: 'New User', dateOfBirth: DateTime(2000, 1, 1), email: email),
+        contacts: [],
+        calendar: Calendar(appointments: []),
+        customCategories: [],
+      );
+      _users.add(newUser);
+      _loggedInUser = newUser;
+      await _saveUsers();
+      notifyListeners();
+      return true;
+    }
+  }
+
   Future<void> _loadUsers() async {
     _users = await _storageService.readUsers();
     if (_users.isEmpty) {

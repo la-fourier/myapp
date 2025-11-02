@@ -28,6 +28,8 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           title: 'Orgaa stuff',
           theme: themeProvider.getTheme(),
+          darkTheme: themeProvider.getTheme(),
+          themeMode: themeProvider.themeMode,
           builder: (context, child) {
             return LoadingOverlay(
               child: child!,

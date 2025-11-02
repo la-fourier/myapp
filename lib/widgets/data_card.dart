@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 
 // A helper class to define a column, its data, and its sorting behavior.
@@ -81,48 +80,6 @@ class _DataCardState<T> extends State<DataCard<T>> {
     });
   }
 
-  void _showColumnSettings(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Visible Columns'),
-          content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              return SizedBox(
-                width: double.maxFinite,
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: widget.columns.length,
-                  itemBuilder: (context, index) {
-                    final column = widget.columns[index];
-                    return CheckboxListTile(
-                      title: Text(column.label),
-                      value: _columnVisibility[column.label] ?? true,
-                      onChanged: (bool? value) {
-                        setState(() {
-                          _columnVisibility[column.label] = value ?? false;
-                        });
-                        // This setState is for the dialog, we need to call the main setState as well
-                        this.setState(() {});
-                      },
-                    );
-                  },
-                ),
-              );
-            },
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Done'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final visibleColumns = _orderedColumns.where((c) => _columnVisibility[c.label] ?? true).toList();
@@ -160,10 +117,20 @@ class _DataCardState<T> extends State<DataCard<T>> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              IconButton(
-                icon: const Icon(Icons.view_column_outlined),
-                tooltip: 'Visible Columns',
-                onPressed: () => _showColumnSettings(context),
+              PopupMenuButton(
+                itemBuilder: (context) {
+                  return widget.columns.map((column) {
+                    return CheckedPopupMenuItem(
+                      value: column.label,
+                      checked: _columnVisibility[column.label] ?? true,
+                      child: Text(column.label),
+                    );
+                  }).toList();
+                },
+                child: IconButton(
+                  onPressed: null,
+                  icon: const Icon(Icons.view_column_outlined),
+                ),
               ),
             ],
           ),

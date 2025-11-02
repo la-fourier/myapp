@@ -83,19 +83,34 @@ class _SettingsViewState extends State<SettingsView> {
   }
 
   Widget _buildAppearanceSettings(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return ListView(
       children: [
-        Consumer<ThemeProvider>(
-          builder: (context, themeProvider, child) {
-            return SwitchListTile(
-              title: const Text('Dark Mode'),
-              value: themeProvider.isDarkMode,
-              onChanged: (value) {
-                themeProvider.toggleTheme();
-              },
-              secondary: const Icon(Icons.color_lens),
-            );
+        ListTile(
+          leading: const Icon(Icons.color_lens),
+          title: const Text('Theme'),
+          trailing: DropdownButton<AppTheme>(
+            value: themeProvider.currentTheme,
+            onChanged: (AppTheme? newValue) {
+              if (newValue != null) {
+                themeProvider.setTheme(newValue);
+              }
+            },
+            items: AppTheme.values.map((AppTheme theme) {
+              return DropdownMenuItem<AppTheme>(
+                value: theme,
+                child: Text(theme.toString().split('.').last),
+              );
+            }).toList(),
+          ),
+        ),
+        SwitchListTile(
+          title: const Text('Dark Mode'),
+          value: themeProvider.themeMode == ThemeMode.dark,
+          onChanged: (value) {
+            themeProvider.toggleThemeMode();
           },
+          secondary: const Icon(Icons.dark_mode),
         ),
         ListTile(
           leading: const Icon(Icons.language),

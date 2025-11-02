@@ -20,6 +20,21 @@ class DashboardView extends StatefulWidget {
 
 class _DashboardViewState extends State<DashboardView> {
   String _selectedDataSourceId = 'people';
+  final TextEditingController _filterController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _filterController.addListener(() {
+      setState(() {}); // Re-render to apply filter
+    });
+  }
+
+  @override
+  void dispose() {
+    _filterController.dispose();
+    super.dispose();
+  }
 
   void _showCategoryEditor({Category? category}) async {
     final appState = Provider.of<AppState>(context, listen: false);
@@ -138,6 +153,15 @@ class _DashboardViewState extends State<DashboardView> {
             ],
           ),
           const SizedBox(height: 16),
+          TextField(
+            controller: _filterController,
+            decoration: const InputDecoration(
+              labelText: 'Search',
+              border: OutlineInputBorder(),
+              prefixIcon: Icon(Icons.search),
+            ),
+          ),
+          const SizedBox(height: 16),
           Expanded(
             child: Card(
               elevation: 2,
@@ -150,9 +174,14 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   Widget _buildConfiguredDataCard(AppState appState, String id, dynamic data) {
+    return _buildDataCardForId(id, appState, data);
+  }
+
+  Widget _buildDataCardForId(String id, AppState appState, dynamic data) {
     switch (id) {
       case 'people':
         return DataCard<Person>(
+          filterText: _filterController.text,
           data: data as List<Person>,
           columns: [
             SortableColumn(
@@ -177,6 +206,7 @@ class _DashboardViewState extends State<DashboardView> {
         );
       case 'calendar':
         return DataCard<Appointment>(
+          filterText: _filterController.text,
           data: data as List<Appointment>,
           columns: [
             SortableColumn(
@@ -201,6 +231,7 @@ class _DashboardViewState extends State<DashboardView> {
         );
       case 'categories':
         return DataCard<Category>(
+          filterText: _filterController.text,
           data: data as List<Category>,
           columns: [
             SortableColumn(
@@ -225,6 +256,7 @@ class _DashboardViewState extends State<DashboardView> {
         );
       case 'tracked_activities':
         return DataCard<TrackedActivity>(
+          filterText: _filterController.text,
           data: data as List<TrackedActivity>,
           columns: [
             SortableColumn(
@@ -247,7 +279,7 @@ class _DashboardViewState extends State<DashboardView> {
               getField: (item) => item.endTime,
               cellBuilder: (item) => Text(item.endTime.toIso8601String().substring(11, 16)),
             ),
-             SortableColumn(
+            SortableColumn(
               label: 'Duration (Mins)',
               getField: (item) => item.endTime.difference(item.startTime).inMinutes,
               cellBuilder: (item) => Text(item.endTime.difference(item.startTime).inMinutes.toString()),

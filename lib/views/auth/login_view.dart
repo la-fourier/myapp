@@ -41,7 +41,7 @@ class _LoginViewState extends State<LoginView> {
     return Scaffold(
       body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 400),
+          constraints: const BoxConstraints(maxWidth: 300),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Form(
@@ -68,7 +68,19 @@ class _LoginViewState extends State<LoginView> {
                       Expanded(
                         child: TextFormField(
                       controller: _passwordController,
-                      decoration: const InputDecoration(labelText: 'Password'),
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            obscurePassword ? Icons.visibility : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              obscurePassword = !obscurePassword;
+                            });
+                          },
+                        ),
+                      ),
                       obscureText: obscurePassword,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -78,30 +90,21 @@ class _LoginViewState extends State<LoginView> {
                       },
                     ),
                       ),
-                  IconButton(
-                    icon: obscurePassword ? const Icon(Icons.visibility_rounded) : const Icon(Icons.visibility_off_rounded),
-                    tooltip: obscurePassword ? 'Show Password' : 'Hide Password',
-                    onPressed: () {
-                      setState(() {
-                        obscurePassword = !obscurePassword;
-                      });
-                    },
-                  ),
                     ],
                   ),
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                  ElevatedButton(
-                    onPressed: _login,
-                    child: const Text('Login'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pushNamed('/signup');
-                    },
-                    child: const Text('Sign Up'),
+                      ElevatedButton(
+                        onPressed: _login,
+                        child: const Text('Login'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pushNamed('/signup');
+                        },
+                        child: const Text('Sign Up'),
                   ),
                   IconButton(
                     icon: const Icon(Icons.info_outline_rounded),

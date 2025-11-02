@@ -182,18 +182,6 @@ class _MainScreenState extends State<MainScreen> {
               onPressed: () => _showAsModalSheet((controller) => AccountView(scrollController: controller)),
               tooltip: 'Account',
             ),
-            Consumer<ThemeProvider>(
-              builder: (context, themeProvider, child) {
-                return IconButton(
-                  icon: Icon(
-                    themeProvider.isDarkMode ? Icons.light_mode : Icons.dark_mode,
-                  ),
-                  onPressed: () {
-                    themeProvider.toggleTheme();
-                  },
-                );
-              },
-            ),
           ],
         ),
         body: isMobile
