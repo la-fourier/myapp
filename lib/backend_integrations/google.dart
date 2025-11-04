@@ -48,7 +48,12 @@ class GoogleDriveService {
     if (files.files?.isEmpty ?? true) return null;
 
     final fileId = files.files!.first.id!;
-    final media = await _driveApi!.files.get(fileId, downloadOptions: drive.DownloadOptions.fullMedia) as drive.Media;
+    final media =
+        await _driveApi!.files.get(
+              fileId,
+              downloadOptions: drive.DownloadOptions.fullMedia,
+            )
+            as drive.Media;
     final data = media.stream.toString();
     return jsonDecode(data);
   }

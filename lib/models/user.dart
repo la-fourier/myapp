@@ -24,8 +24,8 @@ class User {
       calendar: Calendar.fromJson(json['calendar']),
       customCategories: json['customCategories'] != null
           ? (json['customCategories'] as List)
-              .map((e) => Category.fromJson(e))
-              .toList()
+                .map((e) => Category.fromJson(e))
+                .toList()
           : [],
     );
   }

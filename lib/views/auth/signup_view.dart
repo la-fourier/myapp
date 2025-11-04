@@ -48,7 +48,10 @@ class _SignupViewState extends State<SignupView> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Text('Sign Up', style: Theme.of(context).textTheme.headlineMedium),
+                  Text(
+                    'Sign Up',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
                   const SizedBox(height: 20),
                   TextFormField(
                     keyboardType: TextInputType.emailAddress,
@@ -71,8 +74,9 @@ class _SignupViewState extends State<SignupView> {
                         icon: obscurePassword
                             ? const Icon(Icons.visibility_rounded)
                             : const Icon(Icons.visibility_off_rounded),
-                        tooltip:
-                            obscurePassword ? 'Show Password' : 'Hide Password',
+                        tooltip: obscurePassword
+                            ? 'Show Password'
+                            : 'Hide Password',
                         onPressed: () {
                           setState(() {
                             obscurePassword = !obscurePassword;
@@ -90,10 +94,21 @@ class _SignupViewState extends State<SignupView> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: _signup,
-                    child: const Text('Sign Up'),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: _signup,
+                        child: const Text('Sign Up'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pushNamed('/login');
+                        },
+                        child: const Text('Already have an account? Log in'),
+                      ),
+                    ],
                   ),
                 ],
               ),

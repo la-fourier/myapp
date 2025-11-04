@@ -7,17 +7,11 @@ class Category {
   Category({required this.name, required this.color});
 
   factory Category.fromJson(Map<String, dynamic> json) {
-    return Category(
-      name: json['name'],
-      color: Color(json['color']),
-    );
+    return Category(name: json['name'], color: Color(json['color']));
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'color': color.value,
-    };
+    return {'name': name, 'color': color.value};
   }
 
   @override

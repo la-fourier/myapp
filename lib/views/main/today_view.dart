@@ -73,10 +73,15 @@ class TimeSlot extends StatelessWidget {
                 ? Container(
                     height: 50, // Height for an empty slot
                     decoration: BoxDecoration(
-                      border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
+                      border: Border(
+                        bottom: BorderSide(color: Colors.grey.shade300),
+                      ),
                     ),
                     child: const Center(
-                      child: Text('No appointments', style: TextStyle(color: Colors.grey)),
+                      child: Text(
+                        'No appointments',
+                        style: TextStyle(color: Colors.grey),
+                      ),
                     ),
                   )
                 : Column(
@@ -109,10 +114,7 @@ class AppointmentCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
-              width: 5,
-              color: appointment.category.color,
-            ),
+            Container(width: 5, color: appointment.category.color),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
@@ -121,14 +123,17 @@ class AppointmentCard extends StatelessWidget {
                   children: [
                     Text(
                       appointment.title,
-                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '${timeFormat.format(appointment.start)} - ${timeFormat.format(appointment.end)}',
                       style: theme.textTheme.bodyMedium,
                     ),
-                    if (appointment.description != null && appointment.description!.isNotEmpty)
+                    if (appointment.description != null &&
+                        appointment.description!.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 8.0),
                         child: Text(appointment.description!),

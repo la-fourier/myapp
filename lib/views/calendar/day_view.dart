@@ -17,7 +17,11 @@ class DayView extends StatelessWidget {
     this.scrollController,
   });
 
-  void _showAppointmentEditor(BuildContext context, AppState appState, [Appointment? appointment]) {
+  void _showAppointmentEditor(
+    BuildContext context,
+    AppState appState, [
+    Appointment? appointment,
+  ]) {
     showDialog(
       context: context,
       builder: (context) => AppointmentEditorDialog(
@@ -38,8 +42,14 @@ class DayView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final appState = Provider.of<AppState>(context);
-    final appointments = appState.loggedInUser?.calendar.appointments
-            .where((app) => app.start.year == selectedDay.year && app.start.month == selectedDay.month && app.start.day == selectedDay.day)
+    final appointments =
+        appState.loggedInUser?.calendar.appointments
+            .where(
+              (app) =>
+                  app.start.year == selectedDay.year &&
+                  app.start.month == selectedDay.month &&
+                  app.start.day == selectedDay.day,
+            )
             .toList() ??
         [];
 
@@ -53,14 +63,16 @@ class DayView extends StatelessWidget {
             automaticallyImplyLeading: false, // No back button
             title: Text(
               DateFormat('MMMM d, yyyy').format(selectedDay),
-              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             actions: [
               IconButton(
                 icon: const Icon(Icons.close),
                 onPressed: onBack,
                 tooltip: 'Close',
-              )
+              ),
             ],
             backgroundColor: Colors.transparent, // Make AppBar transparent
             elevation: 0,
@@ -73,18 +85,18 @@ class DayView extends StatelessWidget {
           itemBuilder: (context, index) {
             final appointment = appointments[index];
             return ListTile(
-              leading: Container(
-              width: 5,
-              color: appointment.category.color,
-            ),
+              leading: Container(width: 5, color: appointment.category.color),
               title: Text(appointment.title),
-              subtitle: Text('${DateFormat.jm().format(appointment.start)} - ${DateFormat.jm().format(appointment.end)}'),
+              subtitle: Text(
+                '${DateFormat.jm().format(appointment.start)} - ${DateFormat.jm().format(appointment.end)}',
+              ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
                     icon: const Icon(Icons.edit),
-                    onPressed: () => _showAppointmentEditor(context, appState, appointment),
+                    onPressed: () =>
+                        _showAppointmentEditor(context, appState, appointment),
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete),
@@ -92,7 +104,8 @@ class DayView extends StatelessWidget {
                   ),
                 ],
               ),
-              onTap: () => _showAppointmentEditor(context, appState, appointment),
+              onTap: () =>
+                  _showAppointmentEditor(context, appState, appointment),
             );
           },
         ),

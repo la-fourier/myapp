@@ -36,8 +36,11 @@ class _CustomLoadingIndicatorState extends State<CustomLoadingIndicator>
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: List.generate(3, (index) {
             return ScaleTransition(
-              scale: DelayTween(begin: 0.0, end: 1.0, delay: index * 0.2)
-                  .animate(_controller),
+              scale: DelayTween(
+                begin: 0.0,
+                end: 1.0,
+                delay: index * 0.2,
+              ).animate(_controller),
               child: SizedBox.square(
                 dimension: 15.0,
                 child: DecoratedBox(
@@ -57,7 +60,7 @@ class _CustomLoadingIndicatorState extends State<CustomLoadingIndicator>
 
 class DelayTween extends Tween<double> {
   DelayTween({required double begin, required double end, required this.delay})
-      : super(begin: begin, end: end);
+    : super(begin: begin, end: end);
 
   final double delay;
 

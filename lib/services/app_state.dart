@@ -13,7 +13,11 @@ class SelectableActivity {
   final Category category;
   final dynamic original;
 
-  SelectableActivity({required this.name, required this.category, this.original});
+  SelectableActivity({
+    required this.name,
+    required this.category,
+    this.original,
+  });
 }
 
 class AppState extends ChangeNotifier {
@@ -36,11 +40,17 @@ class AppState extends ChangeNotifier {
 
   Future<bool> signup(String email, String password) async {
     try {
-      final existingUser = _users.firstWhere((user) => user.person.email == email);
+      final existingUser = _users.firstWhere(
+        (user) => user.person.email == email,
+      );
       return false; // User already exists
     } catch (e) {
       final newUser = User(
-        person: Person(fullName: 'New User', dateOfBirth: DateTime(2000, 1, 1), email: email),
+        person: Person(
+          fullName: 'New User',
+          dateOfBirth: DateTime(2000, 1, 1),
+          email: email,
+        ),
         contacts: [],
         calendar: Calendar(appointments: []),
         customCategories: [],
@@ -59,7 +69,9 @@ class AppState extends ChangeNotifier {
       _initializeUsers();
     } else {
       if (_loggedInUser != null) {
-        _loggedInUser = _users.firstWhere((user) => user.person.email == _loggedInUser!.person.email);
+        _loggedInUser = _users.firstWhere(
+          (user) => user.person.email == _loggedInUser!.person.email,
+        );
       }
     }
     notifyListeners();
@@ -71,33 +83,43 @@ class AppState extends ChangeNotifier {
 
   void _initializeUsers() {
     final user1 = User(
-      person: Person(fullName: 'Test User', dateOfBirth: DateTime(1995, 5, 23), email: 'test@debug.com'),
+      person: Person(
+        fullName: 'Test User',
+        dateOfBirth: DateTime(1995, 5, 23),
+        email: 'test@debug.com',
+      ),
       contacts: [
         Person(fullName: 'Jane Smith', dateOfBirth: DateTime(1992, 5, 10)),
         Person(fullName: 'Peter Jones', dateOfBirth: DateTime(1988, 11, 22)),
       ],
-      calendar: Calendar(appointments: [
-        Appointment(
-          title: 'Morning Standup',
-          start: DateTime.now().copyWith(hour: 9, minute: 0, second: 0),
-          end: DateTime.now().copyWith(hour: 9, minute: 30, second: 0),
-        ),
-        Appointment(
-          title: 'Lunch with Jane',
-          start: DateTime.now().copyWith(hour: 12, minute: 30, second: 0),
-          end: DateTime.now().copyWith(hour: 13, minute: 30, second: 0),
-        ),
-         Appointment(
-          title: 'Dentist Appointment',
-          start: DateTime.now().add(const Duration(days: 1)).copyWith(hour: 14, minute: 0, second: 0),
-          end: DateTime.now().add(const Duration(days: 1)).copyWith(hour: 15, minute: 0, second: 0),
-        ),
-      ]),
+      calendar: Calendar(
+        appointments: [
+          Appointment(
+            title: 'Morning Standup',
+            start: DateTime.now().copyWith(hour: 9, minute: 0, second: 0),
+            end: DateTime.now().copyWith(hour: 9, minute: 30, second: 0),
+          ),
+          Appointment(
+            title: 'Lunch with Jane',
+            start: DateTime.now().copyWith(hour: 12, minute: 30, second: 0),
+            end: DateTime.now().copyWith(hour: 13, minute: 30, second: 0),
+          ),
+          Appointment(
+            title: 'Dentist Appointment',
+            start: DateTime.now()
+                .add(const Duration(days: 1))
+                .copyWith(hour: 14, minute: 0, second: 0),
+            end: DateTime.now()
+                .add(const Duration(days: 1))
+                .copyWith(hour: 15, minute: 0, second: 0),
+          ),
+        ],
+      ),
       customCategories: [
         Category(name: 'Work', color: Colors.blue),
         Category(name: 'Personal', color: Colors.green),
         Category(name: 'Fitness', color: Colors.orange),
-      ]
+      ],
     );
 
     _users.add(user1);
@@ -129,12 +151,13 @@ class AppState extends ChangeNotifier {
   List<SelectableActivity> getSelectableActivities() {
     if (_loggedInUser == null) return [];
 
-    final fromAppointments = _loggedInUser!.calendar.appointments.map((e) => 
-      SelectableActivity(name: e.title, category: e.category, original: e)
+    final fromAppointments = _loggedInUser!.calendar.appointments.map(
+      (e) =>
+          SelectableActivity(name: e.title, category: e.category, original: e),
     );
 
-    final fromCategories = _loggedInUser!.customCategories.map((e) => 
-      SelectableActivity(name: e.name, category: e, original: e)
+    final fromCategories = _loggedInUser!.customCategories.map(
+      (e) => SelectableActivity(name: e.name, category: e, original: e),
     );
 
     return [...fromAppointments, ...fromCategories];
@@ -150,7 +173,9 @@ class AppState extends ChangeNotifier {
   }
 
   void stopTracking() {
-    if (_currentlyTracking != null && _trackingStartTime != null && _loggedInUser != null) {
+    if (_currentlyTracking != null &&
+        _trackingStartTime != null &&
+        _loggedInUser != null) {
       final trackedActivity = TrackedActivity(
         name: _currentlyTracking!.name,
         category: _currentlyTracking!.category,
@@ -202,9 +227,14 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  void updateAppointment(Appointment oldAppointment, Appointment newAppointment) {
+  void updateAppointment(
+    Appointment oldAppointment,
+    Appointment newAppointment,
+  ) {
     if (_loggedInUser != null) {
-      final index = _loggedInUser!.calendar.appointments.indexOf(oldAppointment);
+      final index = _loggedInUser!.calendar.appointments.indexOf(
+        oldAppointment,
+      );
       if (index != -1) {
         _loggedInUser!.calendar.appointments[index] = newAppointment;
         _saveUsers();

@@ -19,15 +19,16 @@ class NotificationService {
 
     final DarwinInitializationSettings initializationSettingsDarwin =
         DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
+        );
 
-    final InitializationSettings initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsDarwin,
-    );
+    final InitializationSettings initializationSettings =
+        InitializationSettings(
+          android: initializationSettingsAndroid,
+          iOS: initializationSettingsDarwin,
+        );
 
     await flutterLocalNotificationsPlugin.initialize(initializationSettings);
   }
@@ -35,7 +36,7 @@ class NotificationService {
   Future<void> requestPermissions() async {
     await flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin
+          AndroidFlutterLocalNotificationsPlugin
         >()
         ?.requestNotificationsPermission();
   }
@@ -43,13 +44,13 @@ class NotificationService {
   Future<void> showNotification(int id, String title, String body) async {
     const AndroidNotificationDetails androidNotificationDetails =
         AndroidNotificationDetails(
-      'your_channel_id',
-      'your_channel_name',
-      channelDescription: 'your_channel_description',
-      importance: Importance.max,
-      priority: Priority.high,
-      ticker: 'ticker',
-    );
+          'your_channel_id',
+          'your_channel_name',
+          channelDescription: 'your_channel_description',
+          importance: Importance.max,
+          priority: Priority.high,
+          ticker: 'ticker',
+        );
     const NotificationDetails notificationDetails = NotificationDetails(
       android: androidNotificationDetails,
     );

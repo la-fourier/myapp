@@ -10,10 +10,16 @@ class AppointmentEditorDialog extends StatefulWidget {
   final Function(Appointment) onSave;
   final DateTime? startTime;
 
-  const AppointmentEditorDialog({super.key, this.appointment, required this.onSave, this.startTime});
+  const AppointmentEditorDialog({
+    super.key,
+    this.appointment,
+    required this.onSave,
+    this.startTime,
+  });
 
   @override
-  State<AppointmentEditorDialog> createState() => _AppointmentEditorDialogState();
+  State<AppointmentEditorDialog> createState() =>
+      _AppointmentEditorDialogState();
 }
 
 class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
@@ -45,10 +51,14 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
       _title = '';
       _description = '';
       _startDate = widget.startTime ?? DateTime.now();
-      _endDate = (widget.startTime ?? DateTime.now()).add(const Duration(hours: 1));
+      _endDate = (widget.startTime ?? DateTime.now()).add(
+        const Duration(hours: 1),
+      );
       _startTime = TimeOfDay.fromDateTime(_startDate);
       _endTime = TimeOfDay.fromDateTime(_endDate);
-      _category = _categories.isNotEmpty ? _categories.first : Category(name: 'Default', color: Colors.blue);
+      _category = _categories.isNotEmpty
+          ? _categories.first
+          : Category(name: 'Default', color: Colors.blue);
     }
   }
 
@@ -122,7 +132,9 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.appointment == null ? 'Create Appointment' : 'Edit Appointment'),
+      title: Text(
+        widget.appointment == null ? 'Create Appointment' : 'Edit Appointment',
+      ),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -132,7 +144,8 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
               TextFormField(
                 initialValue: _title,
                 decoration: const InputDecoration(labelText: 'Title'),
-                validator: (value) => value!.isEmpty ? 'Please enter a title' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'Please enter a title' : null,
                 onSaved: (value) => _title = value!,
               ),
               TextFormField(
@@ -160,7 +173,9 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
               Row(
                 children: [
                   Expanded(
-                    child: Text('Start: ${DateFormat.yMd().format(_startDate)}'),
+                    child: Text(
+                      'Start: ${DateFormat.yMd().format(_startDate)}',
+                    ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.calendar_today),
@@ -211,10 +226,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Cancel'),
         ),
-        ElevatedButton(
-          onPressed: _saveForm,
-          child: const Text('Save'),
-        ),
+        ElevatedButton(onPressed: _saveForm, child: const Text('Save')),
       ],
     );
   }

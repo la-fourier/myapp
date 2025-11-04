@@ -40,10 +40,7 @@ class _UserEditorDialogState extends State<UserEditorDialog> {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
-      final newPerson = Person(
-        fullName: _fullName,
-        dateOfBirth: _dateOfBirth,
-      );
+      final newPerson = Person(fullName: _fullName, dateOfBirth: _dateOfBirth);
 
       widget.onSave(newPerson);
       Navigator.of(context).pop();
@@ -70,7 +67,9 @@ class _UserEditorDialogState extends State<UserEditorDialog> {
               Row(
                 children: [
                   Expanded(
-                    child: Text('Date of Birth: ${DateFormat.yMd().format(_dateOfBirth)}'),
+                    child: Text(
+                      'Date of Birth: ${DateFormat.yMd().format(_dateOfBirth)}',
+                    ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.calendar_today),
@@ -87,10 +86,7 @@ class _UserEditorDialogState extends State<UserEditorDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Cancel'),
         ),
-        ElevatedButton(
-          onPressed: _saveForm,
-          child: const Text('Save'),
-        ),
+        ElevatedButton(onPressed: _saveForm, child: const Text('Save')),
       ],
     );
   }

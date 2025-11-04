@@ -15,8 +15,16 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
   late Color _selectedColor;
 
   final List<Color> _availableColors = [
-    Colors.blue, Colors.green, Colors.red, Colors.orange, Colors.purple,
-    Colors.pink, Colors.teal, Colors.indigo, Colors.amber, Colors.brown,
+    Colors.blue,
+    Colors.green,
+    Colors.red,
+    Colors.orange,
+    Colors.purple,
+    Colors.pink,
+    Colors.teal,
+    Colors.indigo,
+    Colors.amber,
+    Colors.brown,
   ];
 
   @override

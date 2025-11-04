@@ -21,7 +21,8 @@ class _PlayBarState extends State<PlayBar> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final appState = Provider.of<AppState>(context);
-    if (appState.currentlyTracking != null && (_timer == null || !_timer!.isActive)) {
+    if (appState.currentlyTracking != null &&
+        (_timer == null || !_timer!.isActive)) {
       _startTimer(appState.trackingStartTime);
     } else if (appState.currentlyTracking == null) {
       _timer?.cancel();
@@ -116,7 +117,8 @@ class _PlayBarState extends State<PlayBar> {
           );
         }
 
-        final activityName = appState.currentlyTracking?.name ?? 'No activity selected';
+        final activityName =
+            appState.currentlyTracking?.name ?? 'No activity selected';
 
         return Container(
           height: 40,
@@ -129,7 +131,12 @@ class _PlayBarState extends State<PlayBar> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
-                icon: Icon(isPlaying ? Icons.stop_circle_outlined : Icons.play_circle_outline, color: isPlaying ? Colors.redAccent : Colors.greenAccent),
+                icon: Icon(
+                  isPlaying
+                      ? Icons.stop_circle_outlined
+                      : Icons.play_circle_outline,
+                  color: isPlaying ? Colors.redAccent : Colors.greenAccent,
+                ),
                 iconSize: 24,
                 onPressed: () {
                   if (isPlaying) {
@@ -146,13 +153,19 @@ class _PlayBarState extends State<PlayBar> {
                   children: [
                     Text(
                       activityName,
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
                       overflow: TextOverflow.ellipsis,
                     ),
                     if (isPlaying)
                       Text(
                         _formatDuration(_duration),
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
                       ),
                   ],
                 ),
