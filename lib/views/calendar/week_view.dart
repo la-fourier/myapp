@@ -80,7 +80,7 @@ class _WeekViewState extends State<WeekView> {
       builder: (context) => AppointmentEditorDialog(
         startTime: startTime,
         onSave: (appointment) {
-          appState.addAppointment(appointment);
+          appState.addItem<Appointment>(appointment);
         },
       ),
     );

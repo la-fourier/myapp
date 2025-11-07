@@ -45,9 +45,9 @@ class _DashboardViewState extends State<DashboardView> {
 
     if (result != null) {
       if (category == null) {
-        appState.addCustomCategory(result);
+        appState.addItem<Category>(result);
       } else {
-        appState.updateCustomCategory(category, result);
+        appState.updateItem<Category>(category, result);
       }
     }
   }
@@ -60,10 +60,10 @@ class _DashboardViewState extends State<DashboardView> {
         person: person,
         onSave: (newPerson) {
           if (person == null) {
-            appState.addPerson(newPerson);
+            appState.addItem<Person>(newPerson);
           } else {
             // Person model needs to implement == for this to work correctly
-            appState.updatePerson(person, newPerson);
+            appState.updateItem<Person>(person, newPerson);
           }
         },
       ),
@@ -78,9 +78,9 @@ class _DashboardViewState extends State<DashboardView> {
         appointment: appointment,
         onSave: (newAppointment) {
           if (appointment == null) {
-            appState.addAppointment(newAppointment);
+            appState.addItem<Appointment>(newAppointment);
           } else {
-            appState.updateAppointment(appointment, newAppointment);
+            appState.updateItem<Appointment>(appointment, newAppointment);
           }
         },
       ),
@@ -214,7 +214,7 @@ class _DashboardViewState extends State<DashboardView> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete),
-                    onPressed: () => appState.deletePerson(item),
+                    onPressed: () => appState.deleteItem<Person>(item),
                   ),
                 ],
               ),
@@ -249,7 +249,7 @@ class _DashboardViewState extends State<DashboardView> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete),
-                    onPressed: () => appState.deleteAppointment(item),
+                    onPressed: () => appState.deleteItem<Appointment>(item),
                   ),
                 ],
               ),
@@ -283,7 +283,7 @@ class _DashboardViewState extends State<DashboardView> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete),
-                    onPressed: () => appState.deleteCustomCategory(item),
+                    onPressed: () => appState.deleteItem<Category>(item),
                   ),
                 ],
               ),

@@ -173,8 +173,11 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
               Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      'Start: ${DateFormat.yMd().format(_startDate)}',
+                    child: InkWell(
+                      onTap: () => _selectDate(context, true),
+                      child: Text(
+                        'Start: ${DateFormat.yMd().format(_startDate)}',
+                      ),
                     ),
                   ),
                   IconButton(
@@ -186,7 +189,10 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
               Row(
                 children: [
                   Expanded(
-                    child: Text('Start Time: ${_startTime.format(context)}'),
+                    child: InkWell(
+                      onTap: () => _selectTime(context, true),
+                      child: Text('Start Time: ${_startTime.format(context)}'),
+                    ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.access_time),
@@ -198,7 +204,10 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
               Row(
                 children: [
                   Expanded(
-                    child: Text('End: ${DateFormat.yMd().format(_endDate)}'),
+                    child: InkWell(
+                      onTap: () => _selectDate(context, false),
+                      child: Text('End: ${DateFormat.yMd().format(_endDate)}'),
+                    ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.calendar_today),
@@ -209,7 +218,10 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
               Row(
                 children: [
                   Expanded(
-                    child: Text('End Time: ${_endTime.format(context)}'),
+                    child: InkWell(
+                      onTap: () => _selectTime(context, false),
+                      child: Text('End Time: ${_endTime.format(context)}'),
+                    ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.access_time),

@@ -75,8 +75,11 @@ class _PersonEditorDialogState extends State<PersonEditorDialog> {
               Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      'Date of Birth: ${DateFormat.yMd().format(_dateOfBirth)}',
+                    child: InkWell(
+                      onTap: () => _selectDate(context),
+                      child: Text(
+                        'Date of Birth: ${DateFormat.yMd().format(_dateOfBirth)}',
+                      ),
                     ),
                   ),
                   IconButton(

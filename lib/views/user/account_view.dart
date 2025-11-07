@@ -7,6 +7,7 @@ import 'package:myapp/backend_integrations/github.dart';
 import 'package:myapp/backend_integrations/google.dart';
 import 'package:myapp/services/loading_service.dart';
 import 'package:myapp/models/user.dart';
+import 'package:myapp/models/person.dart';
 
 class AccountView extends StatelessWidget {
   final ScrollController? scrollController;
@@ -57,6 +58,11 @@ class AccountView extends StatelessWidget {
     );
   }
 
+  void _updateUser(BuildContext context, User updatedUser) {
+    final appState = Provider.of<AppState>(context, listen: false);
+    appState.updateUser(updatedUser);
+  }
+
   Widget _buildProfilePage(BuildContext context, AppState appState, User user) {
     final person = user.person;
 
@@ -101,7 +107,21 @@ class AccountView extends StatelessWidget {
         lastDate: DateTime.now(),
       );
       if (newDate != null) {
-        appState.updateUserDateOfBirth(newDate);
+        final updatedUser = User(
+          person: Person(
+            fullName: person.fullName,
+            dateOfBirth: newDate,
+            email: person.email,
+            nickname: person.nickname,
+            address: person.address,
+            profilePictureUrl: person.profilePictureUrl,
+            password: person.password,
+          ),
+          contacts: user.contacts,
+          calendar: user.calendar,
+          customCategories: user.customCategories,
+        );
+        _updateUser(context, updatedUser);
         Fluttertoast.showToast(msg: "Birthday updated.");
       }
     }
@@ -124,28 +144,92 @@ class AccountView extends StatelessWidget {
             context,
             'Name',
             person.fullName,
-            (newValue) => appState.updateUserName(newValue),
+            (newValue) {
+              final updatedUser = User(
+                person: Person(
+                  fullName: newValue,
+                  dateOfBirth: person.dateOfBirth,
+                  email: person.email,
+                  nickname: person.nickname,
+                  address: person.address,
+                  profilePictureUrl: person.profilePictureUrl,
+                  password: person.password,
+                ),
+                contacts: user.contacts,
+                calendar: user.calendar,
+                customCategories: user.customCategories,
+              );
+              _updateUser(context, updatedUser);
+            },
             showEditDialog,
           ),
           _buildEditableRow(
             context,
             'Nickname',
             person.nickname ?? 'N/A',
-            (newValue) => appState.updateUserNickname(newValue),
+            (newValue) {
+              final updatedUser = User(
+                person: Person(
+                  fullName: person.fullName,
+                  dateOfBirth: person.dateOfBirth,
+                  email: person.email,
+                  nickname: newValue,
+                  address: person.address,
+                  profilePictureUrl: person.profilePictureUrl,
+                  password: person.password,
+                ),
+                contacts: user.contacts,
+                calendar: user.calendar,
+                customCategories: user.customCategories,
+              );
+              _updateUser(context, updatedUser);
+            },
             showEditDialog,
           ),
           _buildEditableRow(
             context,
             'Email',
             person.email ?? 'N/A',
-            (newValue) => appState.updateUserEmail(newValue),
+            (newValue) {
+              final updatedUser = User(
+                person: Person(
+                  fullName: person.fullName,
+                  dateOfBirth: person.dateOfBirth,
+                  email: newValue,
+                  nickname: person.nickname,
+                  address: person.address,
+                  profilePictureUrl: person.profilePictureUrl,
+                  password: person.password,
+                ),
+                contacts: user.contacts,
+                calendar: user.calendar,
+                customCategories: user.customCategories,
+              );
+              _updateUser(context, updatedUser);
+            },
             showEditDialog,
           ),
           _buildEditableRow(
             context,
             'Address',
             person.address ?? 'N/A',
-            (newValue) => appState.updateUserAddress(newValue),
+            (newValue) {
+              final updatedUser = User(
+                person: Person(
+                  fullName: person.fullName,
+                  dateOfBirth: person.dateOfBirth,
+                  email: person.email,
+                  nickname: person.nickname,
+                  address: newValue,
+                  profilePictureUrl: person.profilePictureUrl,
+                  password: person.password,
+                ),
+                contacts: user.contacts,
+                calendar: user.calendar,
+                customCategories: user.customCategories,
+              );
+              _updateUser(context, updatedUser);
+            },
             showEditDialog,
           ),
           _buildDateRow(context, 'Birthday', person.dateOfBirth, pickDate),
@@ -200,23 +284,26 @@ class AccountView extends StatelessWidget {
     DateTime value,
     Future<void> Function(BuildContext) pickDate,
   ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 80,
-            child: Text(
-              label,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+    return InkWell(
+      onTap: () => pickDate(context),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 80,
+              child: Text(
+                label,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
-          ),
-          Expanded(child: Text(DateFormat.yMMMd().format(value))),
-          IconButton(
-            icon: const Icon(Icons.edit, size: 20),
-            onPressed: () => pickDate(context),
-          ),
-        ],
+            Expanded(child: Text(DateFormat.yMMMd().format(value))),
+            IconButton(
+              icon: const Icon(Icons.edit, size: 20),
+              onPressed: () => pickDate(context),
+            ),
+          ],
+        ),
       ),
     );
   }

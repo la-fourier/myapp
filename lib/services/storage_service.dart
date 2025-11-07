@@ -36,6 +36,16 @@ class StorageService {
     }
   }
 
+  Future<void> saveLoggedInUser(String email) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('loggedInUser', email);
+  }
+
+  Future<String?> getLoggedInUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('loggedInUser');
+  }
+
   Future<List<User>> _readUsersFromFile() async {
     try {
       final file = await _localFile;

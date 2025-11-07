@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/models/user.dart';
 import 'package:myapp/models/person.dart';
@@ -6,6 +7,8 @@ import 'package:myapp/models/calendar/appointment.dart';
 import 'package:myapp/models/calendar/category.dart';
 import 'package:myapp/models/calendar/tracked_activity.dart';
 import 'package:myapp/services/storage_service.dart';
+
+import 'package:fluttertoast/fluttertoast.dart';
 
 // Helper class for the activity selection UI
 class SelectableActivity {
@@ -39,41 +42,40 @@ class AppState extends ChangeNotifier {
   }
 
   Future<bool> signup(String email, String password) async {
-    try {
-      final existingUser = _users.firstWhere(
-        (user) => user.person.email == email,
-      );
+    if (_users.any((user) => user.person.email == email)) {
       return false; // User already exists
-    } catch (e) {
-      final newUser = User(
-        person: Person(
-          fullName: 'New User',
-          dateOfBirth: DateTime(2000, 1, 1),
-          email: email,
-        ),
-        contacts: [],
-        calendar: Calendar(appointments: []),
-        customCategories: [],
-      );
-      _users.add(newUser);
-      _loggedInUser = newUser;
-      await _saveUsers();
-      notifyListeners();
-      return true;
     }
+
+    final newUser = User(
+      person: Person(
+        fullName: 'New User',
+        dateOfBirth: DateTime(2000, 1, 1),
+        email: email,
+        password: password,
+      ),
+      contacts: [],
+      calendar: Calendar(appointments: []),
+      customCategories: [],
+    );
+    _users.add(newUser);
+    _loggedInUser = newUser;
+    await _saveUsers();
+    notifyListeners();
+    return true;
   }
 
   Future<void> _loadUsers() async {
     _users = await _storageService.readUsers();
     if (_users.isEmpty) {
       _initializeUsers();
-    } else {
-      if (_loggedInUser != null) {
-        _loggedInUser = _users.firstWhere(
-          (user) => user.person.email == _loggedInUser!.person.email,
-        );
-      }
     }
+
+    final loggedInUserEmail = await _storageService.getLoggedInUser();
+    if (loggedInUserEmail != null && loggedInUserEmail.isNotEmpty) {
+      _loggedInUser =
+          _users.firstWhereOrNull((user) => user.person.email == loggedInUserEmail);
+    }
+
     notifyListeners();
   }
 
@@ -87,6 +89,7 @@ class AppState extends ChangeNotifier {
         fullName: 'Test User',
         dateOfBirth: DateTime(1995, 5, 23),
         email: 'test@debug.com',
+        password: 'debug123',
       ),
       contacts: [
         Person(fullName: 'Jane Smith', dateOfBirth: DateTime(1992, 5, 10)),
@@ -128,22 +131,22 @@ class AppState extends ChangeNotifier {
 
   // AUTHENTICATION
   Future<bool> login(String email, String password) async {
-    if (password == 'debug123') {
-      try {
-        _loggedInUser = _users.firstWhere((user) => user.person.email == email);
-        notifyListeners();
-        return true;
-      } catch (e) {
-        _loggedInUser = null;
-        return false;
-      }
+    final user = _users.firstWhereOrNull((user) => user.person.email == email);
+
+    if (user != null && user.person.password == password) {
+      _loggedInUser = user;
+      await _storageService.saveLoggedInUser(email);
+      notifyListeners();
+      return true;
     } else {
+      _loggedInUser = null;
       return false;
     }
   }
 
   void logout() {
     _loggedInUser = null;
+    _storageService.saveLoggedInUser('');
     notifyListeners();
   }
 
@@ -190,166 +193,62 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  // CATEGORY MANAGEMENT
-  void addCustomCategory(Category category) {
+  // DATA MANAGEMENT
+  void addItem<T>(T item) {
     if (_loggedInUser != null) {
-      _loggedInUser!.customCategories.add(category);
-      _saveUsers();
-      notifyListeners();
-    }
-  }
-
-  void updateCustomCategory(Category oldCategory, Category newCategory) {
-    if (_loggedInUser != null) {
-      final index = _loggedInUser!.customCategories.indexOf(oldCategory);
-      if (index != -1) {
-        _loggedInUser!.customCategories[index] = newCategory;
-        _saveUsers();
-        notifyListeners();
+      if (T == Category) {
+        _loggedInUser!.customCategories.add(item as Category);
+      } else if (T == Appointment) {
+        _loggedInUser!.calendar.appointments.add(item as Appointment);
+      } else if (T == Person) {
+        _loggedInUser!.contacts.add(item as Person);
       }
-    }
-  }
-
-  void deleteCustomCategory(Category category) {
-    if (_loggedInUser != null) {
-      _loggedInUser!.customCategories.remove(category);
       _saveUsers();
       notifyListeners();
     }
   }
 
-  // APPOINTMENT MANAGEMENT
-  void addAppointment(Appointment appointment) {
+  void updateItem<T>(T oldItem, T newItem) {
     if (_loggedInUser != null) {
-      _loggedInUser!.calendar.appointments.add(appointment);
-      _saveUsers();
-      notifyListeners();
-    }
-  }
-
-  void updateAppointment(
-    Appointment oldAppointment,
-    Appointment newAppointment,
-  ) {
-    if (_loggedInUser != null) {
-      final index = _loggedInUser!.calendar.appointments.indexOf(
-        oldAppointment,
-      );
-      if (index != -1) {
-        _loggedInUser!.calendar.appointments[index] = newAppointment;
-        _saveUsers();
-        notifyListeners();
+      if (T == Category) {
+        final index = _loggedInUser!.customCategories.indexOf(oldItem as Category);
+        if (index != -1) {
+          _loggedInUser!.customCategories[index] = newItem as Category;
+        }
+      } else if (T == Appointment) {
+        final index = _loggedInUser!.calendar.appointments.indexOf(oldItem as Appointment);
+        if (index != -1) {
+          _loggedInUser!.calendar.appointments[index] = newItem as Appointment;
+        }
+      } else if (T == Person) {
+        final index = _loggedInUser!.contacts.indexOf(oldItem as Person);
+        if (index != -1) {
+          _loggedInUser!.contacts[index] = newItem as Person;
+        }
       }
-    }
-  }
-
-  void deleteAppointment(Appointment appointment) {
-    if (_loggedInUser != null) {
-      _loggedInUser!.calendar.appointments.remove(appointment);
       _saveUsers();
       notifyListeners();
     }
   }
 
-  // PERSON (CONTACT) MANAGEMENT
-  void addPerson(Person person) {
+  void deleteItem<T>(T item) {
     if (_loggedInUser != null) {
-      _loggedInUser!.contacts.add(person);
-      _saveUsers();
-      notifyListeners();
-    }
-  }
-
-  void updatePerson(Person oldPerson, Person newPerson) {
-    if (_loggedInUser != null) {
-      final index = _loggedInUser!.contacts.indexOf(oldPerson);
-      if (index != -1) {
-        _loggedInUser!.contacts[index] = newPerson;
-        _saveUsers();
-        notifyListeners();
+      if (T == Category) {
+        _loggedInUser!.customCategories.remove(item as Category);
+      } else if (T == Appointment) {
+        _loggedInUser!.calendar.appointments.remove(item as Appointment);
+      } else if (T == Person) {
+        _loggedInUser!.contacts.remove(item as Person);
       }
-    }
-  }
-
-  void deletePerson(Person person) {
-    if (_loggedInUser != null) {
-      _loggedInUser!.contacts.remove(person);
       _saveUsers();
       notifyListeners();
     }
   }
 
   // USER PROFILE MANAGEMENT
-  void updateUserName(String newName) {
+  void updateUser(User user) {
     if (_loggedInUser != null) {
-      _loggedInUser!.person = Person(
-        fullName: newName,
-        dateOfBirth: _loggedInUser!.person.dateOfBirth,
-        email: _loggedInUser!.person.email,
-        nickname: _loggedInUser!.person.nickname,
-        address: _loggedInUser!.person.address,
-        profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
-      );
-      _saveUsers();
-      notifyListeners();
-    }
-  }
-
-  void updateUserEmail(String newEmail) {
-    if (_loggedInUser != null) {
-      _loggedInUser!.person = Person(
-        fullName: _loggedInUser!.person.fullName,
-        dateOfBirth: _loggedInUser!.person.dateOfBirth,
-        email: newEmail,
-        nickname: _loggedInUser!.person.nickname,
-        address: _loggedInUser!.person.address,
-        profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
-      );
-      _saveUsers();
-      notifyListeners();
-    }
-  }
-
-  void updateUserNickname(String newNickname) {
-    if (_loggedInUser != null) {
-      _loggedInUser!.person = Person(
-        fullName: _loggedInUser!.person.fullName,
-        dateOfBirth: _loggedInUser!.person.dateOfBirth,
-        email: _loggedInUser!.person.email,
-        nickname: newNickname,
-        address: _loggedInUser!.person.address,
-        profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
-      );
-      _saveUsers();
-      notifyListeners();
-    }
-  }
-
-  void updateUserAddress(String newAddress) {
-    if (_loggedInUser != null) {
-      _loggedInUser!.person = Person(
-        fullName: _loggedInUser!.person.fullName,
-        dateOfBirth: _loggedInUser!.person.dateOfBirth,
-        email: _loggedInUser!.person.email,
-        nickname: _loggedInUser!.person.nickname,
-        address: newAddress,
-        profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
-      );
-      _saveUsers();
-      notifyListeners();
-    }
-  }
-
-  void updateUserDateOfBirth(DateTime newDateOfBirth) {
-    if (_loggedInUser != null) {
-      _loggedInUser!.person = Person(
-        fullName: _loggedInUser!.person.fullName,
-        dateOfBirth: newDateOfBirth,
-        email: _loggedInUser!.person.email,
-        nickname: _loggedInUser!.person.nickname,
-        address: _loggedInUser!.person.address,
-        profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
-      );
+      _loggedInUser = user;
       _saveUsers();
       notifyListeners();
     }

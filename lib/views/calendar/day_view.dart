@@ -29,9 +29,9 @@ class DayView extends StatelessWidget {
         startTime: selectedDay,
         onSave: (newAppointment) {
           if (appointment != null) {
-            appState.updateAppointment(appointment, newAppointment);
+            appState.updateItem<Appointment>(appointment, newAppointment);
           } else {
-            appState.addAppointment(newAppointment);
+            appState.addItem<Appointment>(newAppointment);
           }
         },
       ),
@@ -100,7 +100,7 @@ class DayView extends StatelessWidget {
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete),
-                    onPressed: () => appState.deleteAppointment(appointment),
+                    onPressed: () => appState.deleteItem<Appointment>(appointment),
                   ),
                 ],
               ),

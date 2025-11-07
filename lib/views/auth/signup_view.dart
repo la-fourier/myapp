@@ -106,7 +106,7 @@ class _SignupViewState extends State<SignupView> {
                         onPressed: () {
                           Navigator.of(context).pushNamed('/login');
                         },
-                        child: const Text('Already have an account? Log in'),
+                        child: const Text('Log in instead'),
                       ),
                     ],
                   ),
