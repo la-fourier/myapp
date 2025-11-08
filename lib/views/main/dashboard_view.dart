@@ -126,6 +126,7 @@ class _DashboardViewState extends State<DashboardView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               DropdownButton<String>(
                 value: _selectedDataSourceId,
@@ -143,7 +144,6 @@ class _DashboardViewState extends State<DashboardView> {
                   );
                 }).toList(),
               ),
-              const Spacer(),
               if (selectedSource['add_new'] != null)
                 IconButton(
                   icon: const Icon(Icons.add_circle_outline),

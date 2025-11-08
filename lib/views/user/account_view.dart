@@ -38,11 +38,20 @@ class AccountView extends StatelessWidget {
                   onPressed: () => Navigator.of(context).pop(),
                 )
               ],
-              bottom: const TabBar(
-                tabs: [
-                  Tab(text: 'Profile'),
-                  Tab(text: 'Integrations'),
-                ],
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(kToolbarHeight),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10.0),
+                    child: const TabBar(
+                      tabs: [
+                        Tab(text: 'Profile'),
+                        Tab(text: 'Integrations'),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
           ];

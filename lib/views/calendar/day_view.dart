@@ -79,18 +79,50 @@ class DayView extends StatelessWidget {
             ),
               title: Text(appointment.title),
               subtitle: Text('${DateFormat.jm().format(appointment.start)} - ${DateFormat.jm().format(appointment.end)}'),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () => _showAppointmentEditor(context, appState, appointment),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () => appState.deleteAppointment(appointment),
-                  ),
-                ],
+              trailing: LayoutBuilder(
+                builder: (context, constraints) {
+                  if (constraints.maxWidth > 120) {
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          onPressed: () => _showAppointmentEditor(context, appState, appointment),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () => appState.deleteAppointment(appointment),
+                        ),
+                      ],
+                    );
+                  } else {
+                    return PopupMenuButton<String>(
+                      onSelected: (value) {
+                        if (value == 'edit') {
+                          _showAppointmentEditor(context, appState, appointment);
+                        } else if (value == 'delete') {
+                          appState.deleteAppointment(appointment);
+                        }
+                      },
+                      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                        const PopupMenuItem<String>(
+                          value: 'edit',
+                          child: ListTile(
+                            leading: Icon(Icons.edit),
+                            title: Text('Edit'),
+                          ),
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'delete',
+                          child: ListTile(
+                            leading: Icon(Icons.delete),
+                            title: Text('Delete'),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+                },
               ),
               onTap: () => _showAppointmentEditor(context, appState, appointment),
             );

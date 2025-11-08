@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:myapp/models/calendar/appointment.dart';
 import 'package:myapp/models/calendar/category.dart';
 import 'package:myapp/services/app_state.dart';
 import 'package:provider/provider.dart';
+import 'package:myapp/widgets/editable_text.dart' as editable_text;
 
 class AppointmentEditorDialog extends StatefulWidget {
   final Appointment? appointment;
@@ -27,6 +29,9 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
   late Category _category;
   late List<Category> _categories;
 
+  bool _isRawEditMode = false;
+  final TextEditingController _rawTextController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -49,6 +54,35 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
       _startTime = TimeOfDay.fromDateTime(_startDate);
       _endTime = TimeOfDay.fromDateTime(_endDate);
       _category = _categories.isNotEmpty ? _categories.first : Category(name: 'Default', color: Colors.blue);
+    }
+    _rawTextController.text = _appointmentToJson();
+  }
+
+  String _appointmentToJson() {
+    final data = {
+      'title': _title,
+      'description': _description,
+      'start': DateTime(_startDate.year, _startDate.month, _startDate.day, _startTime.hour, _startTime.minute).toIso8601String(),
+      'end': DateTime(_endDate.year, _endDate.month, _endDate.day, _endTime.hour, _endTime.minute).toIso8601String(),
+      'category': _category.toJson(),
+    };
+    return const JsonEncoder.withIndent('  ').convert(data);
+  }
+
+  void _jsonToAppointment(String jsonString) {
+    try {
+      final data = jsonDecode(jsonString);
+      setState(() {
+        _title = data['title'];
+        _description = data['description'];
+        _startDate = DateTime.parse(data['start']);
+        _endDate = DateTime.parse(data['end']);
+        _startTime = TimeOfDay.fromDateTime(_startDate);
+        _endTime = TimeOfDay.fromDateTime(_endDate);
+        _category = Category.fromJson(data['category']);
+      });
+    } catch (e) {
+      // Handle JSON parsing error
     }
   }
 
@@ -87,6 +121,10 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
   }
 
   void _saveForm() {
+    if (_isRawEditMode) {
+      _jsonToAppointment(_rawTextController.text);
+    }
+
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
@@ -122,90 +160,176 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.appointment == null ? 'Create Appointment' : 'Edit Appointment'),
-      content: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                initialValue: _title,
-                decoration: const InputDecoration(labelText: 'Title'),
-                validator: (value) => value!.isEmpty ? 'Please enter a title' : null,
-                onSaved: (value) => _title = value!,
-              ),
-              TextFormField(
-                initialValue: _description,
-                decoration: const InputDecoration(labelText: 'Description'),
-                onSaved: (value) => _description = value ?? '',
-              ),
-              if (_categories.isNotEmpty)
-                DropdownButtonFormField<Category>(
-                  value: _category,
-                  items: _categories.map((Category category) {
-                    return DropdownMenuItem<Category>(
-                      value: category,
-                      child: Text(category.name),
-                    );
-                  }).toList(),
-                  onChanged: (Category? newValue) {
-                    setState(() {
-                      _category = newValue!;
-                    });
-                  },
-                  decoration: const InputDecoration(labelText: 'Category'),
-                ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text('Start: ${DateFormat.yMd().format(_startDate)}'),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.calendar_today),
-                    onPressed: () => _selectDate(context, true),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text('Start Time: ${_startTime.format(context)}'),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.access_time),
-                    onPressed: () => _selectTime(context, true),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text('End: ${DateFormat.yMd().format(_endDate)}'),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.calendar_today),
-                    onPressed: () => _selectDate(context, false),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text('End Time: ${_endTime.format(context)}'),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.access_time),
-                    onPressed: () => _selectTime(context, false),
-                  ),
-                ],
-              ),
-            ],
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(widget.appointment == null ? 'Create Appointment' : 'Edit Appointment'),
+          IconButton(
+            icon: Icon(_isRawEditMode ? Icons.notes : Icons.code),
+            onPressed: () {
+              setState(() {
+                _isRawEditMode = !_isRawEditMode;
+                if (_isRawEditMode) {
+                  _rawTextController.text = _appointmentToJson();
+                } else {
+                  _jsonToAppointment(_rawTextController.text);
+                }
+              });
+            },
           ),
-        ),
+        ],
       ),
+      content: _isRawEditMode
+          ? TextField(
+              controller: _rawTextController,
+              keyboardType: TextInputType.multiline,
+              maxLines: null,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Raw Text (JSON)',
+              ),
+            )
+          : Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      initialValue: _title,
+                      decoration: const InputDecoration(labelText: 'Title'),
+                      validator: (value) => value!.isEmpty ? 'Please enter a title' : null,
+                      onSaved: (value) => _title = value!,
+                    ),
+                    TextFormField(
+                      initialValue: _description,
+                      decoration: const InputDecoration(labelText: 'Description'),
+                      onSaved: (value) => _description = value ?? '',
+                    ),
+                    if (_categories.isNotEmpty)
+                      DropdownButtonFormField<Category>(
+                        value: _category,
+                        items: _categories.map((Category category) {
+                          return DropdownMenuItem<Category>(
+                            value: category,
+                            child: Text(category.name),
+                          );
+                        }).toList(),
+                        onChanged: (Category? newValue) {
+                          setState(() {
+                            _category = newValue!;
+                          });
+                        },
+                        decoration: const InputDecoration(labelText: 'Category'),
+                      ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: editable_text.EditableText(
+                            initialText: 'Start: ${DateFormat.yMd().format(_startDate)}',
+                            style: Theme.of(context).textTheme.bodyLarge!,
+                            onSave: (value) {
+                              try {
+                                final newDate = DateFormat.yMd().parse(value.replaceFirst('Start: ', ''));
+                                setState(() {
+                                  _startDate = newDate;
+                                });
+                              } catch (e) {
+                                // Handle parsing error
+                              }
+                            },
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.calendar_today),
+                          onPressed: () => _selectDate(context, true),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: editable_text.EditableText(
+                            initialText: 'Start Time: ${_startTime.format(context)}',
+                            style: Theme.of(context).textTheme.bodyLarge!,
+                            onSave: (value) {
+                              try {
+                                final newTime = TimeOfDay(
+                                  hour: int.parse(value.split(':')[0].replaceFirst('Start Time: ', '')),
+                                  minute: int.parse(value.split(':')[1]),
+                                );
+                                setState(() {
+                                  _startTime = newTime;
+                                });
+                              } catch (e) {
+                                // Handle parsing error
+                              }
+                            },
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.access_time),
+                          onPressed: () => _selectTime(context, true),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: editable_text.EditableText(
+                            initialText: 'End: ${DateFormat.yMd().format(_endDate)}',
+                            style: Theme.of(context).textTheme.bodyLarge!,
+                            onSave: (value) {
+                              try {
+                                final newDate = DateFormat.yMd().parse(value.replaceFirst('End: ', ''));
+                                setState(() {
+                                  _endDate = newDate;
+                                });
+                              } catch (e) {
+                                // Handle parsing error
+                              }
+                            },
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.calendar_today),
+                          onPressed: () => _selectDate(context, false),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: editable_text.EditableText(
+                            initialText: 'End Time: ${_endTime.format(context)}',
+                            style: Theme.of(context).textTheme.bodyLarge!,
+                            onSave: (value) {
+                              try {
+                                final newTime = TimeOfDay(
+                                  hour: int.parse(value.split(':')[0].replaceFirst('End Time: ', '')),
+                                  minute: int.parse(value.split(':')[1]),
+                                );
+                                setState(() {
+                                  _endTime = newTime;
+                                });
+                              } catch (e) {
+                                // Handle parsing error
+                              }
+                            },
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.access_time),
+                          onPressed: () => _selectTime(context, false),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
