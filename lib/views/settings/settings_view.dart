@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:myapp/services/theme_provider.dart';
+import 'package:myapp/views/settings/border_radius_settings_view.dart';
 import 'package:provider/provider.dart';
 
 class SettingsView extends StatefulWidget {
@@ -28,7 +29,7 @@ class _SettingsViewState extends State<SettingsView> {
         return AlertDialog(
           title: Text(title),
           content: Text(content),
-          actions: [ 
+          actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('Close'),
@@ -42,7 +43,7 @@ class _SettingsViewState extends State<SettingsView> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 4,
+      length: 5,
       child: NestedScrollView(
         controller: widget.scrollController,
         headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
@@ -62,6 +63,7 @@ class _SettingsViewState extends State<SettingsView> {
                 isScrollable: true,
                 tabs: [
                   Tab(text: 'Appearance'),
+                  Tab(text: 'Borders'),
                   Tab(text: 'Notifications'),
                   Tab(text: 'Advanced'),
                   Tab(text: 'About'),
@@ -73,6 +75,7 @@ class _SettingsViewState extends State<SettingsView> {
         body: TabBarView(
           children: [
             _buildAppearanceSettings(context),
+            const BorderRadiusSettingsView(),
             _buildNotificationsSettings(),
             _buildAdvancedSettings(context),
             _buildAboutSettings(),

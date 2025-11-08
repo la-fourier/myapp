@@ -27,7 +27,7 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.category?.name ?? '');
+    _nameController = TextEditingController(text: widget.category?.name ?? 'Your new category');
     _selectedColor = widget.category?.color ?? _availableColors.first;
     _rawTextController.text = _categoryToJson();
   }

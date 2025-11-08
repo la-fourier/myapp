@@ -7,14 +7,23 @@ enum AppTheme {
   warm,
 }
 
+enum AppBorderRadius {
+  rounded,
+  squared,
+}
+
 class ThemeProvider extends ChangeNotifier {
   AppTheme _currentTheme = AppTheme.purple;
   ThemeMode _themeMode = ThemeMode.light;
   bool _showQueryField = false;
+  AppBorderRadius _borderRadius = AppBorderRadius.rounded;
 
   AppTheme get currentTheme => _currentTheme;
   ThemeMode get themeMode => _themeMode;
   bool get showQueryField => _showQueryField;
+  AppBorderRadius get borderRadius => _borderRadius;
+
+  double get _radiusValue => _borderRadius == AppBorderRadius.rounded ? 12.0 : 4.0;
 
   ThemeData getTheme() {
     switch (_currentTheme) {
@@ -37,25 +46,25 @@ class ThemeProvider extends ChangeNotifier {
       colorScheme: ColorScheme.fromSeed(seedColor: Colors.purple, brightness: _themeMode == ThemeMode.light ? Brightness.light : Brightness.dark),
       cardTheme: baseTheme.cardTheme.copyWith(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.0),
+          borderRadius: BorderRadius.circular(_radiusValue),
         ),
       ),
       dialogTheme: baseTheme.dialogTheme.copyWith(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.0),
+          borderRadius: BorderRadius.circular(_radiusValue),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0),
+            borderRadius: BorderRadius.circular(_radiusValue),
           ),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0),
+            borderRadius: BorderRadius.circular(_radiusValue),
           ),
         ),
       ),
@@ -71,25 +80,25 @@ class ThemeProvider extends ChangeNotifier {
       colorScheme: ColorScheme.fromSeed(seedColor: Colors.green, brightness: _themeMode == ThemeMode.light ? Brightness.light : Brightness.dark),
       cardTheme: baseTheme.cardTheme.copyWith(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
+          borderRadius: BorderRadius.circular(_radiusValue),
         ),
       ),
       dialogTheme: baseTheme.dialogTheme.copyWith(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
+          borderRadius: BorderRadius.circular(_radiusValue),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0),
+            borderRadius: BorderRadius.circular(_radiusValue),
           ),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0),
+            borderRadius: BorderRadius.circular(_radiusValue),
           ),
         ),
       ),
@@ -107,18 +116,18 @@ class ThemeProvider extends ChangeNotifier {
       cardTheme: baseTheme.cardTheme.copyWith(
         color: _themeMode == ThemeMode.light ? const Color(0xFFFAF0E6) : baseTheme.cardTheme.color, // Linen
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10.0),
+          borderRadius: BorderRadius.circular(_radiusValue),
         ),
       ),
       dialogTheme: baseTheme.dialogTheme.copyWith(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10.0),
+          borderRadius: BorderRadius.circular(_radiusValue),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0),
+            borderRadius: BorderRadius.circular(_radiusValue),
           ),
         ),
       ),
@@ -127,7 +136,7 @@ class ThemeProvider extends ChangeNotifier {
           backgroundColor: _themeMode == ThemeMode.light ? const Color(0xFFD2B48C) : baseTheme.elevatedButtonTheme.style?.backgroundColor!.resolve(<MaterialState>{}), // Tan
           foregroundColor: Colors.black,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0),
+            borderRadius: BorderRadius.circular(_radiusValue),
           ),
         ),
       ),
@@ -148,4 +157,10 @@ class ThemeProvider extends ChangeNotifier {
     _showQueryField = !_showQueryField;
     notifyListeners();
   }
+
+  void setBorderRadius(AppBorderRadius radius) {
+    _borderRadius = radius;
+    notifyListeners();
+  }
 }
+

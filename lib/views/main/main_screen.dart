@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:myapp/services/theme_provider.dart';
+import 'package:myapp/views/finance/finance_view.dart';
 import 'package:myapp/views/user/account_view.dart';
 import 'package:myapp/views/calendar/calendar_view.dart';
 import 'package:myapp/views/calendar/day_view.dart';
@@ -86,6 +87,7 @@ class _MainScreenState extends State<MainScreen> {
       CalendarView(onDaySelected: _handleDaySelected),
       const TodayView(),
       const StatsView(),
+      const FinanceView(),
     ];
   }
 
@@ -94,6 +96,7 @@ class _MainScreenState extends State<MainScreen> {
     'Calendar',
     'Today',
     'Stats',
+    'Finance',
   ];
 
   void _onItemTapped(int index) {
@@ -213,6 +216,11 @@ class _MainScreenState extends State<MainScreen> {
                         selectedIcon: Icon(Icons.bar_chart),
                         label: Text('Stats'),
                       ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.attach_money),
+                        selectedIcon: Icon(Icons.money),
+                        label: Text('Finance'),
+                      ),
                     ],
                   ),
                   const VerticalDivider(thickness: 1, width: 1),
@@ -246,6 +254,11 @@ class _MainScreenState extends State<MainScreen> {
                     icon: Icon(Icons.bar_chart_outlined),
                     selectedIcon: Icon(Icons.bar_chart),
                     label: 'Stats',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.attach_money),
+                    selectedIcon: Icon(Icons.money),
+                    label: 'Finance',
                   ),
                 ],
               )

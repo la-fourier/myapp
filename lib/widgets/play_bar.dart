@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:myapp/models/calendar/appointment.dart';
+import 'package:myapp/models/calendar/category.dart';
 import 'package:myapp/services/app_state.dart';
 import 'package:provider/provider.dart';
 
@@ -60,39 +62,10 @@ class _PlayBarState extends State<PlayBar> {
   }
 
   void _showActivitySelection(BuildContext context) {
-    final appState = Provider.of<AppState>(context, listen: false);
-    final activities = appState.getSelectableActivities();
-
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Select Activity'),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: activities.length,
-              itemBuilder: (context, index) {
-                final activity = activities[index];
-                return ListTile(
-                  title: Text(activity.name),
-                  leading: Icon(Icons.circle, color: activity.category.color),
-                  onTap: () {
-                    appState.startTracking(activity);
-                    Navigator.of(context).pop();
-                  },
-                );
-              },
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-          ],
-        );
+        return const _ActivitySelectionDialog();
       },
     );
   }
@@ -102,12 +75,15 @@ class _PlayBarState extends State<PlayBar> {
     return Consumer<AppState>(
       builder: (context, appState, child) {
         final isPlaying = appState.currentlyTracking != null;
+        final activityName = appState.currentlyTracking?.name ?? appState.selectedActivity?.name ?? 'No activity selected';
 
         if (widget.viewType == PlayBarViewType.compact) {
           return FloatingActionButton(
             onPressed: () {
               if (isPlaying) {
                 appState.stopTracking();
+              } else if (appState.selectedActivity != null) {
+                appState.startTracking();
               } else {
                 _showActivitySelection(context);
               }
@@ -115,8 +91,6 @@ class _PlayBarState extends State<PlayBar> {
             child: Icon(isPlaying ? Icons.stop : Icons.play_arrow),
           );
         }
-
-        final activityName = appState.currentlyTracking?.name ?? 'No activity selected';
 
         return Container(
           height: 40,
@@ -134,6 +108,8 @@ class _PlayBarState extends State<PlayBar> {
                 onPressed: () {
                   if (isPlaying) {
                     appState.stopTracking();
+                  } else if (appState.selectedActivity != null) {
+                    appState.startTracking();
                   } else {
                     _showActivitySelection(context);
                   }
@@ -166,6 +142,106 @@ class _PlayBarState extends State<PlayBar> {
           ),
         );
       },
+    );
+  }
+}
+
+class _ActivitySelectionDialog extends StatefulWidget {
+  const _ActivitySelectionDialog();
+
+  @override
+  State<_ActivitySelectionDialog> createState() => _ActivitySelectionDialogState();
+}
+
+class _ActivitySelectionDialogState extends State<_ActivitySelectionDialog> {
+  Category? _selectedCategory;
+
+  @override
+  Widget build(BuildContext context) {
+    final appState = Provider.of<AppState>(context, listen: false);
+    final activities = appState.getSelectableActivities();
+    final categories = appState.loggedInUser?.customCategories ?? [];
+
+    // Find suggested activity
+    final now = DateTime.now();
+    Appointment? currentAppointment;
+    try {
+      currentAppointment = appState.loggedInUser?.calendar.appointments.firstWhere(
+        (app) => now.isAfter(app.start) && now.isBefore(app.end),
+      );
+    } catch (e) {
+      currentAppointment = null;
+    }
+    final suggestedActivity = currentAppointment != null
+        ? SelectableActivity(
+            name: currentAppointment.title,
+            category: currentAppointment.category,
+            original: currentAppointment)
+        : null;
+
+    final filteredActivities = _selectedCategory == null
+        ? activities
+        : activities.where((a) => a.category.name == _selectedCategory!.name).toList();
+
+    return AlertDialog(
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          DropdownButton<Category>(
+            hint: const Text("Category"),
+            value: _selectedCategory,
+            items: categories.map((c) => DropdownMenuItem(value: c, child: Text(c.name))).toList(),
+            onChanged: (cat) {
+              setState(() {
+                _selectedCategory = cat;
+              });
+            },
+          ),
+          const Text('Select Activity'),
+        ],
+      ),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (suggestedActivity != null)
+              ListTile(
+                title: Text(suggestedActivity.name),
+                subtitle: const Text("Suggested from calendar"),
+                leading: const Icon(Icons.star, color: Colors.amber),
+                onTap: () {
+                  appState.setSelectedActivity(suggestedActivity);
+                  Navigator.of(context).pop();
+                },
+              ),
+            if (suggestedActivity != null) const Divider(),
+            Expanded(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: filteredActivities.length,
+                itemBuilder: (context, index) {
+                  final activity = filteredActivities[index];
+                  return ListTile(
+                    title: Text(activity.name),
+                    leading: Icon(Icons.circle, color: activity.category.color),
+                    onTap: () {
+                      appState.setSelectedActivity(activity);
+                      Navigator.of(context).pop();
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+      ],
     );
   }
 }

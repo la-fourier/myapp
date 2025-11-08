@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:myapp/models/calendar/appointment.dart';
 import 'package:myapp/models/calendar/category.dart';
+import 'package:myapp/models/finance/attachment.dart';
 import 'package:myapp/services/app_state.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/widgets/editable_text.dart' as editable_text;
@@ -28,6 +29,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
   late TimeOfDay _endTime;
   late Category _category;
   late List<Category> _categories;
+  late List<Attachment> _attachments;
 
   bool _isRawEditMode = false;
   final TextEditingController _rawTextController = TextEditingController();
@@ -46,6 +48,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
       _startTime = TimeOfDay.fromDateTime(_startDate);
       _endTime = TimeOfDay.fromDateTime(_endDate);
       _category = widget.appointment!.category;
+      _attachments = List.from(widget.appointment!.attachments);
     } else {
       _title = '';
       _description = '';
@@ -54,6 +57,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
       _startTime = TimeOfDay.fromDateTime(_startDate);
       _endTime = TimeOfDay.fromDateTime(_endDate);
       _category = _categories.isNotEmpty ? _categories.first : Category(name: 'Default', color: Colors.blue);
+      _attachments = [];
     }
     _rawTextController.text = _appointmentToJson();
   }
@@ -65,6 +69,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
       'start': DateTime(_startDate.year, _startDate.month, _startDate.day, _startTime.hour, _startTime.minute).toIso8601String(),
       'end': DateTime(_endDate.year, _endDate.month, _endDate.day, _endTime.hour, _endTime.minute).toIso8601String(),
       'category': _category.toJson(),
+      // Attachments are not handled in raw edit mode for now
     };
     return const JsonEncoder.withIndent('  ').convert(data);
   }
@@ -150,6 +155,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
         start: finalStartDate,
         end: finalEndDate,
         category: _category,
+        attachments: _attachments,
       );
 
       widget.onSave(newAppointment);
@@ -323,6 +329,25 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                         IconButton(
                           icon: const Icon(Icons.access_time),
                           onPressed: () => _selectTime(context, false),
+                        ),
+                      ],
+                    ),
+                    const Divider(height: 20),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Attachments', style: Theme.of(context).textTheme.titleMedium),
+                        ..._attachments.map((attachment) => ListTile(
+                              leading: const Icon(Icons.receipt),
+                              title: Text(attachment.name),
+                              subtitle: Text(attachment.type),
+                            )),
+                        TextButton.icon(
+                          icon: const Icon(Icons.add),
+                          label: const Text('Add Attachment'),
+                          onPressed: () {
+                            // TODO: Implement attachment selection/creation
+                          },
                         ),
                       ],
                     ),

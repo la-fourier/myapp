@@ -97,7 +97,9 @@ class AppState extends ChangeNotifier {
         Category(name: 'Work', color: Colors.blue),
         Category(name: 'Personal', color: Colors.green),
         Category(name: 'Fitness', color: Colors.orange),
-      ]
+      ],
+      bills: [],
+      accountBalance: 1500.0,
     );
 
     _users.add(user1);
@@ -126,6 +128,10 @@ class AppState extends ChangeNotifier {
   }
 
   // ACTIVITY TRACKING
+  SelectableActivity? _selectedActivity;
+
+  SelectableActivity? get selectedActivity => _selectedActivity;
+
   List<SelectableActivity> getSelectableActivities() {
     if (_loggedInUser == null) return [];
 
@@ -133,20 +139,23 @@ class AppState extends ChangeNotifier {
       SelectableActivity(name: e.title, category: e.category, original: e)
     );
 
-    final fromCategories = _loggedInUser!.customCategories.map((e) => 
-      SelectableActivity(name: e.name, category: e, original: e)
-    );
-
-    return [...fromAppointments, ...fromCategories];
+    return fromAppointments.toList();
   }
 
-  void startTracking(SelectableActivity activity) {
+  void setSelectedActivity(SelectableActivity activity) {
+    _selectedActivity = activity;
+    notifyListeners();
+  }
+
+  void startTracking() {
     if (_currentlyTracking != null) {
       stopTracking(); // Stop previous activity before starting a new one
     }
-    _currentlyTracking = activity;
-    _trackingStartTime = DateTime.now();
-    notifyListeners();
+    if (_selectedActivity != null) {
+      _currentlyTracking = _selectedActivity;
+      _trackingStartTime = DateTime.now();
+      notifyListeners();
+    }
   }
 
   void stopTracking() {
