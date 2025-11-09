@@ -57,7 +57,7 @@ class _SettingsViewState extends State<SettingsView> {
                 IconButton(
                   icon: const Icon(Icons.close),
                   onPressed: () => Navigator.of(context).pop(),
-                )
+                ),
               ],
               bottom: const TabBar(
                 isScrollable: true,
@@ -118,7 +118,9 @@ class _SettingsViewState extends State<SettingsView> {
         ListTile(
           leading: const Icon(Icons.language),
           title: const Text('Language'),
-          subtitle: const Text('English'), // This is static, would need a provider to be dynamic
+          subtitle: const Text(
+            'English',
+          ), // This is static, would need a provider to be dynamic
           onTap: () {
             // Show language selection dialog
             showDialog(
@@ -163,7 +165,10 @@ class _SettingsViewState extends State<SettingsView> {
             setState(() {
               _toastNotificationsEnabled = value;
             });
-            Fluttertoast.showToast(msg: "Toast notifications are now ${value ? 'enabled' : 'disabled'}");
+            Fluttertoast.showToast(
+              msg:
+                  "Toast notifications are now ${value ? 'enabled' : 'disabled'}",
+            );
           },
           secondary: const Icon(Icons.message),
         ),
@@ -178,7 +183,9 @@ class _SettingsViewState extends State<SettingsView> {
           builder: (context, themeProvider, child) {
             return SwitchListTile(
               title: const Text('Show Advanced Query Field'),
-              subtitle: const Text('Display a text field for filtering data in the dashboard.'),
+              subtitle: const Text(
+                'Display a text field for filtering data in the dashboard.',
+              ),
               value: themeProvider.showQueryField,
               onChanged: (value) {
                 themeProvider.toggleShowQueryField();
@@ -197,17 +204,26 @@ class _SettingsViewState extends State<SettingsView> {
         ListTile(
           leading: const Icon(Icons.info_outline),
           title: const Text('About'),
-          onTap: () => _showInfoDialog('About Orgaa', 'Version 1.0.0\n\nThis is a sample application.'),
+          onTap: () => _showInfoDialog(
+            'About Orgaa',
+            'Version 1.0.0\n\nThis is a sample application.',
+          ),
         ),
         ListTile(
           leading: const Icon(Icons.privacy_tip_outlined),
           title: const Text('Privacy Policy'),
-          onTap: () => _showInfoDialog('Privacy Policy', 'This is a placeholder for the privacy policy.'),
+          onTap: () => _showInfoDialog(
+            'Privacy Policy',
+            'This is a placeholder for the privacy policy.',
+          ),
         ),
         ListTile(
           leading: const Icon(Icons.description_outlined),
           title: const Text('Terms of Service'),
-          onTap: () => _showInfoDialog('Terms of Service', 'This is a placeholder for the terms of service.'),
+          onTap: () => _showInfoDialog(
+            'Terms of Service',
+            'This is a placeholder for the terms of service.',
+          ),
         ),
       ],
     );

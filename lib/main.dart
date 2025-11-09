@@ -31,9 +31,7 @@ class MyApp extends StatelessWidget {
           darkTheme: themeProvider.getTheme(),
           themeMode: themeProvider.themeMode,
           builder: (context, child) {
-            return LoadingOverlay(
-              child: child!,
-            );
+            return LoadingOverlay(child: child!);
           },
           debugShowCheckedModeBanner: false,
           home: const AuthWrapper(),

@@ -5,11 +5,11 @@ import 'package:myapp/models/person.dart';
 
 class User {
   Person person;
-  final List<Person> contacts;
+  List<Person> contacts;
   final Calendar calendar;
-  final List<Category> customCategories;
-  final List<Bill> bills;
-  final double accountBalance;
+  List<Category> customCategories;
+  List<Bill> bills;
+  double accountBalance;
 
   User({
     required this.person,
@@ -20,6 +20,25 @@ class User {
     this.accountBalance = 0.0,
   });
 
+  void updatePerson(Person newPerson) {
+    person = newPerson;
+  }
+
+  void deleteContact(Person contact) {
+    contacts.removeWhere((c) => c == contact);
+  }
+
+  void updateUserDateOfBirth(DateTime newDate) {
+    person = Person(
+      fullName: person.fullName,
+      dateOfBirth: newDate,
+      nickname: person.nickname,
+      profilePictureUrl: person.profilePictureUrl,
+      address: person.address,
+      email: person.email,
+    );
+  }
+
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       person: Person.fromJson(json['person']),
@@ -29,13 +48,11 @@ class User {
       calendar: Calendar.fromJson(json['calendar']),
       customCategories: json['customCategories'] != null
           ? (json['customCategories'] as List)
-              .map((e) => Category.fromJson(e))
-              .toList()
+                .map((e) => Category.fromJson(e))
+                .toList()
           : [],
       bills: json['bills'] != null
-          ? (json['bills'] as List)
-              .map((e) => Bill.fromJson(e))
-              .toList()
+          ? (json['bills'] as List).map((e) => Bill.fromJson(e)).toList()
           : [],
       accountBalance: json['accountBalance'] ?? 0.0,
     );

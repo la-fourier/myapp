@@ -9,7 +9,11 @@ class YearView extends StatefulWidget {
   final DateTime focusedDay;
   final Function(DateTime) onDaySelected;
 
-  const YearView({super.key, required this.focusedDay, required this.onDaySelected});
+  const YearView({
+    super.key,
+    required this.focusedDay,
+    required this.onDaySelected,
+  });
 
   @override
   State<YearView> createState() => _YearViewState();
@@ -21,35 +25,38 @@ class _YearViewState extends State<YearView> {
   @override
   Widget build(BuildContext context) {
     // Use LayoutBuilder to adapt how many month cards are shown per row
-    return LayoutBuilder(builder: (context, constraints) {
-      final double maxWidth = constraints.maxWidth;
-      // Determine crossAxisCount based on available width. For small screens show 2, medium 3, large 4.
-      int crossAxisCount;
-      if (maxWidth < 600) {
-        crossAxisCount = 2;
-      } else if (maxWidth < 1000) {
-        crossAxisCount = 3;
-      } else {
-        crossAxisCount = 4;
-      }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double maxWidth = constraints.maxWidth;
+        // Determine crossAxisCount based on available width. For small screens show 2, medium 3, large 4.
+        int crossAxisCount;
+        if (maxWidth < 600) {
+          crossAxisCount = 2;
+        } else if (maxWidth < 1000) {
+          crossAxisCount = 3;
+        } else {
+          crossAxisCount = 4;
+        }
 
-      // Compute card width to help scale fonts inside month cards
-      final double cardWidth = (maxWidth - (crossAxisCount - 1) * 8) / crossAxisCount;
+        // Compute card width to help scale fonts inside month cards
+        final double cardWidth =
+            (maxWidth - (crossAxisCount - 1) * 8) / crossAxisCount;
 
-      return GridView.builder(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: crossAxisCount,
-          childAspectRatio: 0.9,
-          crossAxisSpacing: 8,
-          mainAxisSpacing: 8,
-        ),
-        itemCount: 12,
-        itemBuilder: (context, index) {
-          final month = DateTime(widget.focusedDay.year, index + 1);
-          return _buildMonth(context, month, cardWidth);
-        },
-      );
-    });
+        return GridView.builder(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            childAspectRatio: 0.9,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+          ),
+          itemCount: 12,
+          itemBuilder: (context, index) {
+            final month = DateTime(widget.focusedDay.year, index + 1);
+            return _buildMonth(context, month, cardWidth);
+          },
+        );
+      },
+    );
   }
 
   Widget _buildMonth(BuildContext context, DateTime month, double cardWidth) {
@@ -66,14 +73,12 @@ class _YearViewState extends State<YearView> {
             child: Text(
               DateFormat.MMMM().format(month),
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontSize: monthTitleSize,
-                  ),
+                fontWeight: FontWeight.bold,
+                fontSize: monthTitleSize,
+              ),
             ),
           ),
-          Expanded(
-            child: _buildMonthGrid(month, cardWidth),
-          ),
+          Expanded(child: _buildMonthGrid(month, cardWidth)),
         ],
       ),
     );
@@ -86,7 +91,8 @@ class _YearViewState extends State<YearView> {
     final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
     final firstDayOfMonth = DateTime(month.year, month.month, 1).weekday;
     final List<Widget> dayWidgets = [];
-    final Color subtleTextColor = (isDarkMode ? Colors.white : Colors.black).withAlpha(128);
+    final Color subtleTextColor = (isDarkMode ? Colors.white : Colors.black)
+        .withAlpha(128);
 
     // Compute cell font size based on card width. There are 7 columns; reserve padding.
     final double effectiveCellWidth = (cardWidth - 16) / 7.0;
@@ -100,7 +106,11 @@ class _YearViewState extends State<YearView> {
             fit: BoxFit.scaleDown,
             child: Text(
               day,
-              style: TextStyle(fontWeight: FontWeight.normal, color: subtleTextColor, fontSize: cellFontSize * 0.9),
+              style: TextStyle(
+                fontWeight: FontWeight.normal,
+                color: subtleTextColor,
+                fontSize: cellFontSize * 0.9,
+              ),
             ),
           ),
         ),
@@ -117,7 +127,9 @@ class _YearViewState extends State<YearView> {
       final day = DateTime(month.year, month.month, i);
       final isToday = isSameDay(day, DateTime.now());
       final isHovered = isSameDay(day, _hoveredDay);
-      final hasAppointment = appointments.any((app) => isSameDay(app.start, day));
+      final hasAppointment = appointments.any(
+        (app) => isSameDay(app.start, day),
+      );
 
       dayWidgets.add(
         MouseRegion(
@@ -127,12 +139,16 @@ class _YearViewState extends State<YearView> {
             onTap: () => widget.onDaySelected(day),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 150),
-              transform: isHovered ? Matrix4.diagonal3Values(1.05, 1.05, 1.0) : Matrix4.identity(),
+              transform: isHovered
+                  ? Matrix4.diagonal3Values(1.05, 1.05, 1.0)
+                  : Matrix4.identity(),
               transformAlignment: Alignment.center,
               decoration: BoxDecoration(
                 color: isToday
                     ? Theme.of(context).colorScheme.tertiary.withAlpha(128)
-                    : (isHovered ? Theme.of(context).hoverColor : Colors.transparent),
+                    : (isHovered
+                          ? Theme.of(context).hoverColor
+                          : Colors.transparent),
                 borderRadius: BorderRadius.circular(8.0),
               ),
               child: Stack(
@@ -144,7 +160,9 @@ class _YearViewState extends State<YearView> {
                       '$i',
                       style: TextStyle(
                         fontSize: cellFontSize,
-                        fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                        fontWeight: isToday
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                         color: isDarkMode ? Colors.white : Colors.black,
                       ),
                     ),

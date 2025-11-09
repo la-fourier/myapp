@@ -5,6 +5,7 @@ import 'package:myapp/models/calendar/calendar.dart';
 import 'package:myapp/models/calendar/appointment.dart';
 import 'package:myapp/models/calendar/category.dart';
 import 'package:myapp/models/calendar/tracked_activity.dart';
+import 'package:myapp/models/finance/bill.dart';
 import 'package:myapp/services/storage_service.dart';
 
 // Helper class for the activity selection UI
@@ -13,7 +14,11 @@ class SelectableActivity {
   final Category category;
   final dynamic original;
 
-  SelectableActivity({required this.name, required this.category, this.original});
+  SelectableActivity({
+    required this.name,
+    required this.category,
+    this.original,
+  });
 }
 
 class AppState extends ChangeNotifier {
@@ -36,11 +41,17 @@ class AppState extends ChangeNotifier {
 
   Future<bool> signup(String email, String password) async {
     try {
-      final existingUser = _users.firstWhere((user) => user.person.email == email);
+      final existingUser = _users.firstWhere(
+        (user) => user.person.email == email,
+      );
       return false; // User already exists
     } catch (e) {
       final newUser = User(
-        person: Person(fullName: 'New User', dateOfBirth: DateTime(2000, 1, 1), email: email),
+        person: Person(
+          fullName: 'New User',
+          dateOfBirth: DateTime(2000, 1, 1),
+          email: email,
+        ),
         contacts: [],
         calendar: Calendar(appointments: []),
         customCategories: [],
@@ -59,7 +70,9 @@ class AppState extends ChangeNotifier {
       _initializeUsers();
     } else {
       if (_loggedInUser != null) {
-        _loggedInUser = _users.firstWhere((user) => user.person.email == _loggedInUser!.person.email);
+        _loggedInUser = _users.firstWhere(
+          (user) => user.person.email == _loggedInUser!.person.email,
+        );
       }
     }
     notifyListeners();
@@ -71,28 +84,38 @@ class AppState extends ChangeNotifier {
 
   void _initializeUsers() {
     final user1 = User(
-      person: Person(fullName: 'Test User', dateOfBirth: DateTime(1995, 5, 23), email: 'test@debug.com'),
+      person: Person(
+        fullName: 'Test User',
+        dateOfBirth: DateTime(1995, 5, 23),
+        email: 'test@debug.com',
+      ),
       contacts: [
         Person(fullName: 'Jane Smith', dateOfBirth: DateTime(1992, 5, 10)),
         Person(fullName: 'Peter Jones', dateOfBirth: DateTime(1988, 11, 22)),
       ],
-      calendar: Calendar(appointments: [
-        Appointment(
-          title: 'Morning Standup',
-          start: DateTime.now().copyWith(hour: 9, minute: 0, second: 0),
-          end: DateTime.now().copyWith(hour: 9, minute: 30, second: 0),
-        ),
-        Appointment(
-          title: 'Lunch with Jane',
-          start: DateTime.now().copyWith(hour: 12, minute: 30, second: 0),
-          end: DateTime.now().copyWith(hour: 13, minute: 30, second: 0),
-        ),
-         Appointment(
-          title: 'Dentist Appointment',
-          start: DateTime.now().add(const Duration(days: 1)).copyWith(hour: 14, minute: 0, second: 0),
-          end: DateTime.now().add(const Duration(days: 1)).copyWith(hour: 15, minute: 0, second: 0),
-        ),
-      ]),
+      calendar: Calendar(
+        appointments: [
+          Appointment(
+            title: 'Morning Standup',
+            start: DateTime.now().copyWith(hour: 9, minute: 0, second: 0),
+            end: DateTime.now().copyWith(hour: 9, minute: 30, second: 0),
+          ),
+          Appointment(
+            title: 'Lunch with Jane',
+            start: DateTime.now().copyWith(hour: 12, minute: 30, second: 0),
+            end: DateTime.now().copyWith(hour: 13, minute: 30, second: 0),
+          ),
+          Appointment(
+            title: 'Dentist Appointment',
+            start: DateTime.now()
+                .add(const Duration(days: 1))
+                .copyWith(hour: 14, minute: 0, second: 0),
+            end: DateTime.now()
+                .add(const Duration(days: 1))
+                .copyWith(hour: 15, minute: 0, second: 0),
+          ),
+        ],
+      ),
       customCategories: [
         Category(name: 'Work', color: Colors.blue),
         Category(name: 'Personal', color: Colors.green),
@@ -135,8 +158,9 @@ class AppState extends ChangeNotifier {
   List<SelectableActivity> getSelectableActivities() {
     if (_loggedInUser == null) return [];
 
-    final fromAppointments = _loggedInUser!.calendar.appointments.map((e) => 
-      SelectableActivity(name: e.title, category: e.category, original: e)
+    final fromAppointments = _loggedInUser!.calendar.appointments.map(
+      (e) =>
+          SelectableActivity(name: e.title, category: e.category, original: e),
     );
 
     return fromAppointments.toList();
@@ -159,7 +183,9 @@ class AppState extends ChangeNotifier {
   }
 
   void stopTracking() {
-    if (_currentlyTracking != null && _trackingStartTime != null && _loggedInUser != null) {
+    if (_currentlyTracking != null &&
+        _trackingStartTime != null &&
+        _loggedInUser != null) {
       final trackedActivity = TrackedActivity(
         name: _currentlyTracking!.name,
         category: _currentlyTracking!.category,
@@ -211,9 +237,14 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  void updateAppointment(Appointment oldAppointment, Appointment newAppointment) {
+  void updateAppointment(
+    Appointment oldAppointment,
+    Appointment newAppointment,
+  ) {
     if (_loggedInUser != null) {
-      final index = _loggedInUser!.calendar.appointments.indexOf(oldAppointment);
+      final index = _loggedInUser!.calendar.appointments.indexOf(
+        oldAppointment,
+      );
       if (index != -1) {
         _loggedInUser!.calendar.appointments[index] = newAppointment;
         _saveUsers();
@@ -230,107 +261,117 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  // BILL MANAGEMENT
+  void addBill(Bill bill) {
+    if (_loggedInUser != null) {
+      _loggedInUser!.bills.add(bill);
+      _loggedInUser!.accountBalance -= bill.totalAmount;
+      _saveUsers();
+      notifyListeners();
+    }
+  }
+
   // PERSON (CONTACT) MANAGEMENT
   void addPerson(Person person) {
     if (_loggedInUser != null) {
       _loggedInUser!.contacts.add(person);
-      _saveUsers();
-      notifyListeners();
-    }
-  }
 
-  void updatePerson(Person oldPerson, Person newPerson) {
-    if (_loggedInUser != null) {
-      final index = _loggedInUser!.contacts.indexOf(oldPerson);
-      if (index != -1) {
-        _loggedInUser!.contacts[index] = newPerson;
-        _saveUsers();
-        notifyListeners();
+      void updatePerson(Person oldPerson, Person newPerson) {
+        if (_loggedInUser != null) {
+          final index = _loggedInUser!.contacts.indexOf(oldPerson);
+          if (index != -1) {
+            _loggedInUser!.contacts[index] = newPerson;
+            _saveUsers();
+            notifyListeners();
+          }
+        }
+      }
+
+      void deletePerson(Person person) {
+        if (_loggedInUser != null) {
+          _loggedInUser!.contacts.remove(person);
+          _saveUsers();
+          notifyListeners();
+        }
+      }
+
+      // USER PROFILE MANAGEMENT
+      void updateUserName(String newName) {
+        if (_loggedInUser != null) {
+          _loggedInUser!.person = Person(
+            fullName: newName,
+            dateOfBirth: _loggedInUser!.person.dateOfBirth,
+            email: _loggedInUser!.person.email,
+            nickname: _loggedInUser!.person.nickname,
+            address: _loggedInUser!.person.address,
+            profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
+          );
+          _saveUsers();
+          notifyListeners();
+        }
+      }
+
+      void updateUserEmail(String newEmail) {
+        if (_loggedInUser != null) {
+          _loggedInUser!.person = Person(
+            fullName: _loggedInUser!.person.fullName,
+            dateOfBirth: _loggedInUser!.person.dateOfBirth,
+            email: newEmail,
+            nickname: _loggedInUser!.person.nickname,
+            address: _loggedInUser!.person.address,
+            profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
+          );
+          _saveUsers();
+          notifyListeners();
+        }
+      }
+
+      void updateUserNickname(String newNickname) {
+        if (_loggedInUser != null) {
+          _loggedInUser!.person = Person(
+            fullName: _loggedInUser!.person.fullName,
+            dateOfBirth: _loggedInUser!.person.dateOfBirth,
+            email: _loggedInUser!.person.email,
+            nickname: newNickname,
+            address: _loggedInUser!.person.address,
+            profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
+          );
+          _saveUsers();
+          notifyListeners();
+        }
+      }
+
+      void updateUserAddress(String newAddress) {
+        if (_loggedInUser != null) {
+          _loggedInUser!.person = Person(
+            fullName: _loggedInUser!.person.fullName,
+            dateOfBirth: _loggedInUser!.person.dateOfBirth,
+            email: _loggedInUser!.person.email,
+            nickname: _loggedInUser!.person.nickname,
+            address: newAddress,
+            profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
+          );
+          _saveUsers();
+          notifyListeners();
+        }
+      }
+
+      void updateUserDateOfBirth(DateTime newDateOfBirth) {
+        if (_loggedInUser != null) {
+          _loggedInUser!.person = Person(
+            fullName: _loggedInUser!.person.fullName,
+            dateOfBirth: newDateOfBirth,
+            email: _loggedInUser!.person.email,
+            nickname: _loggedInUser!.person.nickname,
+            address: _loggedInUser!.person.address,
+            profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
+          );
+          _saveUsers();
+          notifyListeners();
+        }
       }
     }
-  }
-
-  void deletePerson(Person person) {
-    if (_loggedInUser != null) {
-      _loggedInUser!.contacts.remove(person);
-      _saveUsers();
-      notifyListeners();
-    }
-  }
-
-  // USER PROFILE MANAGEMENT
-  void updateUserName(String newName) {
-    if (_loggedInUser != null) {
-      _loggedInUser!.person = Person(
-        fullName: newName,
-        dateOfBirth: _loggedInUser!.person.dateOfBirth,
-        email: _loggedInUser!.person.email,
-        nickname: _loggedInUser!.person.nickname,
-        address: _loggedInUser!.person.address,
-        profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
-      );
-      _saveUsers();
-      notifyListeners();
-    }
-  }
-
-  void updateUserEmail(String newEmail) {
-    if (_loggedInUser != null) {
-      _loggedInUser!.person = Person(
-        fullName: _loggedInUser!.person.fullName,
-        dateOfBirth: _loggedInUser!.person.dateOfBirth,
-        email: newEmail,
-        nickname: _loggedInUser!.person.nickname,
-        address: _loggedInUser!.person.address,
-        profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
-      );
-      _saveUsers();
-      notifyListeners();
-    }
-  }
-
-  void updateUserNickname(String newNickname) {
-    if (_loggedInUser != null) {
-      _loggedInUser!.person = Person(
-        fullName: _loggedInUser!.person.fullName,
-        dateOfBirth: _loggedInUser!.person.dateOfBirth,
-        email: _loggedInUser!.person.email,
-        nickname: newNickname,
-        address: _loggedInUser!.person.address,
-        profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
-      );
-      _saveUsers();
-      notifyListeners();
-    }
-  }
-
-  void updateUserAddress(String newAddress) {
-    if (_loggedInUser != null) {
-      _loggedInUser!.person = Person(
-        fullName: _loggedInUser!.person.fullName,
-        dateOfBirth: _loggedInUser!.person.dateOfBirth,
-        email: _loggedInUser!.person.email,
-        nickname: _loggedInUser!.person.nickname,
-        address: newAddress,
-        profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
-      );
-      _saveUsers();
-      notifyListeners();
-    }
-  }
-
-  void updateUserDateOfBirth(DateTime newDateOfBirth) {
-    if (_loggedInUser != null) {
-      _loggedInUser!.person = Person(
-        fullName: _loggedInUser!.person.fullName,
-        dateOfBirth: newDateOfBirth,
-        email: _loggedInUser!.person.email,
-        nickname: _loggedInUser!.person.nickname,
-        address: _loggedInUser!.person.address,
-        profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
-      );
-      _saveUsers();
-      notifyListeners();
-    }
+    _saveUsers();
+    notifyListeners();
   }
 }

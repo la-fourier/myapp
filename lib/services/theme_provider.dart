@@ -1,16 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-enum AppTheme {
-  purple,
-  green,
-  warm,
-}
+enum AppTheme { purple, green, warm }
 
-enum AppBorderRadius {
-  rounded,
-  squared,
-}
+enum AppBorderRadius { rounded, squared }
 
 class ThemeProvider extends ChangeNotifier {
   AppTheme _currentTheme = AppTheme.purple;
@@ -23,7 +16,8 @@ class ThemeProvider extends ChangeNotifier {
   bool get showQueryField => _showQueryField;
   AppBorderRadius get borderRadius => _borderRadius;
 
-  double get _radiusValue => _borderRadius == AppBorderRadius.rounded ? 12.0 : 4.0;
+  double get _radiusValue =>
+      _borderRadius == AppBorderRadius.rounded ? 12.0 : 4.0;
 
   ThemeData getTheme() {
     switch (_currentTheme) {
@@ -32,18 +26,26 @@ class ThemeProvider extends ChangeNotifier {
       case AppTheme.warm:
         return _buildWarmTheme();
       case AppTheme.purple:
-      default:
         return _buildPurpleTheme();
     }
   }
 
   ThemeData _buildPurpleTheme() {
-    final baseTheme = _themeMode == ThemeMode.light ? ThemeData.light() : ThemeData.dark();
+    final baseTheme = _themeMode == ThemeMode.light
+        ? ThemeData.light()
+        : ThemeData.dark();
     return baseTheme.copyWith(
       splashFactory: InkSparkle.splashFactory,
       textTheme: GoogleFonts.frederickaTheGreatTextTheme(baseTheme.textTheme),
-      primaryTextTheme: GoogleFonts.frederickaTheGreatTextTheme(baseTheme.primaryTextTheme),
-      colorScheme: ColorScheme.fromSeed(seedColor: Colors.purple, brightness: _themeMode == ThemeMode.light ? Brightness.light : Brightness.dark),
+      primaryTextTheme: GoogleFonts.frederickaTheGreatTextTheme(
+        baseTheme.primaryTextTheme,
+      ),
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.purple,
+        brightness: _themeMode == ThemeMode.light
+            ? Brightness.light
+            : Brightness.dark,
+      ),
       cardTheme: baseTheme.cardTheme.copyWith(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(_radiusValue),
@@ -72,12 +74,19 @@ class ThemeProvider extends ChangeNotifier {
   }
 
   ThemeData _buildGreenTheme() {
-    final baseTheme = _themeMode == ThemeMode.light ? ThemeData.light() : ThemeData.dark();
+    final baseTheme = _themeMode == ThemeMode.light
+        ? ThemeData.light()
+        : ThemeData.dark();
     return baseTheme.copyWith(
       splashFactory: InkSparkle.splashFactory,
       textTheme: GoogleFonts.latoTextTheme(baseTheme.textTheme),
       primaryTextTheme: GoogleFonts.latoTextTheme(baseTheme.primaryTextTheme),
-      colorScheme: ColorScheme.fromSeed(seedColor: Colors.green, brightness: _themeMode == ThemeMode.light ? Brightness.light : Brightness.dark),
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.green,
+        brightness: _themeMode == ThemeMode.light
+            ? Brightness.light
+            : Brightness.dark,
+      ),
       cardTheme: baseTheme.cardTheme.copyWith(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(_radiusValue),
@@ -100,21 +109,62 @@ class ThemeProvider extends ChangeNotifier {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(_radiusValue),
           ),
+        ),
+      ),
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(_radiusValue),
+          ),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(_radiusValue),
+        ),
+      ),
+      listTileTheme: baseTheme.listTileTheme.copyWith(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(_radiusValue),
+        ),
+      ),
+      tabBarTheme: baseTheme.tabBarTheme.copyWith(
+        indicator: BoxDecoration(
+          borderRadius: BorderRadius.circular(_radiusValue),
+          color: baseTheme.colorScheme.primary.withOpacity(0.2),
+        ),
+      ),
+      floatingActionButtonTheme: baseTheme.floatingActionButtonTheme.copyWith(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(_radiusValue),
         ),
       ),
     );
   }
 
   ThemeData _buildWarmTheme() {
-    final baseTheme = _themeMode == ThemeMode.light ? ThemeData.light() : ThemeData.dark();
+    final baseTheme = _themeMode == ThemeMode.light
+        ? ThemeData.light()
+        : ThemeData.dark();
     return baseTheme.copyWith(
       splashFactory: InkSparkle.splashFactory,
       textTheme: GoogleFonts.merriweatherTextTheme(baseTheme.textTheme),
-      primaryTextTheme: GoogleFonts.merriweatherTextTheme(baseTheme.primaryTextTheme),
-      colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFD2B48C), brightness: _themeMode == ThemeMode.light ? Brightness.light : Brightness.dark), // Tan
-      scaffoldBackgroundColor: _themeMode == ThemeMode.light ? const Color(0xFFF5F5DC) : baseTheme.scaffoldBackgroundColor, // Beige
+      primaryTextTheme: GoogleFonts.merriweatherTextTheme(
+        baseTheme.primaryTextTheme,
+      ),
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: const Color(0xFFD2B48C),
+        brightness: _themeMode == ThemeMode.light
+            ? Brightness.light
+            : Brightness.dark,
+      ), // Tan
+      scaffoldBackgroundColor: _themeMode == ThemeMode.light
+          ? const Color(0xFFF5F5DC)
+          : baseTheme.scaffoldBackgroundColor, // Beige
       cardTheme: baseTheme.cardTheme.copyWith(
-        color: _themeMode == ThemeMode.light ? const Color(0xFFFAF0E6) : baseTheme.cardTheme.color, // Linen
+        color: _themeMode == ThemeMode.light
+            ? const Color(0xFFFAF0E6)
+            : baseTheme.cardTheme.color, // Linen
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(_radiusValue),
         ),
@@ -133,7 +183,11 @@ class ThemeProvider extends ChangeNotifier {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: _themeMode == ThemeMode.light ? const Color(0xFFD2B48C) : baseTheme.elevatedButtonTheme.style?.backgroundColor!.resolve(<MaterialState>{}), // Tan
+          backgroundColor: _themeMode == ThemeMode.light
+              ? const Color(0xFFD2B48C)
+              : baseTheme.elevatedButtonTheme.style?.backgroundColor!.resolve(
+                  <MaterialState>{},
+                ), // Tan
           foregroundColor: Colors.black,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(_radiusValue),
@@ -149,7 +203,9 @@ class ThemeProvider extends ChangeNotifier {
   }
 
   void toggleThemeMode() {
-    _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    _themeMode = _themeMode == ThemeMode.light
+        ? ThemeMode.dark
+        : ThemeMode.light;
     notifyListeners();
   }
 
@@ -163,4 +219,3 @@ class ThemeProvider extends ChangeNotifier {
     notifyListeners();
   }
 }
-

@@ -71,10 +71,7 @@ class _EditableTextState extends State<EditableText> {
             _isEditing = true;
           });
         },
-        child: Text(
-          widget.initialText,
-          style: widget.style,
-        ),
+        child: Text(widget.initialText, style: widget.style),
       );
     }
   }

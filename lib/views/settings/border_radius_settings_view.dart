@@ -35,4 +35,3 @@ class BorderRadiusSettingsView extends StatelessWidget {
     );
   }
 }
-

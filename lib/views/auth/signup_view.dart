@@ -48,7 +48,10 @@ class _SignupViewState extends State<SignupView> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Text('Sign Up', style: Theme.of(context).textTheme.headlineMedium),
+                  Text(
+                    'Sign Up',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
                   const SizedBox(height: 20),
                   TextFormField(
                     keyboardType: TextInputType.emailAddress,
@@ -71,8 +74,9 @@ class _SignupViewState extends State<SignupView> {
                         icon: obscurePassword
                             ? const Icon(Icons.visibility_rounded)
                             : const Icon(Icons.visibility_off_rounded),
-                        tooltip:
-                            obscurePassword ? 'Show Password' : 'Hide Password',
+                        tooltip: obscurePassword
+                            ? 'Show Password'
+                            : 'Hide Password',
                         onPressed: () {
                           setState(() {
                             obscurePassword = !obscurePassword;

@@ -14,8 +14,8 @@ class Calendar {
           .toList(),
       trackedActivities: json['trackedActivities'] != null
           ? (json['trackedActivities'] as List)
-              .map((e) => TrackedActivity.fromJson(e))
-              .toList()
+                .map((e) => TrackedActivity.fromJson(e))
+                .toList()
           : [],
     );
   }

@@ -63,7 +63,7 @@ class _DashboardViewState extends State<DashboardView> {
             appState.addPerson(newPerson);
           } else {
             // Person model needs to implement == for this to work correctly
-            appState.updatePerson(person, newPerson);
+            appState.loggedInUser!.updatePerson(newPerson);
           }
         },
       ),
@@ -137,7 +137,9 @@ class _DashboardViewState extends State<DashboardView> {
                     });
                   }
                 },
-                items: dataSources.keys.map<DropdownMenuItem<String>>((String value) {
+                items: dataSources.keys.map<DropdownMenuItem<String>>((
+                  String value,
+                ) {
                   return DropdownMenuItem<String>(
                     value: value,
                     child: Text(dataSources[value]!['title']! as String),
@@ -165,7 +167,11 @@ class _DashboardViewState extends State<DashboardView> {
           Expanded(
             child: Card(
               elevation: 2,
-              child: _buildConfiguredDataCard(appState, _selectedDataSourceId, selectedSource['data']!),
+              child: _buildConfiguredDataCard(
+                appState,
+                _selectedDataSourceId,
+                selectedSource['data']!,
+              ),
             ),
           ),
         ],
@@ -192,15 +198,25 @@ class _DashboardViewState extends State<DashboardView> {
             SortableColumn(
               label: 'Date of Birth',
               getField: (item) => item.dateOfBirth,
-              cellBuilder: (item) => Text(item.dateOfBirth.toIso8601String().substring(0, 10)),
+              cellBuilder: (item) =>
+                  Text(item.dateOfBirth.toIso8601String().substring(0, 10)),
             ),
             SortableColumn(
               label: 'Actions',
               getField: (item) => '',
-              cellBuilder: (item) => Row(mainAxisSize: MainAxisSize.min, children: [
-                IconButton(icon: const Icon(Icons.edit), onPressed: () => _showPersonEditor(person: item)),
-                IconButton(icon: const Icon(Icons.delete), onPressed: () => appState.deletePerson(item)),
-              ]),
+              cellBuilder: (item) => Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () => _showPersonEditor(person: item),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () => appState.loggedInUser!.deleteContact(item),
+                  ),
+                ],
+              ),
             ),
           ],
         );
@@ -217,15 +233,25 @@ class _DashboardViewState extends State<DashboardView> {
             SortableColumn(
               label: 'Start Date',
               getField: (item) => item.start,
-              cellBuilder: (item) => Text(item.start.toIso8601String().substring(0, 10)),
+              cellBuilder: (item) =>
+                  Text(item.start.toIso8601String().substring(0, 10)),
             ),
             SortableColumn(
               label: 'Actions',
               getField: (item) => '',
-              cellBuilder: (item) => Row(mainAxisSize: MainAxisSize.min, children: [
-                IconButton(icon: const Icon(Icons.edit), onPressed: () => _showAppointmentEditor(appointment: item)),
-                IconButton(icon: const Icon(Icons.delete), onPressed: () => appState.deleteAppointment(item)),
-              ]),
+              cellBuilder: (item) => Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () => _showAppointmentEditor(appointment: item),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () => appState.deleteAppointment(item),
+                  ),
+                ],
+              ),
             ),
           ],
         );
@@ -247,10 +273,19 @@ class _DashboardViewState extends State<DashboardView> {
             SortableColumn(
               label: 'Actions',
               getField: (item) => '',
-              cellBuilder: (item) => Row(mainAxisSize: MainAxisSize.min, children: [
-                IconButton(icon: const Icon(Icons.edit), onPressed: () => _showCategoryEditor(category: item)),
-                IconButton(icon: const Icon(Icons.delete), onPressed: () => appState.deleteCustomCategory(item)),
-              ]),
+              cellBuilder: (item) => Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () => _showCategoryEditor(category: item),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () => appState.deleteCustomCategory(item),
+                  ),
+                ],
+              ),
             ),
           ],
         );
@@ -272,17 +307,22 @@ class _DashboardViewState extends State<DashboardView> {
             SortableColumn(
               label: 'Start Time',
               getField: (item) => item.startTime,
-              cellBuilder: (item) => Text(item.startTime.toIso8601String().substring(11, 16)),
+              cellBuilder: (item) =>
+                  Text(item.startTime.toIso8601String().substring(11, 16)),
             ),
             SortableColumn(
               label: 'End Time',
               getField: (item) => item.endTime,
-              cellBuilder: (item) => Text(item.endTime.toIso8601String().substring(11, 16)),
+              cellBuilder: (item) =>
+                  Text(item.endTime.toIso8601String().substring(11, 16)),
             ),
             SortableColumn(
               label: 'Duration (Mins)',
-              getField: (item) => item.endTime.difference(item.startTime).inMinutes,
-              cellBuilder: (item) => Text(item.endTime.difference(item.startTime).inMinutes.toString()),
+              getField: (item) =>
+                  item.endTime.difference(item.startTime).inMinutes,
+              cellBuilder: (item) => Text(
+                item.endTime.difference(item.startTime).inMinutes.toString(),
+              ),
             ),
           ],
         );

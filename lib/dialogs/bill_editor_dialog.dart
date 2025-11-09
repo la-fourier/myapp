@@ -38,7 +38,9 @@ class _BillEditorDialogState extends State<BillEditorDialog> {
     } else {
       _vendor = '';
       _date = DateTime.now();
-      _category = _categories.isNotEmpty ? _categories.first : Category(name: 'Default', color: Colors.grey);
+      _category = _categories.isNotEmpty
+          ? _categories.first
+          : Category(name: 'Default', color: Colors.grey);
       _items = [LineItem(description: '', amount: 0.0)];
     }
   }
@@ -84,13 +86,16 @@ class _BillEditorDialogState extends State<BillEditorDialog> {
               TextFormField(
                 initialValue: _vendor,
                 decoration: const InputDecoration(labelText: 'Vendor'),
-                validator: (value) => value!.isEmpty ? 'Please enter a vendor' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'Please enter a vendor' : null,
                 onSaved: (value) => _vendor = value!,
               ),
               const SizedBox(height: 20),
               Row(
                 children: [
-                  Expanded(child: Text('Date: ${DateFormat.yMd().format(_date)}')),
+                  Expanded(
+                    child: Text('Date: ${DateFormat.yMd().format(_date)}'),
+                  ),
                   IconButton(
                     icon: const Icon(Icons.calendar_today),
                     onPressed: () async {
@@ -126,7 +131,10 @@ class _BillEditorDialogState extends State<BillEditorDialog> {
                   decoration: const InputDecoration(labelText: 'Category'),
                 ),
               const Divider(height: 30),
-              Text('Line Items', style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                'Line Items',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               ..._items.asMap().entries.map((entry) {
                 int index = entry.key;
                 LineItem item = entry.value;
@@ -135,8 +143,13 @@ class _BillEditorDialogState extends State<BillEditorDialog> {
                     Expanded(
                       child: TextFormField(
                         initialValue: item.description,
-                        decoration: const InputDecoration(labelText: 'Description'),
-                        onChanged: (value) => _items[index] = LineItem(description: value, amount: item.amount),
+                        decoration: const InputDecoration(
+                          labelText: 'Description',
+                        ),
+                        onChanged: (value) => _items[index] = LineItem(
+                          description: value,
+                          amount: item.amount,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -146,7 +159,10 @@ class _BillEditorDialogState extends State<BillEditorDialog> {
                         initialValue: item.amount.toString(),
                         decoration: const InputDecoration(labelText: 'Amount'),
                         keyboardType: TextInputType.number,
-                        onChanged: (value) => _items[index] = LineItem(description: item.description, amount: double.tryParse(value) ?? 0.0),
+                        onChanged: (value) => _items[index] = LineItem(
+                          description: item.description,
+                          amount: double.tryParse(value) ?? 0.0,
+                        ),
                       ),
                     ),
                     IconButton(
@@ -170,10 +186,7 @@ class _BillEditorDialogState extends State<BillEditorDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Cancel'),
         ),
-        ElevatedButton(
-          onPressed: _saveForm,
-          child: const Text('Save'),
-        ),
+        ElevatedButton(onPressed: _saveForm, child: const Text('Save')),
       ],
     );
   }

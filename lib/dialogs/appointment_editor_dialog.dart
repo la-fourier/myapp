@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:myapp/models/calendar/appointment.dart';
-import 'package:myapp/models/calendar/category.dart';
-import 'package:myapp/models/finance/attachment.dart';
 import 'package:myapp/services/app_state.dart';
+import 'package:myapp/models/calendar/appointment.dart';
+import 'package:myapp/models/finance/attachment.dart';
+import 'package:myapp/models/calendar/category.dart';
+import 'package:myapp/dialogs/bill_editor_dialog.dart';
+import 'package:myapp/models/finance/bill.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/widgets/editable_text.dart' as editable_text;
 
@@ -13,10 +15,16 @@ class AppointmentEditorDialog extends StatefulWidget {
   final Function(Appointment) onSave;
   final DateTime? startTime;
 
-  const AppointmentEditorDialog({super.key, this.appointment, required this.onSave, this.startTime});
+  const AppointmentEditorDialog({
+    super.key,
+    this.appointment,
+    required this.onSave,
+    this.startTime,
+  });
 
   @override
-  State<AppointmentEditorDialog> createState() => _AppointmentEditorDialogState();
+  State<AppointmentEditorDialog> createState() =>
+      _AppointmentEditorDialogState();
 }
 
 class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
@@ -53,10 +61,14 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
       _title = '';
       _description = '';
       _startDate = widget.startTime ?? DateTime.now();
-      _endDate = (widget.startTime ?? DateTime.now()).add(const Duration(hours: 1));
+      _endDate = (widget.startTime ?? DateTime.now()).add(
+        const Duration(hours: 1),
+      );
       _startTime = TimeOfDay.fromDateTime(_startDate);
       _endTime = TimeOfDay.fromDateTime(_endDate);
-      _category = _categories.isNotEmpty ? _categories.first : Category(name: 'Default', color: Colors.blue);
+      _category = _categories.isNotEmpty
+          ? _categories.first
+          : Category(name: 'Default', color: Colors.blue);
       _attachments = [];
     }
     _rawTextController.text = _appointmentToJson();
@@ -66,8 +78,20 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
     final data = {
       'title': _title,
       'description': _description,
-      'start': DateTime(_startDate.year, _startDate.month, _startDate.day, _startTime.hour, _startTime.minute).toIso8601String(),
-      'end': DateTime(_endDate.year, _endDate.month, _endDate.day, _endTime.hour, _endTime.minute).toIso8601String(),
+      'start': DateTime(
+        _startDate.year,
+        _startDate.month,
+        _startDate.day,
+        _startTime.hour,
+        _startTime.minute,
+      ).toIso8601String(),
+      'end': DateTime(
+        _endDate.year,
+        _endDate.month,
+        _endDate.day,
+        _endTime.hour,
+        _endTime.minute,
+      ).toIso8601String(),
       'category': _category.toJson(),
       // Attachments are not handled in raw edit mode for now
     };
@@ -169,7 +193,11 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(widget.appointment == null ? 'Create Appointment' : 'Edit Appointment'),
+          Text(
+            widget.appointment == null
+                ? 'Create Appointment'
+                : 'Edit Appointment',
+          ),
           IconButton(
             icon: Icon(_isRawEditMode ? Icons.notes : Icons.code),
             onPressed: () {
@@ -204,12 +232,15 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                     TextFormField(
                       initialValue: _title,
                       decoration: const InputDecoration(labelText: 'Title'),
-                      validator: (value) => value!.isEmpty ? 'Please enter a title' : null,
+                      validator: (value) =>
+                          value!.isEmpty ? 'Please enter a title' : null,
                       onSaved: (value) => _title = value!,
                     ),
                     TextFormField(
                       initialValue: _description,
-                      decoration: const InputDecoration(labelText: 'Description'),
+                      decoration: const InputDecoration(
+                        labelText: 'Description',
+                      ),
                       onSaved: (value) => _description = value ?? '',
                     ),
                     if (_categories.isNotEmpty)
@@ -226,18 +257,23 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                             _category = newValue!;
                           });
                         },
-                        decoration: const InputDecoration(labelText: 'Category'),
+                        decoration: const InputDecoration(
+                          labelText: 'Category',
+                        ),
                       ),
                     const SizedBox(height: 20),
                     Row(
                       children: [
                         Expanded(
                           child: editable_text.EditableText(
-                            initialText: 'Start: ${DateFormat.yMd().format(_startDate)}',
+                            initialText:
+                                'Start: ${DateFormat.yMd().format(_startDate)}',
                             style: Theme.of(context).textTheme.bodyLarge!,
                             onSave: (value) {
                               try {
-                                final newDate = DateFormat.yMd().parse(value.replaceFirst('Start: ', ''));
+                                final newDate = DateFormat.yMd().parse(
+                                  value.replaceFirst('Start: ', ''),
+                                );
                                 setState(() {
                                   _startDate = newDate;
                                 });
@@ -257,12 +293,17 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                       children: [
                         Expanded(
                           child: editable_text.EditableText(
-                            initialText: 'Start Time: ${_startTime.format(context)}',
+                            initialText:
+                                'Start Time: ${_startTime.format(context)}',
                             style: Theme.of(context).textTheme.bodyLarge!,
                             onSave: (value) {
                               try {
                                 final newTime = TimeOfDay(
-                                  hour: int.parse(value.split(':')[0].replaceFirst('Start Time: ', '')),
+                                  hour: int.parse(
+                                    value
+                                        .split(':')[0]
+                                        .replaceFirst('Start Time: ', ''),
+                                  ),
                                   minute: int.parse(value.split(':')[1]),
                                 );
                                 setState(() {
@@ -285,11 +326,14 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                       children: [
                         Expanded(
                           child: editable_text.EditableText(
-                            initialText: 'End: ${DateFormat.yMd().format(_endDate)}',
+                            initialText:
+                                'End: ${DateFormat.yMd().format(_endDate)}',
                             style: Theme.of(context).textTheme.bodyLarge!,
                             onSave: (value) {
                               try {
-                                final newDate = DateFormat.yMd().parse(value.replaceFirst('End: ', ''));
+                                final newDate = DateFormat.yMd().parse(
+                                  value.replaceFirst('End: ', ''),
+                                );
                                 setState(() {
                                   _endDate = newDate;
                                 });
@@ -309,12 +353,17 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                       children: [
                         Expanded(
                           child: editable_text.EditableText(
-                            initialText: 'End Time: ${_endTime.format(context)}',
+                            initialText:
+                                'End Time: ${_endTime.format(context)}',
                             style: Theme.of(context).textTheme.bodyLarge!,
                             onSave: (value) {
                               try {
                                 final newTime = TimeOfDay(
-                                  hour: int.parse(value.split(':')[0].replaceFirst('End Time: ', '')),
+                                  hour: int.parse(
+                                    value
+                                        .split(':')[0]
+                                        .replaceFirst('End Time: ', ''),
+                                  ),
                                   minute: int.parse(value.split(':')[1]),
                                 );
                                 setState(() {
@@ -336,17 +385,36 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Attachments', style: Theme.of(context).textTheme.titleMedium),
-                        ..._attachments.map((attachment) => ListTile(
-                              leading: const Icon(Icons.receipt),
-                              title: Text(attachment.name),
-                              subtitle: Text(attachment.type),
-                            )),
+                        Text(
+                          'Attachments',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        ..._attachments.map(
+                          (attachment) => ListTile(
+                            leading: const Icon(Icons.receipt),
+                            title: Text(attachment.name),
+                            subtitle: Text(attachment.type),
+                          ),
+                        ),
                         TextButton.icon(
                           icon: const Icon(Icons.add),
                           label: const Text('Add Attachment'),
                           onPressed: () {
-                            // TODO: Implement attachment selection/creation
+                            showDialog(
+                              context: context,
+                              builder: (context) => BillEditorDialog(
+                                onSave: (bill) {
+                                  setState(() {
+                                    _attachments.add(bill);
+                                  });
+                                  // Also add the bill to the user's main list of bills
+                                  Provider.of<AppState>(
+                                    context,
+                                    listen: false,
+                                  ).addBill(bill);
+                                },
+                              ),
+                            );
                           },
                         ),
                       ],
@@ -360,10 +428,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Cancel'),
         ),
-        ElevatedButton(
-          onPressed: _saveForm,
-          child: const Text('Save'),
-        ),
+        ElevatedButton(onPressed: _saveForm, child: const Text('Save')),
       ],
     );
   }

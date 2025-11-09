@@ -19,7 +19,8 @@ class GitHubService {
     final callbackUrlScheme = kIsWeb ? 'app' : 'myapp';
 
     final result = await FlutterWebAuth2.authenticate(
-      url: 'https://github.com/login/oauth/authorize?client_id=$clientId&scope=gist',
+      url:
+          'https://github.com/login/oauth/authorize?client_id=$clientId&scope=gist',
       callbackUrlScheme: callbackUrlScheme,
     );
 
@@ -57,7 +58,10 @@ class GitHubService {
     );
   }
 
-  Future<Map<String, dynamic>?> downloadJson(String gistId, String fileName) async {
+  Future<Map<String, dynamic>?> downloadJson(
+    String gistId,
+    String fileName,
+  ) async {
     if (_accessToken == null) throw Exception("Not connected to GitHub");
 
     final response = await http.get(

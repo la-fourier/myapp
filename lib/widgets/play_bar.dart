@@ -23,7 +23,8 @@ class _PlayBarState extends State<PlayBar> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final appState = Provider.of<AppState>(context);
-    if (appState.currentlyTracking != null && (_timer == null || !_timer!.isActive)) {
+    if (appState.currentlyTracking != null &&
+        (_timer == null || !_timer!.isActive)) {
       _startTimer(appState.trackingStartTime);
     } else if (appState.currentlyTracking == null) {
       _timer?.cancel();
@@ -75,7 +76,10 @@ class _PlayBarState extends State<PlayBar> {
     return Consumer<AppState>(
       builder: (context, appState, child) {
         final isPlaying = appState.currentlyTracking != null;
-        final activityName = appState.currentlyTracking?.name ?? appState.selectedActivity?.name ?? 'No activity selected';
+        final activityName =
+            appState.currentlyTracking?.name ??
+            appState.selectedActivity?.name ??
+            'No activity selected';
 
         if (widget.viewType == PlayBarViewType.compact) {
           return FloatingActionButton(
@@ -103,7 +107,12 @@ class _PlayBarState extends State<PlayBar> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
-                icon: Icon(isPlaying ? Icons.stop_circle_outlined : Icons.play_circle_outline, color: isPlaying ? Colors.redAccent : Colors.greenAccent),
+                icon: Icon(
+                  isPlaying
+                      ? Icons.stop_circle_outlined
+                      : Icons.play_circle_outline,
+                  color: isPlaying ? Colors.redAccent : Colors.greenAccent,
+                ),
                 iconSize: 24,
                 onPressed: () {
                   if (isPlaying) {
@@ -122,13 +131,19 @@ class _PlayBarState extends State<PlayBar> {
                   children: [
                     Text(
                       activityName,
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
                       overflow: TextOverflow.ellipsis,
                     ),
                     if (isPlaying)
                       Text(
                         _formatDuration(_duration),
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
                       ),
                   ],
                 ),
@@ -150,7 +165,8 @@ class _ActivitySelectionDialog extends StatefulWidget {
   const _ActivitySelectionDialog();
 
   @override
-  State<_ActivitySelectionDialog> createState() => _ActivitySelectionDialogState();
+  State<_ActivitySelectionDialog> createState() =>
+      _ActivitySelectionDialogState();
 }
 
 class _ActivitySelectionDialogState extends State<_ActivitySelectionDialog> {
@@ -166,9 +182,8 @@ class _ActivitySelectionDialogState extends State<_ActivitySelectionDialog> {
     final now = DateTime.now();
     Appointment? currentAppointment;
     try {
-      currentAppointment = appState.loggedInUser?.calendar.appointments.firstWhere(
-        (app) => now.isAfter(app.start) && now.isBefore(app.end),
-      );
+      currentAppointment = appState.loggedInUser?.calendar.appointments
+          .firstWhere((app) => now.isAfter(app.start) && now.isBefore(app.end));
     } catch (e) {
       currentAppointment = null;
     }
@@ -176,12 +191,15 @@ class _ActivitySelectionDialogState extends State<_ActivitySelectionDialog> {
         ? SelectableActivity(
             name: currentAppointment.title,
             category: currentAppointment.category,
-            original: currentAppointment)
+            original: currentAppointment,
+          )
         : null;
 
     final filteredActivities = _selectedCategory == null
         ? activities
-        : activities.where((a) => a.category.name == _selectedCategory!.name).toList();
+        : activities
+              .where((a) => a.category.name == _selectedCategory!.name)
+              .toList();
 
     return AlertDialog(
       title: Row(
@@ -190,7 +208,9 @@ class _ActivitySelectionDialogState extends State<_ActivitySelectionDialog> {
           DropdownButton<Category>(
             hint: const Text("Category"),
             value: _selectedCategory,
-            items: categories.map((c) => DropdownMenuItem(value: c, child: Text(c.name))).toList(),
+            items: categories
+                .map((c) => DropdownMenuItem(value: c, child: Text(c.name)))
+                .toList(),
             onChanged: (cat) {
               setState(() {
                 _selectedCategory = cat;

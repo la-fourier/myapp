@@ -59,14 +59,18 @@ class _DataCardState<T> extends State<DataCard<T>> {
       });
     }
     if (widget.columns != oldWidget.columns) {
-       setState(() {
+      setState(() {
         _columnVisibility = {for (var col in widget.columns) col.label: true};
         _orderedColumns = List.from(widget.columns);
-       });
+      });
     }
   }
 
-  void _sort(Comparable Function(T item) getField, int columnIndex, bool ascending) {
+  void _sort(
+    Comparable Function(T item) getField,
+    int columnIndex,
+    bool ascending,
+  ) {
     _sortedData.sort((a, b) {
       final aValue = getField(a);
       final bValue = getField(b);
@@ -82,7 +86,9 @@ class _DataCardState<T> extends State<DataCard<T>> {
 
   @override
   Widget build(BuildContext context) {
-    final visibleColumns = _orderedColumns.where((c) => _columnVisibility[c.label] ?? true).toList();
+    final visibleColumns = _orderedColumns
+        .where((c) => _columnVisibility[c.label] ?? true)
+        .toList();
 
     List<T> filteredData = _sortedData;
     if (widget.filterText != null && widget.filterText!.isNotEmpty) {
@@ -103,7 +109,9 @@ class _DataCardState<T> extends State<DataCard<T>> {
               if (item.toString().toLowerCase().contains(filter)) {
                 return true;
               }
-            } catch (e) { /* ignore */ }
+            } catch (e) {
+              /* ignore */
+            }
           }
         }
         return false;
@@ -153,7 +161,9 @@ class _DataCardState<T> extends State<DataCard<T>> {
                             elevation: 4.0,
                             child: Container(
                               padding: const EdgeInsets.all(8.0),
-                              color: Theme.of(context).colorScheme.surfaceVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.surfaceVariant,
                               child: Text(column.label),
                             ),
                           ),
@@ -163,7 +173,9 @@ class _DataCardState<T> extends State<DataCard<T>> {
                       onWillAccept: (data) => data != null,
                       onAccept: (draggedColumn) {
                         setState(() {
-                          final draggedIndex = _orderedColumns.indexOf(draggedColumn);
+                          final draggedIndex = _orderedColumns.indexOf(
+                            draggedColumn,
+                          );
                           final targetIndex = _orderedColumns.indexOf(column);
                           if (draggedIndex != -1 && targetIndex != -1) {
                             final item = _orderedColumns.removeAt(draggedIndex);
@@ -175,7 +187,11 @@ class _DataCardState<T> extends State<DataCard<T>> {
                     tooltip: column.tooltip,
                     numeric: column.numeric,
                     onSort: (columnIndex, ascending) {
-                      _sort(column.getField, visibleColumns.indexOf(column), ascending);
+                      _sort(
+                        column.getField,
+                        visibleColumns.indexOf(column),
+                        ascending,
+                      );
                     },
                   );
                 }).toList(),

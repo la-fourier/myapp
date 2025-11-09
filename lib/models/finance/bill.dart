@@ -8,17 +8,11 @@ class LineItem {
   LineItem({required this.description, required this.amount});
 
   factory LineItem.fromJson(Map<String, dynamic> json) {
-    return LineItem(
-      description: json['description'],
-      amount: json['amount'],
-    );
+    return LineItem(description: json['description'], amount: json['amount']);
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'description': description,
-      'amount': amount,
-    };
+    return {'description': description, 'amount': amount};
   }
 }
 
@@ -46,7 +40,9 @@ class Bill implements Attachment {
   factory Bill.fromJson(Map<String, dynamic> json) {
     return Bill(
       vendor: json['vendor'],
-      items: (json['items'] as List).map((item) => LineItem.fromJson(item)).toList(),
+      items: (json['items'] as List)
+          .map((item) => LineItem.fromJson(item))
+          .toList(),
       date: DateTime.parse(json['date']),
       category: Category.fromJson(json['category']),
     );
@@ -62,4 +58,3 @@ class Bill implements Attachment {
     };
   }
 }
-

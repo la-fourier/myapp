@@ -17,8 +17,16 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
   late Color _selectedColor;
 
   final List<Color> _availableColors = [
-    Colors.blue, Colors.green, Colors.red, Colors.orange, Colors.purple,
-    Colors.pink, Colors.teal, Colors.indigo, Colors.amber, Colors.brown,
+    Colors.blue,
+    Colors.green,
+    Colors.red,
+    Colors.orange,
+    Colors.purple,
+    Colors.pink,
+    Colors.teal,
+    Colors.indigo,
+    Colors.amber,
+    Colors.brown,
   ];
 
   bool _isRawEditMode = false;
@@ -27,16 +35,15 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.category?.name ?? 'Your new category');
+    _nameController = TextEditingController(
+      text: widget.category?.name ?? 'Your new category',
+    );
     _selectedColor = widget.category?.color ?? _availableColors.first;
     _rawTextController.text = _categoryToJson();
   }
 
   String _categoryToJson() {
-    final data = {
-      'name': _nameController.text,
-      'color': _selectedColor.value,
-    };
+    final data = {'name': _nameController.text, 'color': _selectedColor.value};
     return const JsonEncoder.withIndent('  ').convert(data);
   }
 

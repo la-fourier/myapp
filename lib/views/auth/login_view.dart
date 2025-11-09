@@ -27,7 +27,9 @@ class _LoginViewState extends State<LoginView> {
       if (!success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Invalid credentials. Use test@debug.com / debug123 for testing.'),
+            content: Text(
+              'Invalid credentials. Use test@debug.com / debug123 for testing.',
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -49,7 +51,10 @@ class _LoginViewState extends State<LoginView> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Text('Login', style: Theme.of(context).textTheme.headlineMedium),
+                  Text(
+                    'Login',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
                   const SizedBox(height: 20),
                   TextFormField(
                     keyboardType: TextInputType.emailAddress,
@@ -67,28 +72,30 @@ class _LoginViewState extends State<LoginView> {
                     children: [
                       Expanded(
                         child: TextFormField(
-                      controller: _passwordController,
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            obscurePassword ? Icons.visibility : Icons.visibility_off,
+                          controller: _passwordController,
+                          decoration: InputDecoration(
+                            labelText: 'Password',
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                obscurePassword
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  obscurePassword = !obscurePassword;
+                                });
+                              },
+                            ),
                           ),
-                          onPressed: () {
-                            setState(() {
-                              obscurePassword = !obscurePassword;
-                            });
+                          obscureText: obscurePassword,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your password';
+                            }
+                            return null;
                           },
                         ),
-                      ),
-                      obscureText: obscurePassword,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your password';
-                        }
-                        return null;
-                      },
-                    ),
                       ),
                     ],
                   ),
@@ -105,37 +112,39 @@ class _LoginViewState extends State<LoginView> {
                           Navigator.of(context).pushNamed('/signup');
                         },
                         child: const Text('Sign Up'),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.info_outline_rounded),
-                    tooltip: 'Info',
-                    onPressed: () {
-                      setState(() {
-                        showInfoDialog = true;
-                      });
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: const Text('Test Account Info'),
-                            content: const Text('Use test@debug.com / debug123 for testing.'),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                  setState(() {
-                                    showInfoDialog = false;
-                                  });
-                                },
-                                child: const Text('Close'),
-                              ),
-                            ],
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.info_outline_rounded),
+                        tooltip: 'Info',
+                        onPressed: () {
+                          setState(() {
+                            showInfoDialog = true;
+                          });
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: const Text('Test Account Info'),
+                                content: const Text(
+                                  'Use test@debug.com / debug123 for testing.',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                      setState(() {
+                                        showInfoDialog = false;
+                                      });
+                                    },
+                                    child: const Text('Close'),
+                                  ),
+                                ],
+                              );
+                            },
                           );
                         },
-                      );
-                    },
-                  ),
-                  ],
+                      ),
+                    ],
                   ),
                 ],
               ),

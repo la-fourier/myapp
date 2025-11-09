@@ -7,6 +7,7 @@ import 'package:myapp/backend_integrations/github.dart';
 import 'package:myapp/backend_integrations/google.dart';
 import 'package:myapp/services/loading_service.dart';
 import 'package:myapp/models/user.dart';
+import 'package:myapp/models/person.dart';
 
 class AccountView extends StatelessWidget {
   final ScrollController? scrollController;
@@ -36,7 +37,7 @@ class AccountView extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.close),
                   onPressed: () => Navigator.of(context).pop(),
-                )
+                ),
               ],
               bottom: PreferredSize(
                 preferredSize: const Size.fromHeight(kToolbarHeight),
@@ -69,7 +70,11 @@ class AccountView extends StatelessWidget {
   Widget _buildProfilePage(BuildContext context, AppState appState, User user) {
     final person = user.person;
 
-    void showEditDialog(String title, String initialValue, Function(String) onSave) {
+    void showEditDialog(
+      String title,
+      String initialValue,
+      Function(String) onSave,
+    ) {
       final controller = TextEditingController(text: initialValue);
       showDialog(
         context: context,
@@ -78,12 +83,17 @@ class AccountView extends StatelessWidget {
             title: Text(title),
             content: TextField(controller: controller, autofocus: true),
             actions: [
-              TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
               ElevatedButton(
                 onPressed: () {
                   onSave(controller.text);
                   Navigator.of(context).pop();
-                  Fluttertoast.showToast(msg: "${title.split(' ').last} updated.");
+                  Fluttertoast.showToast(
+                    msg: "${title.split(' ').last} updated.",
+                  );
                 },
                 child: const Text('Save'),
               ),
@@ -101,7 +111,16 @@ class AccountView extends StatelessWidget {
         lastDate: DateTime.now(),
       );
       if (newDate != null) {
-        appState.updateUserDateOfBirth(newDate);
+        appState.loggedInUser!.updatePerson(
+          Person(
+            fullName: person.fullName,
+            dateOfBirth: newDate,
+            nickname: person.nickname,
+            profilePictureUrl: person.profilePictureUrl,
+            address: person.address,
+            email: person.email,
+          ),
+        );
         Fluttertoast.showToast(msg: "Birthday updated.");
       }
     }
@@ -111,17 +130,79 @@ class AccountView extends StatelessWidget {
       child: Column(
         children: [
           GestureDetector(
-            onTap: () => Fluttertoast.showToast(msg: "Changing profile picture is not yet implemented."),
+            onTap: () => Fluttertoast.showToast(
+              msg: "Changing profile picture is not yet implemented.",
+            ),
             child: const CircleAvatar(
               radius: 50,
               child: Icon(Icons.camera_alt, size: 30),
             ),
           ),
           const SizedBox(height: 24),
-          _buildEditableRow(context, 'Name', person.fullName, (newValue) => appState.updateUserName(newValue), showEditDialog),
-          _buildEditableRow(context, 'Nickname', person.nickname ?? 'N/A', (newValue) => appState.updateUserNickname(newValue), showEditDialog),
-          _buildEditableRow(context, 'Email', person.email ?? 'N/A', (newValue) => appState.updateUserEmail(newValue), showEditDialog),
-          _buildEditableRow(context, 'Address', person.address ?? 'N/A', (newValue) => appState.updateUserAddress(newValue), showEditDialog),
+          _buildEditableRow(
+            context,
+            'Name',
+            person.fullName,
+            (newValue) => appState.loggedInUser!.updatePerson(
+              Person(
+                fullName: newValue,
+                dateOfBirth: person.dateOfBirth,
+                nickname: person.nickname,
+                profilePictureUrl: person.profilePictureUrl,
+                address: person.address,
+                email: person.email,
+              ),
+            ),
+            showEditDialog,
+          ),
+          _buildEditableRow(
+            context,
+            'Nickname',
+            person.nickname ?? 'N/A',
+            (newValue) => appState.loggedInUser!.updatePerson(
+              Person(
+                fullName: person.fullName,
+                dateOfBirth: person.dateOfBirth,
+                nickname: newValue,
+                profilePictureUrl: person.profilePictureUrl,
+                address: person.address,
+                email: person.email,
+              ),
+            ),
+            showEditDialog,
+          ),
+          _buildEditableRow(
+            context,
+            'Email',
+            person.email ?? 'N/A',
+            (newValue) => appState.loggedInUser!.updatePerson(
+              Person(
+                fullName: person.fullName,
+                dateOfBirth: person.dateOfBirth,
+                nickname: person.nickname,
+                profilePictureUrl: person.profilePictureUrl,
+                address: person.address,
+                email: newValue,
+              ),
+            ),
+            showEditDialog,
+          ),
+          _buildEditableRow(
+            context,
+            'Address',
+            person.address ?? 'N/A',
+            (newValue) => appState.loggedInUser!.updatePerson(
+              Person(
+                fullName: person.fullName,
+                dateOfBirth: person.dateOfBirth,
+                nickname: person.nickname,
+                profilePictureUrl: person.profilePictureUrl,
+                address: newValue,
+                email: person.email,
+              ),
+            ),
+            showEditDialog,
+          ),
           _buildDateRow(context, 'Birthday', person.dateOfBirth, pickDate),
           const SizedBox(height: 24),
           ListTile(
@@ -140,12 +221,24 @@ class AccountView extends StatelessWidget {
     );
   }
 
-  Widget _buildEditableRow(BuildContext context, String label, String value, Function(String) onSave, Function(String, String, Function(String)) showEditDialog) {
+  Widget _buildEditableRow(
+    BuildContext context,
+    String label,
+    String value,
+    Function(String) onSave,
+    Function(String, String, Function(String)) showEditDialog,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: [
-          SizedBox(width: 80, child: Text(label, style: const TextStyle(fontWeight: FontWeight.bold))),
+          SizedBox(
+            width: 80,
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
           Expanded(child: Text(value)),
           IconButton(
             icon: const Icon(Icons.edit, size: 20),
@@ -156,12 +249,23 @@ class AccountView extends StatelessWidget {
     );
   }
 
-  Widget _buildDateRow(BuildContext context, String label, DateTime value, Future<void> Function(BuildContext) pickDate) {
+  Widget _buildDateRow(
+    BuildContext context,
+    String label,
+    DateTime value,
+    Future<void> Function(BuildContext) pickDate,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: [
-          SizedBox(width: 80, child: Text(label, style: const TextStyle(fontWeight: FontWeight.bold))),
+          SizedBox(
+            width: 80,
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
           Expanded(child: Text(DateFormat.yMMMd().format(value))),
           IconButton(
             icon: const Icon(Icons.edit, size: 20),
@@ -185,9 +289,13 @@ class AccountView extends StatelessWidget {
               loadingService.show();
               try {
                 await GoogleDriveService().connect();
-                Fluttertoast.showToast(msg: "Successfully connected to Google Drive");
+                Fluttertoast.showToast(
+                  msg: "Successfully connected to Google Drive",
+                );
               } catch (e) {
-                Fluttertoast.showToast(msg: "Failed to connect to Google Drive: ${e.toString()}");
+                Fluttertoast.showToast(
+                  msg: "Failed to connect to Google Drive: ${e.toString()}",
+                );
               } finally {
                 loadingService.hide();
               }
@@ -207,7 +315,9 @@ class AccountView extends StatelessWidget {
                 await GitHubService().connect();
                 Fluttertoast.showToast(msg: "Successfully connected to GitHub");
               } catch (e) {
-                Fluttertoast.showToast(msg: "Failed to connect to GitHub: ${e.toString()}");
+                Fluttertoast.showToast(
+                  msg: "Failed to connect to GitHub: ${e.toString()}",
+                );
               } finally {
                 loadingService.hide();
               }
