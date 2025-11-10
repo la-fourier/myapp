@@ -109,6 +109,10 @@ class _WeekViewState extends State<WeekView> {
       7,
       (index) => _currentWeek.add(Duration(days: index)),
     );
+    final weekDays = List.generate(
+      7,
+      (index) => _currentWeek.add(Duration(days: index)),
+    );
 
     const double hourHeight = 60.0;
     const double timeColWidth = 50.0;
@@ -123,6 +127,57 @@ class _WeekViewState extends State<WeekView> {
             Expanded(
               child: SingleChildScrollView(
                 child: MouseRegion(
+                  onHover: (event) =>
+                      setState(() => _hoverPosition = event.localPosition),
+                  onExit: (event) =>
+                      setState(() => _hoverPosition = Offset.zero),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final dayWidth =
+                          (constraints.maxWidth - timeColWidth) / 7;
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() => _hoverPosition = Offset.zero);
+                        },
+                        onDoubleTapDown: (details) {
+                          final hoverTime = _calculateHoverTime(
+                            details.localPosition,
+                            dayWidth,
+                            weekDays,
+                            hourHeight,
+                            timeColWidth,
+                          );
+                          if (hoverTime != null) {
+                            _showAppointmentEditor(hoverTime);
+                          }
+                        },
+                        child: Stack(
+                          children: [
+                            _buildTimeGrid(hourHeight, timeColWidth),
+                            ..._buildAppointments(
+                              appointments,
+                              dayWidth,
+                              hourHeight,
+                              timeColWidth,
+                            ),
+                            if (_hoverPosition != Offset.zero) ...[
+                              _buildHoverIndicator(
+                                dayWidth,
+                                hourHeight,
+                                timeColWidth,
+                                weekDays,
+                              ),
+                            ],
+                            _buildCurrentTimeIndicator(
+                              dayWidth,
+                              hourHeight,
+                              timeColWidth,
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                   onHover: (event) =>
                       setState(() => _hoverPosition = event.localPosition),
                   onExit: (event) =>
@@ -202,6 +257,18 @@ class _WeekViewState extends State<WeekView> {
             icon: Icon(Icons.chevron_right, color: arrowColor),
             onPressed: _nextWeek,
           ),
+          IconButton(
+            icon: Icon(Icons.chevron_left, color: arrowColor),
+            onPressed: _previousWeek,
+          ),
+          Text(
+            '${DateFormat.yMMMM().format(_currentWeek)} - CW $weekNumber',
+            style: const TextStyle(fontSize: 18),
+          ),
+          IconButton(
+            icon: Icon(Icons.chevron_right, color: arrowColor),
+            onPressed: _nextWeek,
+          ),
         ],
       ),
     );
@@ -217,6 +284,14 @@ class _WeekViewState extends State<WeekView> {
             child: Center(
               child: Column(
                 children: [
+                  Text(
+                    DateFormat.E().format(day),
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                  Text(
+                    DateFormat.d().format(day),
+                    style: const TextStyle(color: Colors.grey),
+                  ),
                   Text(
                     DateFormat.E().format(day),
                     style: const TextStyle(color: Colors.grey),
@@ -242,6 +317,12 @@ class _WeekViewState extends State<WeekView> {
     final verticalLineColor = isDarkMode
         ? Colors.grey.shade800
         : Colors.grey.shade300;
+    final horizontalLineColor = isDarkMode
+        ? Colors.grey.shade700
+        : Colors.grey.shade400;
+    final verticalLineColor = isDarkMode
+        ? Colors.grey.shade800
+        : Colors.grey.shade300;
 
     return Row(
       children: [
@@ -256,8 +337,25 @@ class _WeekViewState extends State<WeekView> {
                     top: BorderSide(color: horizontalLineColor, width: 0.5),
                   ),
                 ),
+                decoration: BoxDecoration(
+                  border: Border(
+                    top: BorderSide(color: horizontalLineColor, width: 0.5),
+                  ),
+                ),
                 child: Row(
                   children: List.generate(7, (day) {
+                    return Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border(
+                            left: BorderSide(
+                              color: verticalLineColor,
+                              width: 0.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
                     return Expanded(
                       child: Container(
                         decoration: BoxDecoration(
@@ -280,6 +378,25 @@ class _WeekViewState extends State<WeekView> {
     );
   }
 
+  List<Widget> _buildAppointments(
+    List<Appointment> appointments,
+    double dayWidth,
+    double hourHeight,
+    double timeColWidth,
+  ) {
+    return appointments
+        .where((app) {
+          final weekEnd = _currentWeek.add(const Duration(days: 7));
+          return app.start.isBefore(weekEnd) && app.end.isAfter(_currentWeek);
+        })
+        .map((app) {
+          final dayIndex = app.start.weekday - 1;
+          final top =
+              (app.start.hour * hourHeight) +
+              (app.start.minute / 60 * hourHeight);
+          final left = timeColWidth + (dayIndex * dayWidth);
+          final height =
+              app.end.difference(app.start).inMinutes / 60 * hourHeight;
   List<Widget> _buildAppointments(
     List<Appointment> appointments,
     double dayWidth,
@@ -333,6 +450,13 @@ class _WeekViewState extends State<WeekView> {
     double hourHeight,
     double timeColWidth,
   ) {
+  DateTime? _calculateHoverTime(
+    Offset position,
+    double dayWidth,
+    List<DateTime> weekDays,
+    double hourHeight,
+    double timeColWidth,
+  ) {
     final dx = position.dx - timeColWidth;
     final dy = position.dy;
     if (dx < 0) return null;
@@ -361,9 +485,24 @@ class _WeekViewState extends State<WeekView> {
       hourHeight,
       timeColWidth,
     );
+  Widget _buildHoverIndicator(
+    double dayWidth,
+    double hourHeight,
+    double timeColWidth,
+    List<DateTime> weekDays,
+  ) {
+    final hoverTime = _calculateHoverTime(
+      _hoverPosition,
+      dayWidth,
+      weekDays,
+      hourHeight,
+      timeColWidth,
+    );
     if (hoverTime == null) return const SizedBox.shrink();
 
     final dayIndex = hoverTime.weekday - 1;
+    final top =
+        (hoverTime.hour * hourHeight) + (hoverTime.minute / 60 * hourHeight);
     final top =
         (hoverTime.hour * hourHeight) + (hoverTime.minute / 60 * hourHeight);
     final left = timeColWidth + (dayIndex * dayWidth);
@@ -382,6 +521,13 @@ class _WeekViewState extends State<WeekView> {
         child: const Center(
           child: Icon(Icons.add_circle_outline, color: Colors.grey),
         ),
+        decoration: BoxDecoration(
+          color: Theme.of(context).hoverColor,
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        child: const Center(
+          child: Icon(Icons.add_circle_outline, color: Colors.grey),
+        ),
       ),
     );
   }
@@ -391,7 +537,14 @@ class _WeekViewState extends State<WeekView> {
     double hourHeight,
     double timeColWidth,
   ) {
+  Widget _buildCurrentTimeIndicator(
+    double dayWidth,
+    double hourHeight,
+    double timeColWidth,
+  ) {
     final now = DateTime.now();
+    if (now.isBefore(_currentWeek) ||
+        now.isAfter(_currentWeek.add(const Duration(days: 7)))) {
     if (now.isBefore(_currentWeek) ||
         now.isAfter(_currentWeek.add(const Duration(days: 7)))) {
       return const SizedBox.shrink();
@@ -425,6 +578,10 @@ class _TimeColumn extends StatelessWidget {
             height: hourHeight,
             padding: const EdgeInsets.only(right: 4.0),
             alignment: Alignment.topRight,
+            child: Text(
+              '${index.toString().padLeft(2, '0')}:00',
+              style: const TextStyle(fontSize: 10),
+            ),
             child: Text(
               '${index.toString().padLeft(2, '0')}:00',
               style: const TextStyle(fontSize: 10),

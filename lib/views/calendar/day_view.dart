@@ -86,9 +86,13 @@ class _DayViewState extends State<DayView> {
         startTime: widget.selectedDay,
         onSave: (newAppointment) {
           if (appointment != null) {
-            appState.updateAppointment(appointment, newAppointment);
+            Provider.of<AppState>(
+              context,
+              listen: false,
+            ).loggedInUser?.calendar.appointments.remove(appointment);
+            appState.loggedInUser?.calendar.appointments.add(newAppointment);
           } else {
-            appState.addAppointment(newAppointment);
+            appState.loggedInUser?.calendar.appointments.add(newAppointment);
           }
           _filterAppointments(); // Refresh list after save
         },
@@ -180,7 +184,11 @@ class _DayViewState extends State<DayView> {
                               IconButton(
                                 icon: const Icon(Icons.delete),
                                 onPressed: () {
-                                  appState.deleteAppointment(appointment);
+                                  Provider.of<AppState>(context, listen: false)
+                                      .loggedInUser
+                                      ?.calendar
+                                      .appointments
+                                      .remove(appointment);
                                   _filterAppointments(); // Refresh list after delete
                                 },
                               ),
@@ -196,7 +204,11 @@ class _DayViewState extends State<DayView> {
                                   appointment,
                                 );
                               } else if (value == 'delete') {
-                                appState.deleteAppointment(appointment);
+                                Provider.of<AppState>(context, listen: false)
+                                    .loggedInUser
+                                    ?.calendar
+                                    .appointments
+                                    .remove(appointment);
                                 _filterAppointments(); // Refresh list after delete
                               }
                             },

@@ -5,6 +5,7 @@ import 'package:myapp/services/theme_provider.dart';
 import 'package:myapp/views/auth/login_view.dart';
 import 'package:myapp/views/main/main_screen.dart';
 import 'package:myapp/widgets/loading_overlay.dart';
+import 'package:myapp/views/auth/signup_view.dart';
 
 void main() {
   runApp(
@@ -34,7 +35,12 @@ class MyApp extends StatelessWidget {
             return LoadingOverlay(child: child!);
           },
           debugShowCheckedModeBanner: false,
-          home: const AuthWrapper(),
+          initialRoute: '/',
+          routes: {
+            '/': (context) => const AuthWrapper(),
+            '/login': (context) => const LoginView(),
+            '/signup': (context) => const SignupView(),
+          },
         );
       },
     );

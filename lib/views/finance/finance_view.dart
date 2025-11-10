@@ -13,7 +13,11 @@ class FinanceView extends StatelessWidget {
       context: context,
       builder: (context) => BillEditorDialog(
         onSave: (bill) {
-          Provider.of<AppState>(context, listen: false).addBill(bill);
+          Provider.of<AppState>(
+            context,
+            listen: false,
+          ).loggedInUser?.bills.add(bill);
+          Navigator.of(context).pop();
         },
       ),
     );

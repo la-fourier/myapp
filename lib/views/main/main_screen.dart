@@ -36,6 +36,13 @@ class _MainScreenState extends State<MainScreen> {
         scrollController: scrollController,
       ),
     );
+    _showAsModalSheet(
+      (scrollController) => DayView(
+        selectedDay: day,
+        onBack: () => Navigator.of(context).pop(),
+        scrollController: scrollController,
+      ),
+    );
   }
 
   void _showAsModalSheet(Widget Function(ScrollController) builder) {
@@ -121,6 +128,10 @@ class _MainScreenState extends State<MainScreen> {
           .loggedInUser!
           .person
           .fullName, // Just an example of data to sync
+      'user': appState
+          .loggedInUser!
+          .person
+          .fullName, // Just an example of data to sync
     };
 
     loadingService.show();
@@ -160,7 +171,6 @@ class _MainScreenState extends State<MainScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isMobile = constraints.maxWidth < 600;
-
         return Scaffold(
           appBar: AppBar(
             leading: IconButton(
@@ -280,7 +290,6 @@ class _MainScreenState extends State<MainScreen> {
                 )
               : const SizedBox.shrink(),
         );
-      },
-    );
+      });
   }
 }

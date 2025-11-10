@@ -38,6 +38,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
   late Category _category;
   late List<Category> _categories;
   late List<Attachment> _attachments;
+  late Priority _priority;
 
   bool _isRawEditMode = false;
   final TextEditingController _rawTextController = TextEditingController();
@@ -57,6 +58,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
       _endTime = TimeOfDay.fromDateTime(_endDate);
       _category = widget.appointment!.category;
       _attachments = List.from(widget.appointment!.attachments);
+      _priority = widget.appointment!.priority;
     } else {
       _title = '';
       _description = '';
@@ -70,6 +72,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
           ? _categories.first
           : Category(name: 'Default', color: Colors.blue);
       _attachments = [];
+      _priority = Priority.normal;
     }
     _rawTextController.text = _appointmentToJson();
   }
@@ -93,6 +96,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
         _endTime.minute,
       ).toIso8601String(),
       'category': _category.toJson(),
+      'priority': _priority.toString(),
       // Attachments are not handled in raw edit mode for now
     };
     return const JsonEncoder.withIndent('  ').convert(data);
@@ -109,6 +113,10 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
         _startTime = TimeOfDay.fromDateTime(_startDate);
         _endTime = TimeOfDay.fromDateTime(_endDate);
         _category = Category.fromJson(data['category']);
+        _priority = Priority.values.firstWhere(
+          (e) => e.toString() == data['priority'],
+          orElse: () => Priority.normal,
+        );
       });
     } catch (e) {
       // Handle JSON parsing error
@@ -180,6 +188,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
         end: finalEndDate,
         category: _category,
         attachments: _attachments,
+        priority: _priority,
       );
 
       widget.onSave(newAppointment);
@@ -261,6 +270,21 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                           labelText: 'Category',
                         ),
                       ),
+                    DropdownButtonFormField<Priority>(
+                      value: _priority,
+                      items: Priority.values.map((Priority priority) {
+                        return DropdownMenuItem<Priority>(
+                          value: priority,
+                          child: Text(priority.toString().split('.').last),
+                        );
+                      }).toList(),
+                      onChanged: (Priority? newValue) {
+                        setState(() {
+                          _priority = newValue!;
+                        });
+                      },
+                      decoration: const InputDecoration(labelText: 'Priority'),
+                    ),
                     const SizedBox(height: 20),
                     Row(
                       children: [
@@ -411,7 +435,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                                   Provider.of<AppState>(
                                     context,
                                     listen: false,
-                                  ).addBill(bill);
+                                  ).loggedInUser?.bills.add(bill);
                                 },
                               ),
                             );

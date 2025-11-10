@@ -30,6 +30,24 @@ class ThemeProvider extends ChangeNotifier {
     }
   }
 
+  void setBorderRadius(AppBorderRadius borderRadius) {
+    _borderRadius = borderRadius;
+    notifyListeners();
+  }
+
+  ThemeData _buildDefaultTheme() {
+    final baseTheme = _themeMode == ThemeMode.light
+        ? ThemeData.light()
+        : ThemeData.dark();
+    final radius = _borderRadius == AppBorderRadius.rounded ? 12.0 : 2.0;
+    return baseTheme.copyWith(
+      splashFactory: InkSparkle.splashFactory,
+      inputDecorationTheme: baseTheme.inputDecorationTheme.copyWith(
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(radius)),
+      ),
+    );
+  }
+
   ThemeData _buildPurpleTheme() {
     final baseTheme = _themeMode == ThemeMode.light
         ? ThemeData.light()
@@ -187,7 +205,7 @@ class ThemeProvider extends ChangeNotifier {
               ? const Color(0xFFD2B48C)
               : baseTheme.elevatedButtonTheme.style?.backgroundColor!.resolve(
                   <MaterialState>{},
-                ), // Tan
+                ), // Tan// Tan
           foregroundColor: Colors.black,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(_radiusValue),
@@ -206,16 +224,14 @@ class ThemeProvider extends ChangeNotifier {
     _themeMode = _themeMode == ThemeMode.light
         ? ThemeMode.dark
         : ThemeMode.light;
+    _themeMode = _themeMode == ThemeMode.light
+        ? ThemeMode.dark
+        : ThemeMode.light;
     notifyListeners();
   }
 
   void toggleShowQueryField() {
     _showQueryField = !_showQueryField;
-    notifyListeners();
-  }
-
-  void setBorderRadius(AppBorderRadius radius) {
-    _borderRadius = radius;
     notifyListeners();
   }
 }

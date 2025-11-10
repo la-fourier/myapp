@@ -3,6 +3,8 @@ import 'package:myapp/models/calendar/category.dart';
 import 'package:myapp/models/finance/attachment.dart';
 import 'package:myapp/models/finance/bill.dart';
 
+enum Priority { veryImportant, important, normal, low }
+
 class Appointment {
   final String title;
   final String? description;
@@ -10,6 +12,7 @@ class Appointment {
   final DateTime end;
   final Category category;
   final List<Attachment> attachments;
+  final Priority priority;
 
   Appointment({
     required this.title,
@@ -18,6 +21,7 @@ class Appointment {
     required this.end,
     Category? category,
     List<Attachment>? attachments,
+    this.priority = Priority.normal,
   }) : category = category ?? Category(name: 'Default', color: Colors.blue),
        attachments = attachments ?? [];
 
@@ -41,6 +45,9 @@ class Appointment {
           ? Category.fromJson(json['category'])
           : Category(name: 'Default', color: Colors.blue),
       attachments: attachments,
+      priority: json['priority'] != null
+          ? Priority.values.firstWhere((e) => e.toString() == json['priority'])
+          : Priority.normal,
     );
   }
 
@@ -58,6 +65,7 @@ class Appointment {
         // Add other attachment types here
         return {};
       }).toList(),
+      'priority': priority.toString(),
     };
   }
 }

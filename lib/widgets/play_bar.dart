@@ -95,7 +95,6 @@ class _PlayBarState extends State<PlayBar> {
             child: Icon(isPlaying ? Icons.stop : Icons.play_arrow),
           );
         }
-
         return Container(
           height: 40,
           decoration: BoxDecoration(

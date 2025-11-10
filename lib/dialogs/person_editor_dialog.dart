@@ -166,6 +166,7 @@ class _PersonEditorDialogState extends State<PersonEditorDialog> {
           child: const Text('Cancel'),
         ),
         ElevatedButton(onPressed: _saveForm, child: const Text('Save')),
+        ElevatedButton(onPressed: _saveForm, child: const Text('Save')),
       ],
     );
   }

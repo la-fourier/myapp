@@ -162,6 +162,7 @@ class _UserEditorDialogState extends State<UserEditorDialog> {
           child: const Text('Cancel'),
         ),
         ElevatedButton(onPressed: _saveForm, child: const Text('Save')),
+        ElevatedButton(onPressed: _saveForm, child: const Text('Save')),
       ],
     );
   }

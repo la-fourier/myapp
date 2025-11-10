@@ -94,10 +94,21 @@ class _SignupViewState extends State<SignupView> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: _signup,
-                    child: const Text('Sign Up'),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: _signup,
+                        child: const Text('Sign Up'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pushNamed('/login');
+                        },
+                        child: const Text('Log in instead'),
+                      ),
+                    ],
                   ),
                 ],
               ),

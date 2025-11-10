@@ -67,6 +67,11 @@ class AccountView extends StatelessWidget {
     );
   }
 
+  void _updateUser(BuildContext context, User updatedUser) {
+    final appState = Provider.of<AppState>(context, listen: false);
+    Provider.of<AppState>(context, listen: false).users.add(updatedUser);
+  }
+
   Widget _buildProfilePage(BuildContext context, AppState appState, User user) {
     final person = user.person;
 
@@ -121,6 +126,21 @@ class AccountView extends StatelessWidget {
             email: person.email,
           ),
         );
+        final updatedUser = User(
+          person: Person(
+            fullName: person.fullName,
+            dateOfBirth: newDate,
+            email: person.email,
+            nickname: person.nickname,
+            address: person.address,
+            profilePictureUrl: person.profilePictureUrl,
+            password: person.password,
+          ),
+          contacts: user.contacts,
+          calendar: user.calendar,
+          customCategories: user.customCategories,
+        );
+        _updateUser(context, updatedUser);
         Fluttertoast.showToast(msg: "Birthday updated.");
       }
     }
@@ -153,7 +173,23 @@ class AccountView extends StatelessWidget {
                 email: person.email,
               ),
             ),
-            showEditDialog,
+            (newValue, oldValue, onSave) {
+              final updatedUser = User(
+                person: Person(
+                  fullName: newValue,
+                  dateOfBirth: person.dateOfBirth,
+                  email: person.email,
+                  nickname: person.nickname,
+                  address: person.address,
+                  profilePictureUrl: person.profilePictureUrl,
+                  password: person.password,
+                ),
+                contacts: user.contacts,
+                calendar: user.calendar,
+                customCategories: user.customCategories,
+              );
+              _updateUser(context, updatedUser);
+            },
           ),
           _buildEditableRow(
             context,
@@ -169,7 +205,23 @@ class AccountView extends StatelessWidget {
                 email: person.email,
               ),
             ),
-            showEditDialog,
+            (newValue, oldValue, onSave) {
+              final updatedUser = User(
+                person: Person(
+                  fullName: person.fullName,
+                  dateOfBirth: person.dateOfBirth,
+                  email: person.email,
+                  nickname: newValue,
+                  address: person.address,
+                  profilePictureUrl: person.profilePictureUrl,
+                  password: person.password,
+                ),
+                contacts: user.contacts,
+                calendar: user.calendar,
+                customCategories: user.customCategories,
+              );
+              _updateUser(context, updatedUser);
+            },
           ),
           _buildEditableRow(
             context,
@@ -185,7 +237,23 @@ class AccountView extends StatelessWidget {
                 email: newValue,
               ),
             ),
-            showEditDialog,
+            (newValue, oldValue, onSave) {
+              final updatedUser = User(
+                person: Person(
+                  fullName: person.fullName,
+                  dateOfBirth: person.dateOfBirth,
+                  email: newValue,
+                  nickname: person.nickname,
+                  address: person.address,
+                  profilePictureUrl: person.profilePictureUrl,
+                  password: person.password,
+                ),
+                contacts: user.contacts,
+                calendar: user.calendar,
+                customCategories: user.customCategories,
+              );
+              _updateUser(context, updatedUser);
+            },
           ),
           _buildEditableRow(
             context,
@@ -201,7 +269,23 @@ class AccountView extends StatelessWidget {
                 email: person.email,
               ),
             ),
-            showEditDialog,
+            (newValue, oldValue, onSave) {
+              final updatedUser = User(
+                person: Person(
+                  fullName: person.fullName,
+                  dateOfBirth: person.dateOfBirth,
+                  email: person.email,
+                  nickname: person.nickname,
+                  address: newValue,
+                  profilePictureUrl: person.profilePictureUrl,
+                  password: person.password,
+                ),
+                contacts: user.contacts,
+                calendar: user.calendar,
+                customCategories: user.customCategories,
+              );
+              _updateUser(context, updatedUser);
+            },
           ),
           _buildDateRow(context, 'Birthday', person.dateOfBirth, pickDate),
           const SizedBox(height: 24),
@@ -275,6 +359,25 @@ class AccountView extends StatelessWidget {
       ),
     );
   }
+
+  // Widget _buildIntegrationsPage(BuildContext context, AppState appState) {
+  //   return ListView(
+  //     children: [
+  //           SizedBox(
+  //             width: 80,
+  //             child: Text(
+  //               label,
+  //               style: const TextStyle(fontWeight: FontWeight.bold),
+  //             ),
+  //           ),
+  //           Expanded(child: Text(DateFormat.yMMMd().format(value))),
+  //           IconButton(
+  //             icon: const Icon(Icons.edit, size: 20),
+  //             onPressed: () => pickDate(context),
+  //           ),
+  //         ],
+  //   );
+  // }
 
   Widget _buildIntegrationsPage(BuildContext context, AppState appState) {
     return ListView(

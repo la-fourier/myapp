@@ -45,9 +45,9 @@ class _DashboardViewState extends State<DashboardView> {
 
     if (result != null) {
       if (category == null) {
-        appState.addCustomCategory(result);
+        appState.addItem<Category>(result);
       } else {
-        appState.updateCustomCategory(category, result);
+        appState.updateItem<Category>(category, result);
       }
     }
   }
@@ -60,7 +60,7 @@ class _DashboardViewState extends State<DashboardView> {
         person: person,
         onSave: (newPerson) {
           if (person == null) {
-            appState.addPerson(newPerson);
+            appState.addItem<Person>(newPerson);
           } else {
             // Person model needs to implement == for this to work correctly
             appState.loggedInUser!.updatePerson(newPerson);
@@ -78,9 +78,9 @@ class _DashboardViewState extends State<DashboardView> {
         appointment: appointment,
         onSave: (newAppointment) {
           if (appointment == null) {
-            appState.addAppointment(newAppointment);
+            appState.addItem<Appointment>(newAppointment);
           } else {
-            appState.updateAppointment(appointment, newAppointment);
+            appState.updateItem<Appointment>(appointment, newAppointment);
           }
         },
       ),
@@ -129,6 +129,7 @@ class _DashboardViewState extends State<DashboardView> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               DropdownButton<String>(
+                borderRadius: BorderRadius.circular(10.0),
                 value: _selectedDataSourceId,
                 onChanged: (String? newValue) {
                   if (newValue != null) {
@@ -213,7 +214,10 @@ class _DashboardViewState extends State<DashboardView> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete),
-                    onPressed: () => appState.loggedInUser!.deleteContact(item),
+                    onPressed: () => Provider.of<AppState>(
+                      context,
+                      listen: false,
+                    ).loggedInUser?.contacts.remove(item),
                   ),
                 ],
               ),
@@ -248,7 +252,10 @@ class _DashboardViewState extends State<DashboardView> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete),
-                    onPressed: () => appState.deleteAppointment(item),
+                    onPressed: () => Provider.of<AppState>(
+                      context,
+                      listen: false,
+                    ).loggedInUser?.calendar.appointments.remove(item),
                   ),
                 ],
               ),
@@ -282,7 +289,10 @@ class _DashboardViewState extends State<DashboardView> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete),
-                    onPressed: () => appState.deleteCustomCategory(item),
+                    onPressed: () => Provider.of<AppState>(
+                      context,
+                      listen: false,
+                    ).loggedInUser?.customCategories.remove(item),
                   ),
                 ],
               ),

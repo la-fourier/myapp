@@ -5,6 +5,7 @@ class Person {
   final String? profilePictureUrl;
   final String? address;
   final String? email;
+  final String? password;
 
   Person({
     required this.fullName,
@@ -13,6 +14,7 @@ class Person {
     this.profilePictureUrl,
     this.address,
     this.email,
+    this.password,
   });
 
   factory Person.fromJson(Map<String, dynamic> json) {
@@ -23,6 +25,7 @@ class Person {
       profilePictureUrl: json['profilePictureUrl'],
       address: json['address'],
       email: json['email'],
+      password: json['password'],
     );
   }
 
@@ -34,6 +37,7 @@ class Person {
       'profilePictureUrl': profilePictureUrl,
       'address': address,
       'email': email,
+      'password': password,
     };
   }
 

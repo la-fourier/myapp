@@ -60,6 +60,7 @@ class _SettingsViewState extends State<SettingsView> {
                 ),
               ],
               bottom: const TabBar(
+                splashBorderRadius: BorderRadius.all(Radius.circular(10.0)),
                 isScrollable: true,
                 tabs: [
                   Tab(text: 'Appearance'),
@@ -114,6 +115,17 @@ class _SettingsViewState extends State<SettingsView> {
             themeProvider.toggleThemeMode();
           },
           secondary: const Icon(Icons.dark_mode),
+        ),
+        ListTile(
+          leading: const Icon(Icons.rounded_corner),
+          title: const Text('Border Radius'),
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const BorderRadiusSettingsView(),
+              ),
+            );
+          },
         ),
         ListTile(
           leading: const Icon(Icons.language),
