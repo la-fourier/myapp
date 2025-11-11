@@ -290,6 +290,7 @@ class _MainScreenState extends State<MainScreen> {
                 )
               : const SizedBox.shrink(),
         );
-      });
+      },
+    );
   }
 }

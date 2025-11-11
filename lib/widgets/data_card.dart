@@ -60,19 +60,12 @@ class _DataCardState<T> extends State<DataCard<T>> {
     }
     if (widget.columns != oldWidget.columns) {
       setState(() {
-      setState(() {
         _columnVisibility = {for (var col in widget.columns) col.label: true};
         _orderedColumns = List.from(widget.columns);
-      });
       });
     }
   }
 
-  void _sort(
-    Comparable Function(T item) getField,
-    int columnIndex,
-    bool ascending,
-  ) {
   void _sort(
     Comparable Function(T item) getField,
     int columnIndex,
@@ -93,9 +86,6 @@ class _DataCardState<T> extends State<DataCard<T>> {
 
   @override
   Widget build(BuildContext context) {
-    final visibleColumns = _orderedColumns
-        .where((c) => _columnVisibility[c.label] ?? true)
-        .toList();
     final visibleColumns = _orderedColumns
         .where((c) => _columnVisibility[c.label] ?? true)
         .toList();
@@ -122,9 +112,6 @@ class _DataCardState<T> extends State<DataCard<T>> {
             } catch (e) {
               /* ignore */
             }
-            } catch (e) {
-              /* ignore */
-            }
           }
         }
         return false;
@@ -138,11 +125,15 @@ class _DataCardState<T> extends State<DataCard<T>> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              PopupMenuButton(
-                borderRadius: BorderRadius.circular(10.0),
+              PopupMenuButton<String>(
+                onSelected: (String value) {
+                  setState(() {
+                    _columnVisibility[value] = !_columnVisibility[value]!;
+                  });
+                },
                 itemBuilder: (context) {
                   return widget.columns.map((column) {
-                    return CheckedPopupMenuItem(
+                    return CheckedPopupMenuItem<String>(
                       value: column.label,
                       checked: _columnVisibility[column.label] ?? true,
                       child: Text(column.label),
@@ -179,9 +170,6 @@ class _DataCardState<T> extends State<DataCard<T>> {
                               color: Theme.of(
                                 context,
                               ).colorScheme.surfaceVariant,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.surfaceVariant,
                               child: Text(column.label),
                             ),
                           ),
@@ -189,8 +177,9 @@ class _DataCardState<T> extends State<DataCard<T>> {
                         );
                       },
                       onWillAcceptWithDetails: (data) => data != null,
-                      onAcceptWithDetails: (draggedColumn) {
+                      onAcceptWithDetails: (details) {
                         setState(() {
+                          final draggedColumn = details.data;
                           final draggedIndex = _orderedColumns.indexOf(
                             draggedColumn,
                           );
@@ -205,11 +194,6 @@ class _DataCardState<T> extends State<DataCard<T>> {
                     tooltip: column.tooltip,
                     numeric: column.numeric,
                     onSort: (columnIndex, ascending) {
-                      _sort(
-                        column.getField,
-                        visibleColumns.indexOf(column),
-                        ascending,
-                      );
                       _sort(
                         column.getField,
                         visibleColumns.indexOf(column),
@@ -233,4 +217,3 @@ class _DataCardState<T> extends State<DataCard<T>> {
     );
   }
 }
-

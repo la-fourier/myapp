@@ -43,28 +43,29 @@ class AppState extends ChangeNotifier {
   }
 
   Future<bool> signup(String email, String password) async {
-    try {
-      final existingUser = _users.firstWhere(
-        (user) => user.person.email == email,
-      );
+    final existingUser =
+        _users.firstWhereOrNull((user) => user.person.email == email);
+
+    if (existingUser != null) {
       return false; // User already exists
-    } catch (e) {
-      final newUser = User(
-        person: Person(
-          fullName: 'New User',
-          dateOfBirth: DateTime(2000, 1, 1),
-          email: email,
-        ),
-        contacts: [],
-        calendar: Calendar(appointments: []),
-        customCategories: [],
-      );
-      _users.add(newUser);
-      _loggedInUser = newUser;
-      await _saveUsers();
-      notifyListeners();
-      return true;
     }
+
+    final newUser = User(
+      person: Person(
+        fullName: 'New User',
+        dateOfBirth: DateTime(2000, 1, 1),
+        email: email,
+        password: password,
+      ),
+      contacts: [],
+      calendar: Calendar(appointments: []),
+      customCategories: [],
+    );
+    _users.add(newUser);
+    _loggedInUser = newUser;
+    await _saveUsers();
+    notifyListeners();
+    return true;
   }
 
   Future<void> _loadUsers() async {
@@ -92,6 +93,7 @@ class AppState extends ChangeNotifier {
         fullName: 'Test User',
         dateOfBirth: DateTime(1995, 5, 23),
         email: 'test@debug.com',
+        password: 'password123',
       ),
       contacts: [
         Person(fullName: 'Jane Smith', dateOfBirth: DateTime(1992, 5, 10)),
