@@ -10,6 +10,7 @@ class User {
   List<Category> customCategories;
   List<Bill> bills;
   double accountBalance;
+  String password;
 
   User({
     required this.person,
@@ -18,6 +19,7 @@ class User {
     this.customCategories = const [],
     this.bills = const [],
     this.accountBalance = 0.0,
+    required this.password,
   });
 
   void updatePerson(Person newPerson) {
@@ -55,6 +57,7 @@ class User {
           ? (json['bills'] as List).map((e) => Bill.fromJson(e)).toList()
           : [],
       accountBalance: json['accountBalance'] ?? 0.0,
+      password: json['password'],
     );
   }
 
@@ -66,6 +69,7 @@ class User {
       'customCategories': customCategories.map((e) => e.toJson()).toList(),
       'bills': bills.map((e) => e.toJson()).toList(),
       'accountBalance': accountBalance,
+      'password': password,
     };
   }
 }

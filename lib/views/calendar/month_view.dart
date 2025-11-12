@@ -133,7 +133,7 @@ class _MonthViewState extends State<MonthView> {
                       onEnter: (_) => setState(() => _hoveredDay = day),
                       onExit: (_) => setState(() => _hoveredDay = null),
                       child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 150),
+                        duration: const Duration(milliseconds: 70),
                         margin: const EdgeInsets.all(4.0),
                         transform: Matrix4.diagonal3Values(scale, scale, 1.0),
                         transformAlignment: Alignment.center,

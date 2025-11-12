@@ -134,11 +134,13 @@ class AccountView extends StatelessWidget {
             nickname: person.nickname,
             address: person.address,
             profilePictureUrl: person.profilePictureUrl,
-            password: person.password,
           ),
           contacts: user.contacts,
           calendar: user.calendar,
           customCategories: user.customCategories,
+          bills: user.bills,
+          accountBalance: user.accountBalance,
+          password: user.password,
         );
         _updateUser(context, updatedUser);
         Fluttertoast.showToast(msg: "Birthday updated.");
@@ -182,11 +184,13 @@ class AccountView extends StatelessWidget {
                   nickname: person.nickname,
                   address: person.address,
                   profilePictureUrl: person.profilePictureUrl,
-                  password: person.password,
                 ),
                 contacts: user.contacts,
                 calendar: user.calendar,
                 customCategories: user.customCategories,
+                bills: user.bills,
+                accountBalance: user.accountBalance,
+                password: user.password,
               );
               _updateUser(context, updatedUser);
             },
@@ -214,11 +218,13 @@ class AccountView extends StatelessWidget {
                   nickname: newValue,
                   address: person.address,
                   profilePictureUrl: person.profilePictureUrl,
-                  password: person.password,
                 ),
                 contacts: user.contacts,
                 calendar: user.calendar,
                 customCategories: user.customCategories,
+                bills: user.bills,
+                accountBalance: user.accountBalance,
+                password: user.password,
               );
               _updateUser(context, updatedUser);
             },
@@ -246,11 +252,13 @@ class AccountView extends StatelessWidget {
                   nickname: person.nickname,
                   address: person.address,
                   profilePictureUrl: person.profilePictureUrl,
-                  password: person.password,
                 ),
                 contacts: user.contacts,
                 calendar: user.calendar,
                 customCategories: user.customCategories,
+                bills: user.bills,
+                accountBalance: user.accountBalance,
+                password: user.password,
               );
               _updateUser(context, updatedUser);
             },
@@ -278,11 +286,13 @@ class AccountView extends StatelessWidget {
                   nickname: person.nickname,
                   address: newValue,
                   profilePictureUrl: person.profilePictureUrl,
-                  password: person.password,
                 ),
                 contacts: user.contacts,
                 calendar: user.calendar,
                 customCategories: user.customCategories,
+                bills: user.bills,
+                accountBalance: user.accountBalance,
+                password: user.password,
               );
               _updateUser(context, updatedUser);
             },

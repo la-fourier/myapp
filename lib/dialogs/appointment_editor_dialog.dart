@@ -289,14 +289,18 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                     Row(
                       children: [
                         Expanded(
-                          child: editable_text.EditableText(
-                            initialText:
-                                'Start: ${DateFormat.yMd().format(_startDate)}',
+                          child: Row(
+                            children: [
+                              Text("Start:"),
+                              SizedBox(width: 10),
+                              Expanded(
+                                child: editable_text.EditableText(
+                            initialText: '${DateFormat.yMd().format(_startDate)}',
                             style: Theme.of(context).textTheme.bodyLarge!,
                             onSave: (value) {
                               try {
                                 final newDate = DateFormat.yMd().parse(
-                                  value.replaceFirst('Start: ', ''),
+                                  value,
                                 );
                                 setState(() {
                                   _startDate = newDate;
@@ -306,6 +310,9 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                               }
                             },
                           ),
+                              ),
+                      ],
+                        ),
                         ),
                         IconButton(
                           icon: const Icon(Icons.calendar_today),
@@ -340,12 +347,12 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.access_time),
+                          icon: const Icon(Icons.access_time, opticalSize: 4,),
                           onPressed: () => _selectTime(context, true),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     Row(
                       children: [
                         Expanded(
@@ -410,6 +417,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
+                          textAlign: TextAlign.center,
                           'Attachments',
                           style: Theme.of(context).textTheme.titleMedium,
                         ),

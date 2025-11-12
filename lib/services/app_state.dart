@@ -55,11 +55,11 @@ class AppState extends ChangeNotifier {
         fullName: 'New User',
         dateOfBirth: DateTime(2000, 1, 1),
         email: email,
-        password: password,
       ),
       contacts: [],
       calendar: Calendar(appointments: []),
       customCategories: [],
+      password: password,
     );
     _users.add(newUser);
     _loggedInUser = newUser;
@@ -93,7 +93,6 @@ class AppState extends ChangeNotifier {
         fullName: 'Test User',
         dateOfBirth: DateTime(1995, 5, 23),
         email: 'test@debug.com',
-        password: 'password123',
       ),
       contacts: [
         Person(fullName: 'Jane Smith', dateOfBirth: DateTime(1992, 5, 10)),
@@ -129,6 +128,7 @@ class AppState extends ChangeNotifier {
       ],
       bills: [],
       accountBalance: 1500.0,
+      password: 'password123',
     );
 
     _users.add(user1);
@@ -137,9 +137,14 @@ class AppState extends ChangeNotifier {
 
   // AUTHENTICATION
   Future<bool> login(String email, String password) async {
-    final user = _users.firstWhereOrNull((user) => user.person.email == email);
+    print(_users.map((u) => u.person.email).toList());
+    final user = await _users.firstWhereOrNull((user) => user.person.email == email);
 
-    if (user != null && user.person.password == password) {
+    print('Attempting login for $email');
+    print('User found: ${user != null}');
+    print('Password (${user?.password} and $password) match: ${user?.password == password}');
+
+    if (user != null && user.password == password) {
       _loggedInUser = user;
       await _storageService.saveLoggedInUser(email);
       notifyListeners();
@@ -207,6 +212,34 @@ class AppState extends ChangeNotifier {
         _saveUsers();
         notifyListeners();
       }
+    }
+  }
+
+  // BILL MANAGEMENT
+  void addBill(Bill bill) {
+    if (_loggedInUser != null) {
+      _loggedInUser!.bills.add(bill);
+      _saveUsers();
+      notifyListeners();
+    }
+  }
+
+  void updateBill(Bill oldBill, Bill newBill) {
+    if (_loggedInUser != null) {
+      final index = _loggedInUser!.bills.indexOf(oldBill);
+      if (index != -1) {
+        _loggedInUser!.bills[index] = newBill;
+        _saveUsers();
+        notifyListeners();
+      }
+    }
+  }
+
+  void deleteBill(Bill bill) {
+    if (_loggedInUser != null) {
+      _loggedInUser!.bills.remove(bill);
+      _saveUsers();
+      notifyListeners();
     }
   }
 

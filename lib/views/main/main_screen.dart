@@ -36,13 +36,6 @@ class _MainScreenState extends State<MainScreen> {
         scrollController: scrollController,
       ),
     );
-    _showAsModalSheet(
-      (scrollController) => DayView(
-        selectedDay: day,
-        onBack: () => Navigator.of(context).pop(),
-        scrollController: scrollController,
-      ),
-    );
   }
 
   void _showAsModalSheet(Widget Function(ScrollController) builder) {
@@ -50,42 +43,38 @@ class _MainScreenState extends State<MainScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.black.withOpacity(0.3),
-      barrierColor: Colors.transparent,
+      // barrierDismissible: true, // Allow dismissing by tapping outside
       elevation: 0,
       builder: (context) {
         return BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => Navigator.of(context).pop(),
-            child: DraggableScrollableSheet(
-              initialChildSize: 0.8,
-              maxChildSize: 0.9,
-              minChildSize: 0.4,
-              expand: false,
-              builder:
-                  (BuildContext context, ScrollController scrollController) {
-                    return GestureDetector(
-                      onTap: () {},
-                      child: Container(
-                        margin: const EdgeInsets.only(
-                          top: 20,
-                          bottom: 40,
-                          left: 16,
-                          right: 16,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).scaffoldBackgroundColor,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: builder(scrollController),
-                        ),
+          child: DraggableScrollableSheet(
+            initialChildSize: 0.8,
+            maxChildSize: 0.9,
+            minChildSize: 0.4,
+            expand: false,
+            builder:
+                (BuildContext context, ScrollController scrollController) {
+                  return GestureDetector(
+                    onTap: () {},
+                    child: Container(
+                      margin: const EdgeInsets.only(
+                        top: 20,
+                        bottom: 40,
+                        left: 16,
+                        right: 16,
                       ),
-                    );
-                  },
-            ),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: builder(scrollController),
+                      ),
+                    ),
+                  );
+                },
           ),
         );
       },

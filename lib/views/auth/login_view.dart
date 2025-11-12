@@ -28,7 +28,7 @@ class _LoginViewState extends State<LoginView> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'Invalid credentials. Use test@debug.com / debug123 for testing.',
+              'Invalid credentials. Use test@debug.com / password123 for testing.',
             ),
             backgroundColor: Colors.red,
           ),
@@ -104,7 +104,9 @@ class _LoginViewState extends State<LoginView> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       ElevatedButton(
-                        onPressed: _login,
+                        onPressed: () async {
+                          await _login();
+                        },
                         child: const Text('Login'),
                       ),
                       ElevatedButton(
@@ -126,7 +128,7 @@ class _LoginViewState extends State<LoginView> {
                               return AlertDialog(
                                 title: const Text('Test Account Info'),
                                 content: const Text(
-                                  'Use test@debug.com / debug123 for testing.',
+                                  'Use test@debug.com / password123 for testing.',
                                 ),
                                 actions: [
                                   TextButton(

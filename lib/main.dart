@@ -7,6 +7,12 @@ import 'package:myapp/views/main/main_screen.dart';
 import 'package:myapp/widgets/loading_overlay.dart';
 import 'package:myapp/views/auth/signup_view.dart';
 
+// TODO Test signup
+// TODO ausbessern Form Errors, dass man die Keys bearbeiten kann :/
+
+// TODO ausbessern Settings besser Strukturieren
+// TODO AccountView besser bearbeitbar machen
+
 void main() {
   runApp(
     MultiProvider(
