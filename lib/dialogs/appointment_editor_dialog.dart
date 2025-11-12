@@ -6,7 +6,6 @@ import 'package:myapp/models/calendar/appointment.dart';
 import 'package:myapp/models/finance/attachment.dart';
 import 'package:myapp/models/calendar/category.dart';
 import 'package:myapp/dialogs/bill_editor_dialog.dart';
-import 'package:myapp/models/finance/bill.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/widgets/editable_text.dart' as editable_text;
 
@@ -295,24 +294,25 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                               SizedBox(width: 10),
                               Expanded(
                                 child: editable_text.EditableText(
-                            initialText: '${DateFormat.yMd().format(_startDate)}',
-                            style: Theme.of(context).textTheme.bodyLarge!,
-                            onSave: (value) {
-                              try {
-                                final newDate = DateFormat.yMd().parse(
-                                  value,
-                                );
-                                setState(() {
-                                  _startDate = newDate;
-                                });
-                              } catch (e) {
-                                // Handle parsing error
-                              }
-                            },
-                          ),
+                                  initialText:
+                                      '${DateFormat.yMd().format(_startDate)}',
+                                  style: Theme.of(context).textTheme.bodyLarge!,
+                                  onSave: (value) {
+                                    try {
+                                      final newDate = DateFormat.yMd().parse(
+                                        value,
+                                      );
+                                      setState(() {
+                                        _startDate = newDate;
+                                      });
+                                    } catch (e) {
+                                      // Handle parsing error
+                                    }
+                                  },
+                                ),
                               ),
-                      ],
-                        ),
+                            ],
+                          ),
                         ),
                         IconButton(
                           icon: const Icon(Icons.calendar_today),
@@ -347,7 +347,10 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.access_time, opticalSize: 4,),
+                          enableFeedback: true,
+                          hoverColor: Colors.transparent,
+                          iconSize: 16,
+                          icon: const Icon(Icons.access_time),
                           onPressed: () => _selectTime(context, true),
                         ),
                       ],

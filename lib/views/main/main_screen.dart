@@ -53,28 +53,27 @@ class _MainScreenState extends State<MainScreen> {
             maxChildSize: 0.9,
             minChildSize: 0.4,
             expand: false,
-            builder:
-                (BuildContext context, ScrollController scrollController) {
-                  return GestureDetector(
-                    onTap: () {},
-                    child: Container(
-                      margin: const EdgeInsets.only(
-                        top: 20,
-                        bottom: 40,
-                        left: 16,
-                        right: 16,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).scaffoldBackgroundColor,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: builder(scrollController),
-                      ),
-                    ),
-                  );
-                },
+            builder: (BuildContext context, ScrollController scrollController) {
+              return GestureDetector(
+                onTap: () {},
+                child: Container(
+                  margin: const EdgeInsets.only(
+                    top: 20,
+                    bottom: 40,
+                    left: 16,
+                    right: 16,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: builder(scrollController),
+                  ),
+                ),
+              );
+            },
           ),
         );
       },

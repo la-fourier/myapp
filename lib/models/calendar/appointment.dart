@@ -3,10 +3,14 @@ import 'package:myapp/models/calendar/category.dart';
 import 'package:myapp/models/finance/attachment.dart';
 import 'package:myapp/models/finance/bill.dart';
 
-enum Priority { veryImportant, important, normal, low;
+enum Priority {
+  veryImportant,
+  important,
+  normal,
+  low;
 
   @override
- String toString() {
+  String toString() {
     return switch (this) {
       Priority.veryImportant => 'Very Important',
       Priority.important => 'Important',

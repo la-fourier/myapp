@@ -44,10 +44,12 @@ class FinanceView extends StatelessWidget {
       // The google_mlkit_text_recognition package uses on-device recognition,
       // so the data is processed locally and not sent to Google.
       final inputImage = InputImage.fromFilePath(image.path);
-      final textRecognizer =
-          TextRecognizer(script: TextRecognitionScript.latin);
-      final RecognizedText recognizedText =
-          await textRecognizer.processImage(inputImage);
+      final textRecognizer = TextRecognizer(
+        script: TextRecognitionScript.latin,
+      );
+      final RecognizedText recognizedText = await textRecognizer.processImage(
+        inputImage,
+      );
       textRecognizer.close();
 
       // Simple parsing logic, this can be improved
@@ -84,10 +86,11 @@ class FinanceView extends StatelessWidget {
         bill: Bill(
           vendor: vendor ?? 'Unknown',
           date: date ?? DateTime.now(),
-          category: Provider.of<AppState>(context, listen: false)
-                  .loggedInUser
-                  ?.customCategories
-                  .first ??
+          category:
+              Provider.of<AppState>(
+                context,
+                listen: false,
+              ).loggedInUser?.customCategories.first ??
               Category(name: 'Default', color: Colors.blue),
           items: [LineItem(description: 'Total', amount: totalAmount)],
         ),
@@ -97,8 +100,10 @@ class FinanceView extends StatelessWidget {
 
   Future<void> _importFromTxt(BuildContext context) async {
     try {
-      final result = await FilePicker.platform
-          .pickFiles(type: FileType.custom, allowedExtensions: ['txt']);
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['txt'],
+      );
       if (result != null && context.mounted) {
         final file = File(result.files.single.path!);
         final lines = await file.readAsLines();
@@ -109,29 +114,37 @@ class FinanceView extends StatelessWidget {
             final bill = Bill(
               vendor: parts[0],
               date: DateTime.tryParse(parts[1]) ?? DateTime.now(),
-              category: Provider.of<AppState>(context, listen: false)
-                      .loggedInUser
-                      ?.customCategories
-                      .first ??
+              category:
+                  Provider.of<AppState>(
+                    context,
+                    listen: false,
+                  ).loggedInUser?.customCategories.first ??
                   Category(name: 'Default', color: Colors.blue),
               items: [LineItem(description: 'Total', amount: totalAmount)],
             );
-            Provider.of<AppState>(context, listen: false).loggedInUser?.bills.add(bill);
+            Provider.of<AppState>(
+              context,
+              listen: false,
+            ).loggedInUser?.bills.add(bill);
           }
         }
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('TXT file imported successfully!')));
+          const SnackBar(content: Text('TXT file imported successfully!')),
+        );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error importing TXT file: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error importing TXT file: $e')));
     }
   }
 
   Future<void> _importFromCsv(BuildContext context) async {
     try {
-      final result = await FilePicker.platform
-          .pickFiles(type: FileType.custom, allowedExtensions: ['csv']);
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['csv'],
+      );
       if (result != null && context.mounted) {
         final file = File(result.files.single.path!);
         final content = await file.readAsString();
@@ -143,43 +156,56 @@ class FinanceView extends StatelessWidget {
             final bill = Bill(
               vendor: row[0].toString(),
               date: DateTime.tryParse(row[1].toString()) ?? DateTime.now(),
-              category: Provider.of<AppState>(context, listen: false)
-                      .loggedInUser
-                      ?.customCategories
-                      .first ??
+              category:
+                  Provider.of<AppState>(
+                    context,
+                    listen: false,
+                  ).loggedInUser?.customCategories.first ??
                   Category(name: 'Default', color: Colors.blue),
               items: [LineItem(description: 'Total', amount: totalAmount)],
             );
-            Provider.of<AppState>(context, listen: false).loggedInUser?.bills.add(bill);
+            Provider.of<AppState>(
+              context,
+              listen: false,
+            ).loggedInUser?.bills.add(bill);
           }
         }
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('CSV file imported successfully!')));
+          const SnackBar(content: Text('CSV file imported successfully!')),
+        );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error importing CSV file: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error importing CSV file: $e')));
     }
   }
 
   Future<void> _importFromJson(BuildContext context) async {
     try {
-      final result = await FilePicker.platform
-          .pickFiles(type: FileType.custom, allowedExtensions: ['json']);
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
       if (result != null && context.mounted) {
         final file = File(result.files.single.path!);
         final content = await file.readAsString();
         final List<dynamic> billsJson = jsonDecode(content);
         for (var billJson in billsJson) {
           final bill = Bill.fromJson(billJson);
-          Provider.of<AppState>(context, listen: false).loggedInUser?.bills.add(bill);
+          Provider.of<AppState>(
+            context,
+            listen: false,
+          ).loggedInUser?.bills.add(bill);
         }
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('JSON file imported successfully!')));
+          const SnackBar(content: Text('JSON file imported successfully!')),
+        );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error importing JSON file: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error importing JSON file: $e')));
     }
   }
 
@@ -246,10 +272,12 @@ class FinanceView extends StatelessWidget {
     );
   }
 
-  Widget _buildImportOption(BuildContext context,
-      {required IconData icon,
-      required String label,
-      required VoidCallback onTap}) {
+  Widget _buildImportOption(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8.0),
@@ -309,8 +337,10 @@ class FinanceView extends StatelessWidget {
       sliverItems.add(
         SliverToBoxAdapter(
           child: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 8.0,
+            ),
             child: Text(
               _formatDate(context, date),
               style: Theme.of(context).textTheme.titleLarge,
@@ -321,24 +351,21 @@ class FinanceView extends StatelessWidget {
       // Add bills for that date
       sliverItems.add(
         SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              final bill = bills[index];
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: bill.category.color,
-                  child: const Icon(Icons.receipt, color: Colors.white),
-                ),
-                title: Text(bill.vendor),
-                subtitle: Text(DateFormat.yMd().format(bill.date)),
-                trailing: Text(currencyFormat.format(bill.totalAmount)),
-                onTap: () {
-                  _showBillEntryDialog(context, bill: bill);
-                },
-              );
-            },
-            childCount: bills.length,
-          ),
+          delegate: SliverChildBuilderDelegate((context, index) {
+            final bill = bills[index];
+            return ListTile(
+              leading: CircleAvatar(
+                backgroundColor: bill.category.color,
+                child: const Icon(Icons.receipt, color: Colors.white),
+              ),
+              title: Text(bill.vendor),
+              subtitle: Text(DateFormat.yMd().format(bill.date)),
+              trailing: Text(currencyFormat.format(bill.totalAmount)),
+              onTap: () {
+                _showBillEntryDialog(context, bill: bill);
+              },
+            );
+          }, childCount: bills.length),
         ),
       );
     });

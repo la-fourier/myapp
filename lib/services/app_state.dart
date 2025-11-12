@@ -9,8 +9,6 @@ import 'package:myapp/models/calendar/tracked_activity.dart';
 import 'package:myapp/models/finance/bill.dart';
 import 'package:myapp/services/storage_service.dart';
 
-import 'package:fluttertoast/fluttertoast.dart';
-
 // Helper class for the activity selection UI
 class SelectableActivity {
   final String name;
@@ -43,8 +41,9 @@ class AppState extends ChangeNotifier {
   }
 
   Future<bool> signup(String email, String password) async {
-    final existingUser =
-        _users.firstWhereOrNull((user) => user.person.email == email);
+    final existingUser = _users.firstWhereOrNull(
+      (user) => user.person.email == email,
+    );
 
     if (existingUser != null) {
       return false; // User already exists
@@ -137,12 +136,9 @@ class AppState extends ChangeNotifier {
 
   // AUTHENTICATION
   Future<bool> login(String email, String password) async {
-    print(_users.map((u) => u.person.email).toList());
-    final user = await _users.firstWhereOrNull((user) => user.person.email == email);
-
-    print('Attempting login for $email');
-    print('User found: ${user != null}');
-    print('Password (${user?.password} and $password) match: ${user?.password == password}');
+    final user = await _users.firstWhereOrNull(
+      (user) => user.person.email == email,
+    );
 
     if (user != null && user.password == password) {
       _loggedInUser = user;
@@ -289,142 +285,142 @@ class AppState extends ChangeNotifier {
       notifyListeners();
     }
 
-    void addAppointment(Appointment appointment) {
-      if (_loggedInUser != null) {
-        _loggedInUser!.calendar.appointments.add(appointment);
-        _saveUsers();
-        notifyListeners();
-      }
-    }
+    //   void addAppointment(Appointment appointment) {
+    //     if (_loggedInUser != null) {
+    //       _loggedInUser!.calendar.appointments.add(appointment);
+    //       _saveUsers();
+    //       notifyListeners();
+    //     }
+    //   }
 
-    void deleteAppointment(Appointment appointment) {
-      if (_loggedInUser != null) {
-        _loggedInUser!.calendar.appointments.remove(appointment);
-        _saveUsers();
-        notifyListeners();
-      }
-    }
+    //   void deleteAppointment(Appointment appointment) {
+    //     if (_loggedInUser != null) {
+    //       _loggedInUser!.calendar.appointments.remove(appointment);
+    //       _saveUsers();
+    //       notifyListeners();
+    //     }
+    //   }
 
-    void updateAppointment(
-      Appointment oldAppointment,
-      Appointment newAppointment,
-    ) {
-      if (_loggedInUser != null) {
-        final index = _loggedInUser!.calendar.appointments.indexOf(
-          oldAppointment,
-        );
-        if (index != -1) {
-          _loggedInUser!.calendar.appointments[index] = newAppointment;
-          _saveUsers();
-          notifyListeners();
-        }
-        _saveUsers();
-        notifyListeners();
-      }
-    }
+    //   void updateAppointment(
+    //     Appointment oldAppointment,
+    //     Appointment newAppointment,
+    //   ) {
+    //     if (_loggedInUser != null) {
+    //       final index = _loggedInUser!.calendar.appointments.indexOf(
+    //         oldAppointment,
+    //       );
+    //       if (index != -1) {
+    //         _loggedInUser!.calendar.appointments[index] = newAppointment;
+    //         _saveUsers();
+    //         notifyListeners();
+    //       }
+    //       _saveUsers();
+    //       notifyListeners();
+    //     }
+    //   }
 
-    // PERSON (CONTACT) MANAGEMENT
-    void addPerson(Person person) {
-      if (_loggedInUser != null) {
-        _loggedInUser!.contacts.add(person);
+    //   // PERSON (CONTACT) MANAGEMENT
+    //   void addPerson(Person person) {
+    //     if (_loggedInUser != null) {
+    //       _loggedInUser!.contacts.add(person);
 
-        void updatePerson(Person oldPerson, Person newPerson) {
-          if (_loggedInUser != null) {
-            final index = _loggedInUser!.contacts.indexOf(oldPerson);
-            if (index != -1) {
-              _loggedInUser!.contacts[index] = newPerson;
-              _saveUsers();
-              notifyListeners();
-            }
-          }
-        }
+    //       void updatePerson(Person oldPerson, Person newPerson) {
+    //         if (_loggedInUser != null) {
+    //           final index = _loggedInUser!.contacts.indexOf(oldPerson);
+    //           if (index != -1) {
+    //             _loggedInUser!.contacts[index] = newPerson;
+    //             _saveUsers();
+    //             notifyListeners();
+    //           }
+    //         }
+    //       }
 
-        void deletePerson(Person person) {
-          if (_loggedInUser != null) {
-            _loggedInUser!.contacts.remove(person);
-            _saveUsers();
-            notifyListeners();
-          }
-        }
+    //       void deletePerson(Person person) {
+    //         if (_loggedInUser != null) {
+    //           _loggedInUser!.contacts.remove(person);
+    //           _saveUsers();
+    //           notifyListeners();
+    //         }
+    //       }
 
-        // USER PROFILE MANAGEMENT
-        void updateUserName(String newName) {
-          if (_loggedInUser != null) {
-            _loggedInUser!.person = Person(
-              fullName: newName,
-              dateOfBirth: _loggedInUser!.person.dateOfBirth,
-              email: _loggedInUser!.person.email,
-              nickname: _loggedInUser!.person.nickname,
-              address: _loggedInUser!.person.address,
-              profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
-            );
-            _saveUsers();
-            notifyListeners();
-          }
-        }
+    //       // USER PROFILE MANAGEMENT
+    //       void updateUserName(String newName) {
+    //         if (_loggedInUser != null) {
+    //           _loggedInUser!.person = Person(
+    //             fullName: newName,
+    //             dateOfBirth: _loggedInUser!.person.dateOfBirth,
+    //             email: _loggedInUser!.person.email,
+    //             nickname: _loggedInUser!.person.nickname,
+    //             address: _loggedInUser!.person.address,
+    //             profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
+    //           );
+    //           _saveUsers();
+    //           notifyListeners();
+    //         }
+    //       }
 
-        void updateUserEmail(String newEmail) {
-          if (_loggedInUser != null) {
-            _loggedInUser!.person = Person(
-              fullName: _loggedInUser!.person.fullName,
-              dateOfBirth: _loggedInUser!.person.dateOfBirth,
-              email: newEmail,
-              nickname: _loggedInUser!.person.nickname,
-              address: _loggedInUser!.person.address,
-              profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
-            );
-            _saveUsers();
-            notifyListeners();
-          }
-        }
+    //       void updateUserEmail(String newEmail) {
+    //         if (_loggedInUser != null) {
+    //           _loggedInUser!.person = Person(
+    //             fullName: _loggedInUser!.person.fullName,
+    //             dateOfBirth: _loggedInUser!.person.dateOfBirth,
+    //             email: newEmail,
+    //             nickname: _loggedInUser!.person.nickname,
+    //             address: _loggedInUser!.person.address,
+    //             profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
+    //           );
+    //           _saveUsers();
+    //           notifyListeners();
+    //         }
+    //       }
 
-        void updateUserNickname(String newNickname) {
-          if (_loggedInUser != null) {
-            _loggedInUser!.person = Person(
-              fullName: _loggedInUser!.person.fullName,
-              dateOfBirth: _loggedInUser!.person.dateOfBirth,
-              email: _loggedInUser!.person.email,
-              nickname: newNickname,
-              address: _loggedInUser!.person.address,
-              profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
-            );
-            _saveUsers();
-            notifyListeners();
-          }
-        }
+    //       void updateUserNickname(String newNickname) {
+    //         if (_loggedInUser != null) {
+    //           _loggedInUser!.person = Person(
+    //             fullName: _loggedInUser!.person.fullName,
+    //             dateOfBirth: _loggedInUser!.person.dateOfBirth,
+    //             email: _loggedInUser!.person.email,
+    //             nickname: newNickname,
+    //             address: _loggedInUser!.person.address,
+    //             profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
+    //           );
+    //           _saveUsers();
+    //           notifyListeners();
+    //         }
+    //       }
 
-        void updateUserAddress(String newAddress) {
-          if (_loggedInUser != null) {
-            _loggedInUser!.person = Person(
-              fullName: _loggedInUser!.person.fullName,
-              dateOfBirth: _loggedInUser!.person.dateOfBirth,
-              email: _loggedInUser!.person.email,
-              nickname: _loggedInUser!.person.nickname,
-              address: newAddress,
-              profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
-            );
-            _saveUsers();
-            notifyListeners();
-          }
-        }
+    //       void updateUserAddress(String newAddress) {
+    //         if (_loggedInUser != null) {
+    //           _loggedInUser!.person = Person(
+    //             fullName: _loggedInUser!.person.fullName,
+    //             dateOfBirth: _loggedInUser!.person.dateOfBirth,
+    //             email: _loggedInUser!.person.email,
+    //             nickname: _loggedInUser!.person.nickname,
+    //             address: newAddress,
+    //             profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
+    //           );
+    //           _saveUsers();
+    //           notifyListeners();
+    //         }
+    //       }
 
-        void updateUserDateOfBirth(DateTime newDateOfBirth) {
-          if (_loggedInUser != null) {
-            _loggedInUser!.person = Person(
-              fullName: _loggedInUser!.person.fullName,
-              dateOfBirth: newDateOfBirth,
-              email: _loggedInUser!.person.email,
-              nickname: _loggedInUser!.person.nickname,
-              address: _loggedInUser!.person.address,
-              profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
-            );
-            _saveUsers();
-            notifyListeners();
-          }
-        }
-      }
-      _saveUsers();
-      notifyListeners();
-    }
+    //       void updateUserDateOfBirth(DateTime newDateOfBirth) {
+    //         if (_loggedInUser != null) {
+    //           _loggedInUser!.person = Person(
+    //             fullName: _loggedInUser!.person.fullName,
+    //             dateOfBirth: newDateOfBirth,
+    //             email: _loggedInUser!.person.email,
+    //             nickname: _loggedInUser!.person.nickname,
+    //             address: _loggedInUser!.person.address,
+    //             profilePictureUrl: _loggedInUser!.person.profilePictureUrl,
+    //           );
+    //           _saveUsers();
+    //           notifyListeners();
+    //         }
+    //       }
+    //     }
+    //     _saveUsers();
+    //     notifyListeners();
+    //   }
   }
 }

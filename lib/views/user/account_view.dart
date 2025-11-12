@@ -8,10 +8,21 @@ import 'package:myapp/backend_integrations/google.dart';
 import 'package:myapp/services/loading_service.dart';
 import 'package:myapp/models/user.dart';
 import 'package:myapp/models/person.dart';
+import 'package:myapp/services/export_service.dart';
 
-class AccountView extends StatelessWidget {
+
+class AccountView extends StatefulWidget {
   final ScrollController? scrollController;
   const AccountView({super.key, this.scrollController});
+
+  @override
+  State<AccountView> createState() => AccountViewState();
+}
+
+class AccountViewState extends State<AccountView> {
+  final ScrollController? scrollController;
+  final Key? key;
+  AccountViewState({this.key, this.scrollController});
 
   @override
   Widget build(BuildContext context) {
@@ -438,7 +449,68 @@ class AccountView extends StatelessWidget {
             child: const Text('Connect'),
           ),
         ),
+        ListTile(
+          leading: const Icon(Icons.download),
+          title: const Text('Export Data'),
+          subtitle: const Text('Download all your data as a single file.'),
+          trailing: ElevatedButton(
+            onPressed: () => _showExportDialog(context, appState),
+            child: const Text('Export'),
+          ),
+        ),
       ],
     );
+  }
+
+  void _showExportDialog(BuildContext context, AppState appState) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Select Export Format'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: const Text('CSV'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _exportData(context, appState, 'csv');
+                },
+              ),
+              ListTile(
+                title: const Text('JSON'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _exportData(context, appState, 'json');
+                },
+              ),
+              ListTile(
+                title: const Text('TXT'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _exportData(context, appState, 'txt');
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _exportData(
+      BuildContext context, AppState appState, String format) async {
+    final loadingService = LoadingService();
+    loadingService.show();
+    try {
+      final exportService = ExportService();
+      await exportService.exportData(appState, format);
+      Fluttertoast.showToast(msg: 'Data exported successfully as $format');
+    } catch (e) {
+      Fluttertoast.showToast(msg: 'Failed to export data: ${e.toString()}');
+    } finally {
+      loadingService.hide();
+    }
   }
 }
