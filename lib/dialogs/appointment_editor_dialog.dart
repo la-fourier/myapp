@@ -46,7 +46,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
   void initState() {
     super.initState();
     final appState = Provider.of<AppState>(context, listen: false);
-    _categories = appState.loggedInUser?.customCategories ?? [];
+    _categories = List<Category>.from(appState.loggedInUser?.customCategories ?? []);
 
     if (widget.appointment != null) {
       _title = widget.appointment!.title;
@@ -58,6 +58,10 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
       _category = widget.appointment!.category;
       _attachments = List.from(widget.appointment!.attachments);
       _priority = widget.appointment!.priority;
+
+      if (!_categories.contains(_category)) {
+        _categories.insert(0, _category);
+      }
     } else {
       _title = '';
       _description = '';
@@ -67,9 +71,10 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
       );
       _startTime = TimeOfDay.fromDateTime(_startDate);
       _endTime = TimeOfDay.fromDateTime(_endDate);
-      _category = _categories.isNotEmpty
-          ? _categories.first
-          : Category(name: 'Default', color: Colors.blue);
+      if (_categories.isEmpty) {
+        _categories.add(Category(name: 'Default', color: Colors.blue));
+      }
+      _category = _categories.first;
       _attachments = [];
       _priority = Priority.normal;
     }
@@ -244,6 +249,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                           value!.isEmpty ? 'Please enter a title' : null,
                       onSaved: (value) => _title = value!,
                     ),
+                    SizedBox(height: 10),
                     TextFormField(
                       initialValue: _description,
                       decoration: const InputDecoration(
@@ -251,51 +257,18 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                       ),
                       onSaved: (value) => _description = value ?? '',
                     ),
-                    if (_categories.isNotEmpty)
-                      DropdownButtonFormField<Category>(
-                        value: _category,
-                        items: _categories.map((Category category) {
-                          return DropdownMenuItem<Category>(
-                            value: category,
-                            child: Text(category.name),
-                          );
-                        }).toList(),
-                        onChanged: (Category? newValue) {
-                          setState(() {
-                            _category = newValue!;
-                          });
-                        },
-                        decoration: const InputDecoration(
-                          labelText: 'Category',
-                        ),
-                      ),
-                    DropdownButtonFormField<Priority>(
-                      value: _priority,
-                      items: Priority.values.map((Priority priority) {
-                        return DropdownMenuItem<Priority>(
-                          value: priority,
-                          child: Text(priority.toString().split('.').last),
-                        );
-                      }).toList(),
-                      onChanged: (Priority? newValue) {
-                        setState(() {
-                          _priority = newValue!;
-                        });
-                      },
-                      decoration: const InputDecoration(labelText: 'Priority'),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
+                    const SizedBox(height: 10),
+                    Table(
                       children: [
-                        Expanded(
-                          child: Row(
-                            children: [
+                    TableRow(
+                      children: [
+                        Row(children: [
                               Text("Start:"),
                               SizedBox(width: 10),
                               Expanded(
                                 child: editable_text.EditableText(
                                   initialText:
-                                      '${DateFormat.yMd().format(_startDate)}',
+                                      DateFormat.yMd().format(_startDate),
                                   style: Theme.of(context).textTheme.bodyLarge!,
                                   onSave: (value) {
                                     try {
@@ -311,62 +284,72 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                                   },
                                 ),
                               ),
+                              IconButton(
+                                enableFeedback: true,
+                                hoverColor: Colors.transparent,
+                                iconSize: 16,
+                                icon: const Icon(Icons.calendar_today),
+                                onPressed: () => _selectDate(context, true),
+                              ),
+                              Expanded(
+                                child: editable_text.EditableText(
+                                  initialText:
+                                      _startTime.format(context),
+                                  style: Theme.of(context).textTheme.bodyLarge!,
+                                  onSave: (value) {
+                                    try {
+                                      final newTime = TimeOfDay(
+                                        hour: int.parse(
+                                          value
+                                              .split(':')[0],
+                                        ),
+                                        minute: int.parse(value.split(':')[1]),
+                                      );
+                                      setState(() {
+                                        _startTime = newTime;
+                                      });
+                                    } catch (e) {
+                                      // Handle parsing error
+                                    }
+                                  },
+                                ),
+                              ),
+                              IconButton(
+                                enableFeedback: true,
+                                hoverColor: Colors.transparent,
+                                iconSize: 16,
+                                icon: const Icon(Icons.access_time),
+                                onPressed: () => _selectTime(context, true),
+                              ),
                             ],
                           ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.calendar_today),
-                          onPressed: () => _selectDate(context, true),
-                        ),
                       ],
                     ),
-                    Row(
+                    TableRow(
                       children: [
+                        Container(width: 400),
+                        // const SizedBox(height: 1),
+                        // const SizedBox(width: 80),
+                        // const SizedBox(height: 1),
+                        // const SizedBox(width: 80),
+                        // const SizedBox(height: 1),
+                      ],
+                    ),
+                    TableRow(
+                      children: [
+                        Row(
+                          children: [
+                        Text("End:"),
+                        SizedBox(width: 10),
                         Expanded(
                           child: editable_text.EditableText(
                             initialText:
-                                'Start Time: ${_startTime.format(context)}',
-                            style: Theme.of(context).textTheme.bodyLarge!,
-                            onSave: (value) {
-                              try {
-                                final newTime = TimeOfDay(
-                                  hour: int.parse(
-                                    value
-                                        .split(':')[0]
-                                        .replaceFirst('Start Time: ', ''),
-                                  ),
-                                  minute: int.parse(value.split(':')[1]),
-                                );
-                                setState(() {
-                                  _startTime = newTime;
-                                });
-                              } catch (e) {
-                                // Handle parsing error
-                              }
-                            },
-                          ),
-                        ),
-                        IconButton(
-                          enableFeedback: true,
-                          hoverColor: Colors.transparent,
-                          iconSize: 16,
-                          icon: const Icon(Icons.access_time),
-                          onPressed: () => _selectTime(context, true),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: editable_text.EditableText(
-                            initialText:
-                                'End: ${DateFormat.yMd().format(_endDate)}',
+                                DateFormat.yMd().format(_endDate),
                             style: Theme.of(context).textTheme.bodyLarge!,
                             onSave: (value) {
                               try {
                                 final newDate = DateFormat.yMd().parse(
-                                  value.replaceFirst('End: ', ''),
+                                  value,
                                 );
                                 setState(() {
                                   _endDate = newDate;
@@ -378,25 +361,23 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                           ),
                         ),
                         IconButton(
+                          enableFeedback: true,
+                          hoverColor: Colors.transparent,
+                          iconSize: 16,
                           icon: const Icon(Icons.calendar_today),
                           onPressed: () => _selectDate(context, false),
                         ),
-                      ],
-                    ),
-                    Row(
-                      children: [
                         Expanded(
                           child: editable_text.EditableText(
                             initialText:
-                                'End Time: ${_endTime.format(context)}',
+                            _endTime.format(context),
                             style: Theme.of(context).textTheme.bodyLarge!,
                             onSave: (value) {
                               try {
                                 final newTime = TimeOfDay(
                                   hour: int.parse(
                                     value
-                                        .split(':')[0]
-                                        .replaceFirst('End Time: ', ''),
+                                        .split(':')[0],
                                   ),
                                   minute: int.parse(value.split(':')[1]),
                                 );
@@ -410,47 +391,105 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                           ),
                         ),
                         IconButton(
+                          enableFeedback: true,
+                          hoverColor: Colors.transparent,
+                          iconSize: 16,
                           icon: const Icon(Icons.access_time),
                           onPressed: () => _selectTime(context, false),
                         ),
                       ],
                     ),
+                      ],
+                    ),
+                      ],
+                    ),
                     const Divider(height: 20),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    ExpansionTile(
+                      title: const Text('Advanced Settings'),
+                      collapsedShape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      collapsedBackgroundColor: Theme.of(context).colorScheme.surface,
+                      expansionAnimationStyle: AnimationStyle(curve: Curves.easeInOut),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
                       children: [
-                        Text(
-                          textAlign: TextAlign.center,
-                          'Attachments',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        ..._attachments.map(
-                          (attachment) => ListTile(
-                            leading: const Icon(Icons.receipt),
-                            title: Text(attachment.name),
-                            subtitle: Text(attachment.type),
+                        SizedBox(width: 10),
+                        if (_categories.isNotEmpty)
+                          DropdownButtonFormField<Category>(
+                            initialValue: _category,
+                            items: _categories.map((Category category) {
+                              return DropdownMenuItem<Category>(
+                                value: category,
+                                child: Text(category.name),
+                              );
+                            }).toList(),
+                            onChanged: (Category? newValue) {
+                              setState(() {
+                                _category = newValue!;
+                              });
+                            },
+                            decoration: const InputDecoration(
+                              labelText: 'Category',
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                        DropdownButtonFormField<Priority>(
+                          initialValue: _priority,
+                          items: Priority.values.map((Priority priority) {
+                            return DropdownMenuItem<Priority>(
+                              value: priority,
+                              child: Text(priority.toString().split('.').last),
+                            );
+                          }).toList(),
+                          onChanged: (Priority? newValue) {
+                            setState(() {
+                              _priority = newValue!;
+                            });
+                          },
+                          decoration: const InputDecoration(
+                            labelText: 'Priority',
                           ),
                         ),
-                        TextButton.icon(
-                          icon: const Icon(Icons.add),
-                          label: const Text('Add Attachment'),
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (context) => BillEditorDialog(
-                                onSave: (bill) {
-                                  setState(() {
-                                    _attachments.add(bill);
-                                  });
-                                  // Also add the bill to the user's main list of bills
-                                  Provider.of<AppState>(
-                                    context,
-                                    listen: false,
-                                  ).loggedInUser?.bills.add(bill);
-                                },
+                        const SizedBox(height: 10),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Text(
+                            //   textAlign: TextAlign.center,
+                            //   'Attachments',
+                            //   style: Theme.of(context).textTheme.titleMedium,
+                            // ),
+                            ..._attachments.map(
+                              (attachment) => ListTile(
+                                leading: const Icon(Icons.receipt),
+                                title: Text(attachment.name),
+                                subtitle: Text(attachment.type),
                               ),
-                            );
-                          },
+                            ),
+                            TextButton.icon(
+                              icon: const Icon(Icons.add),
+                              label: const Text('Add Attachment'),
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => BillEditorDialog(
+                                    onSave: (bill) {
+                                      setState(() {
+                                        _attachments.add(bill);
+                                      });
+                                      // Also add the bill to the user's main list of bills
+                                      Provider.of<AppState>(
+                                        context,
+                                        listen: false,
+                                      ).loggedInUser?.bills.add(bill);
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
                         ),
                       ],
                     ),

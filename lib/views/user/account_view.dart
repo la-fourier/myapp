@@ -10,7 +10,6 @@ import 'package:myapp/models/user.dart';
 import 'package:myapp/models/person.dart';
 import 'package:myapp/services/export_service.dart';
 
-
 class AccountView extends StatefulWidget {
   final ScrollController? scrollController;
   const AccountView({super.key, this.scrollController});
@@ -500,7 +499,10 @@ class AccountViewState extends State<AccountView> {
   }
 
   Future<void> _exportData(
-      BuildContext context, AppState appState, String format) async {
+    BuildContext context,
+    AppState appState,
+    String format,
+  ) async {
     final loadingService = LoadingService();
     loadingService.show();
     try {
