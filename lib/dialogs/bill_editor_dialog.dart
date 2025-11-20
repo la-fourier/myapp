@@ -1,10 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:myapp/models/calendar/category.dart';
 import 'package:myapp/models/finance/bill.dart';
-import 'package:myapp/models/finance/attachment.dart';
 import 'package:myapp/services/app_state.dart';
 import 'package:provider/provider.dart';
+import 'package:myapp/widgets/editable_text.dart' as editable_text;
 
 class BillEditorDialog extends StatefulWidget {
   final Bill? bill;
@@ -24,6 +25,9 @@ class _BillEditorDialogState extends State<BillEditorDialog> {
   late List<LineItem> _items;
   late List<Category> _categories;
 
+  bool _isRawEditMode = false;
+  final TextEditingController _rawTextController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -35,6 +39,9 @@ class _BillEditorDialogState extends State<BillEditorDialog> {
       _date = widget.bill!.date;
       _category = widget.bill!.category;
       _items = List.from(widget.bill!.items);
+       if (!_categories.contains(_category)) {
+        _categories.insert(0, _category);
+      }
     } else {
       _vendor = '';
       _date = DateTime.now();
@@ -43,9 +50,54 @@ class _BillEditorDialogState extends State<BillEditorDialog> {
           : Category(name: 'Default', color: Colors.grey);
       _items = [LineItem(description: '', amount: 0.0)];
     }
+    _rawTextController.text = _billToJson();
+  }
+
+  String _billToJson() {
+    final data = {
+      'vendor': _vendor,
+      'date': _date.toIso8601String(),
+      'category': _category.toJson(),
+      'items': _items.map((item) => item.toJson()).toList(),
+    };
+    return const JsonEncoder.withIndent('  ').convert(data);
+  }
+
+  void _jsonToBill(String jsonString) {
+    try {
+      final data = jsonDecode(jsonString);
+      setState(() {
+        _vendor = data['vendor'];
+        _date = DateTime.parse(data['date']);
+        _category = Category.fromJson(data['category']);
+        _items = (data['items'] as List)
+            .map((itemData) => LineItem.fromJson(itemData))
+            .toList();
+      });
+    } catch (e) {
+      // Handle JSON parsing error
+    }
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _date,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null && picked != _date) {
+      setState(() {
+        _date = picked;
+      });
+    }
   }
 
   void _saveForm() {
+    if (_isRawEditMode) {
+      _jsonToBill(_rawTextController.text);
+    }
+
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
@@ -76,111 +128,156 @@ class _BillEditorDialogState extends State<BillEditorDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.bill == null ? 'Create Bill' : 'Edit Bill'),
-      content: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                initialValue: _vendor,
-                decoration: const InputDecoration(labelText: 'Vendor'),
-                validator: (value) =>
-                    value!.isEmpty ? 'Please enter a vendor' : null,
-                onSaved: (value) => _vendor = value!,
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(widget.bill == null ? 'Create Bill' : 'Edit Bill'),
+          IconButton(
+            icon: Icon(_isRawEditMode ? Icons.notes : Icons.code),
+            onPressed: () {
+              setState(() {
+                _isRawEditMode = !_isRawEditMode;
+                if (_isRawEditMode) {
+                  _rawTextController.text = _billToJson();
+                } else {
+                  _jsonToBill(_rawTextController.text);
+                }
+              });
+            },
+          ),
+        ],
+      ),
+      content: _isRawEditMode
+          ? TextField(
+              controller: _rawTextController,
+              keyboardType: TextInputType.multiline,
+              maxLines: null,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Raw Text (JSON)',
               ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text('Date: ${DateFormat.yMd().format(_date)}'),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.calendar_today),
-                    onPressed: () async {
-                      final picked = await showDatePicker(
-                        context: context,
-                        initialDate: _date,
-                        firstDate: DateTime(2000),
-                        lastDate: DateTime(2101),
-                      );
-                      if (picked != null && picked != _date) {
-                        setState(() {
-                          _date = picked;
-                        });
-                      }
-                    },
-                  ),
-                ],
-              ),
-              if (_categories.isNotEmpty)
-                DropdownButtonFormField<Category>(
-                  value: _category,
-                  items: _categories.map((Category category) {
-                    return DropdownMenuItem<Category>(
-                      value: category,
-                      child: Text(category.name),
-                    );
-                  }).toList(),
-                  onChanged: (Category? newValue) {
-                    setState(() {
-                      _category = newValue!;
-                    });
-                  },
-                  decoration: const InputDecoration(labelText: 'Category'),
-                ),
-              const Divider(height: 30),
-              Text(
-                'Line Items',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              ..._items.asMap().entries.map((entry) {
-                int index = entry.key;
-                LineItem item = entry.value;
-                return Row(
+            )
+          : Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Expanded(
-                      child: TextFormField(
-                        initialValue: item.description,
-                        decoration: const InputDecoration(
-                          labelText: 'Description',
-                        ),
-                        onChanged: (value) => _items[index] = LineItem(
-                          description: value,
-                          amount: item.amount,
-                        ),
-                      ),
+                    TextFormField(
+                      initialValue: _vendor,
+                      decoration: const InputDecoration(labelText: 'Vendor'),
+                      validator: (value) =>
+                          value!.isEmpty ? 'Please enter a vendor' : null,
+                      onSaved: (value) => _vendor = value!,
                     ),
-                    const SizedBox(width: 10),
-                    SizedBox(
-                      width: 80,
-                      child: TextFormField(
-                        initialValue: item.amount.toString(),
-                        decoration: const InputDecoration(labelText: 'Amount'),
-                        keyboardType: TextInputType.number,
-                        onChanged: (value) => _items[index] = LineItem(
-                          description: item.description,
-                          amount: double.tryParse(value) ?? 0.0,
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        const Text("Date:"),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: editable_text.EditableText(
+                            initialText: DateFormat.yMd().format(_date),
+                            style: Theme.of(context).textTheme.bodyLarge!,
+                            onSave: (value) {
+                              try {
+                                final newDate = DateFormat.yMd().parse(value);
+                                setState(() {
+                                  _date = newDate;
+                                });
+                              } catch (e) {
+                                // Handle parsing error
+                              }
+                            },
+                          ),
                         ),
-                      ),
+                        IconButton(
+                          enableFeedback: true,
+                          hoverColor: Colors.transparent,
+                          iconSize: 16,
+                          icon: const Icon(Icons.calendar_today),
+                          onPressed: () => _selectDate(context),
+                        ),
+                      ],
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.remove_circle_outline),
-                      onPressed: () => _removeLineItem(index),
+                    const Divider(height: 20),
+                    if (_categories.isNotEmpty)
+                      DropdownButtonFormField<Category>(
+                        value: _category,
+                        items: _categories.map((Category category) {
+                          return DropdownMenuItem<Category>(
+                            value: category,
+                            child: Text(category.name),
+                          );
+                        }).toList(),
+                        onChanged: (Category? newValue) {
+                          setState(() {
+                            _category = newValue!;
+                          });
+                        },
+                        decoration: const InputDecoration(labelText: 'Category'),
+                      ),
+                    const Divider(height: 20),
+                    ExpansionTile(
+                      title: const Text('Line Items'),
+                      collapsedShape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      collapsedBackgroundColor: Theme.of(context).colorScheme.surface,
+                      expansionAnimationStyle: AnimationStyle(curve: Curves.easeInOut),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      children: [
+                        ..._items.asMap().entries.map((entry) {
+                          int index = entry.key;
+                          LineItem item = entry.value;
+                          return Row(
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  initialValue: item.description,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Description',
+                                  ),
+                                  onChanged: (value) => _items[index] =
+                                      LineItem(
+                                          description: value,
+                                          amount: item.amount),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              SizedBox(
+                                width: 80,
+                                child: TextFormField(
+                                  initialValue: item.amount.toString(),
+                                  decoration:
+                                      const InputDecoration(labelText: 'Amount'),
+                                  keyboardType: TextInputType.number,
+                                  onChanged: (value) => _items[index] =
+                                      LineItem(
+                                          description: item.description,
+                                          amount: double.tryParse(value) ?? 0.0),
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.remove_circle_outline),
+                                onPressed: () => _removeLineItem(index),
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                        TextButton.icon(
+                          icon: const Icon(Icons.add),
+                          label: const Text('Add Item'),
+                          onPressed: _addLineItem,
+                        ),
+                      ],
                     ),
                   ],
-                );
-              }).toList(),
-              TextButton.icon(
-                icon: const Icon(Icons.add),
-                label: const Text('Add Item'),
-                onPressed: _addLineItem,
+                ),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
