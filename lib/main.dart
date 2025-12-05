@@ -1,3 +1,6 @@
+// Google Firebase STudio: https://studio.firebase.google.com/crealcraft-96586257
+
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/services/app_state.dart';
