@@ -1,4 +1,4 @@
-name: Dart Web Build and Deploy
+name: Flutter Web Build and Deploy
 
 on:
   push:
@@ -10,45 +10,46 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     
+    permissions:
+      contents: write  # Erforderlich für Push zu pages branch
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Vollständige History für Branch-Operationen
       
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@9a04e6d73cca37bd455e0608d7e5092f881fd603
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 'stable'
+          channel: 'stable'
       
       - name: Install dependencies
-        run: dart pub get
+        run: flutter pub get
       
       - name: Analyze project source
-        run: dart analyze
+        run: flutter analyze
       
       - name: Run tests
-        run: dart test
+        run: flutter test
       
       - name: Build for web
-        run: dart compile js -o web/main.dart.js web/main.dart
+        run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
       
       - name: Deploy to GitHub Pages
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         run: |
+          cd build/web
+          
           # Konfiguriere Git
           git config --global user.name 'GitHub Actions'
           git config --global user.email 'actions@github.com'
           
-          # Checkout pages branch (erstelle falls nicht vorhanden)
-          git fetch origin pages:pages || git checkout --orphan pages
-          git checkout pages
-          
-          # Lösche alten Inhalt
-          git rm -rf . || true
-          
-          # Kopiere Web-Build
-          git checkout master -- web/
-          mv web/* .
-          rmdir web
-          
-          # Commit und Push
+          # Initialisiere neues Git Repository im build/web Ordner
+          git init
           git add .
-          git commit -m "Deploy to GitHub Pages from master@${GITHUB_SHA::7}" || echo "No changes to commit"
-          git push origin pages --force
+          git commit -m "Deploy to GitHub Pages from ${GITHUB_SHA::7}"
+          
+          # Push zum pages branch (erzwinge Überschreiben)
+          git push --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:pages
