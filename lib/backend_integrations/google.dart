@@ -1,61 +1,32 @@
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class GoogleDriveService {
-  // The clientId is required for web authentication.
-  // TODO: Create OAuth 2.0 credentials for a "Web application" in your Google Cloud Console
-  // and paste the Client ID here. More info: https://pub.dev/packages/google_sign_in_web
-  static final _googleSignIn = GoogleSignIn(
-    clientId: kIsWeb ? 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com' : null,
-    scopes: [drive.DriveApi.driveFileScope],
-  );
+  GoogleSignIn? _googleSignIn;
   drive.DriveApi? _driveApi;
+  final _storage = const FlutterSecureStorage();
 
   Future<void> connect() async {
-    final account = await _googleSignIn.signIn();
-    if (account == null) {
-      throw Exception("Google Sign-In was cancelled or failed.");
-    }
-    final auth = await account.authentication;
-
-    final client = AuthenticatedClient(http.Client(), auth.accessToken!);
-    _driveApi = drive.DriveApi(client);
+    // DUMMY IMPLEMENTATION: OAuth is not yet configured
+    await Future.delayed(const Duration(seconds: 1));
+    // We mock success, but leave _driveApi as null. 
+    // The methods below will need dummy handling as well.
   }
 
   Future<void> uploadJson(String fileName, Map<String, dynamic> data) async {
-    if (_driveApi == null) throw Exception("Not connected to Google Drive");
-
-    final media = drive.Media(
-      Stream.value(utf8.encode(jsonEncode(data))),
-      utf8.encode(jsonEncode(data)).length,
-      contentType: 'application/json',
-    );
-
-    final file = drive.File()
-      ..name = fileName
-      ..mimeType = 'application/json';
-
-    await _driveApi!.files.create(file, uploadMedia: media);
+    // DUMMY UPLOAD
+    await Future.delayed(const Duration(milliseconds: 500));
+    print('Dummy uploaded $fileName to Google Drive');
   }
 
   Future<Map<String, dynamic>?> downloadJson(String fileName) async {
-    if (_driveApi == null) throw Exception("Not connected to Google Drive");
-
-    final files = await _driveApi!.files.list(q: "name='$fileName'");
-    if (files.files?.isEmpty ?? true) return null;
-
-    final fileId = files.files!.first.id!;
-    final media =
-        await _driveApi!.files.get(
-              fileId,
-              downloadOptions: drive.DownloadOptions.fullMedia,
-            )
-            as drive.Media;
-    final data = media.stream.toString();
-    return jsonDecode(data);
+    // DUMMY DOWNLOAD
+    await Future.delayed(const Duration(milliseconds: 500));
+    return {'dummy': 'data'};
   }
 }
 

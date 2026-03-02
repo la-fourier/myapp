@@ -30,6 +30,8 @@ class _SignupViewState extends State<SignupView> {
             backgroundColor: Colors.red,
           ),
         );
+      } else if (success && mounted) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
       }
       // The AuthWrapper will handle navigation automatically upon state change.
     }

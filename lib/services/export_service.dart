@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:myapp/models/calendar/appointment.dart';
 import 'package:myapp/models/finance/bill.dart';
 import 'package:myapp/models/person.dart';
@@ -49,7 +51,15 @@ class ExportService {
     if (kIsWeb) {
       _downloadFile(fileContent, fileName);
     } else {
-      // TODO: Implement mobile download
+      String? outputFile = await FilePicker.platform.saveFile(
+        dialogTitle: 'Please select an output file:',
+        fileName: fileName,
+      );
+
+      if (outputFile != null) {
+        final File file = File(outputFile);
+        await file.writeAsString(fileContent);
+      }
     }
   }
 

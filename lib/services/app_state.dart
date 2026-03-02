@@ -31,13 +31,23 @@ class AppState extends ChangeNotifier {
   SelectableActivity? _currentlyTracking;
   DateTime? _trackingStartTime;
 
+  // Global Settings Settings
+  bool _toastNotificationsEnabled = true;
+
   User? get loggedInUser => _loggedInUser;
   List<User> get users => _users;
   SelectableActivity? get currentlyTracking => _currentlyTracking;
   DateTime? get trackingStartTime => _trackingStartTime;
+  bool get toastNotificationsEnabled => _toastNotificationsEnabled;
 
   AppState() {
     _loadUsers();
+  }
+
+  void setToastNotificationsEnabled(bool value) {
+    _toastNotificationsEnabled = value;
+    // For a production app this would be saved to storage/SharedPreferences.
+    notifyListeners();
   }
 
   Future<bool> signup(String email, String password) async {
@@ -136,9 +146,7 @@ class AppState extends ChangeNotifier {
 
   // AUTHENTICATION
   Future<bool> login(String email, String password) async {
-    final user = await _users.firstWhereOrNull(
-      (user) => user.person.email == email,
-    );
+    final user = _users.where((user) => user.person.email == email).firstOrNull;
 
     if (user != null && user.password == password) {
       _loggedInUser = user;

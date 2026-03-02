@@ -279,6 +279,24 @@ class _BillEditorDialogState extends State<BillEditorDialog> {
               ),
             ),
       actions: [
+        TextButton.icon(
+          onPressed: () async {
+             showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => const Center(child: CircularProgressIndicator()),
+             );
+             await Future.delayed(const Duration(seconds: 2));
+             if (context.mounted) {
+                Navigator.of(context).pop(); // close loading
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('True AI parsing (e.g. Gemini API) would happen here!')),
+                );
+             }
+          },
+          icon: const Icon(Icons.auto_awesome),
+          label: const Text('Use AI'),
+        ),
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Cancel'),

@@ -1,15 +1,20 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class GitHubService {
   String? _accessToken;
+  final _storage = const FlutterSecureStorage();
 
   Future<void> connect() async {
-    // TODO: Replace with your own GitHub client ID and secret.
-    final clientId = 'YOUR_GITHUB_CLIENT_ID';
-    final clientSecret = 'YOUR_GITHUB_CLIENT_SECRET';
+    final clientId = await _storage.read(key: 'github_client_id');
+    final clientSecret = await _storage.read(key: 'github_client_secret');
+
+    if (clientId == null || clientId.isEmpty || clientSecret == null || clientSecret.isEmpty) {
+      throw Exception("GitHub Client ID or Secret is not configured. Please set them in your Account Integrations.");
+    }
 
     // The callbackUrlScheme is a required parameter.
     // For mobile, it's the custom scheme you've registered (e.g., 'myapp').

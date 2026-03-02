@@ -11,6 +11,7 @@ import 'package:myapp/dialogs/bill_editor_dialog.dart';
 import 'package:myapp/models/finance/bill.dart';
 import 'package:myapp/models/calendar/category.dart';
 import 'package:myapp/services/app_state.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 
 import 'package:collection/collection.dart';
@@ -37,6 +38,15 @@ class FinanceView extends StatelessWidget {
   }
 
   Future<void> _scanBillWithCamera(BuildContext context) async {
+    if (kIsWeb) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Camera scanning is only supported on Android/iOS. Please use the mobile emulator.')),
+        );
+      }
+      return;
+    }
+
     final picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.camera);
 
@@ -52,47 +62,89 @@ class FinanceView extends StatelessWidget {
       );
       textRecognizer.close();
 
-      // Simple parsing logic, this can be improved
+      // Heuristic parsing logic
       String? total;
       DateTime? date;
       String? vendor;
+      List<LineItem> extractedItems = [];
+
+      final priceRegex = RegExp(r'(\d+[.,]\d{2})(?!\d)');
 
       for (TextBlock block in recognizedText.blocks) {
         for (TextLine line in block.lines) {
           final text = line.text.toLowerCase();
-          if (text.contains('total') || text.contains('summe')) {
-            total = line.text
-                .replaceAll(RegExp(r'[^0-9.,]'), '')
-                .replaceAll(',', '.');
-          }
-          // Add more robust date parsing
-          if (RegExp(r'\d{2}[./]\d{2}[./]\d{4}').hasMatch(line.text)) {
-            try {
-              date = DateFormat('dd/MM/yyyy').parse(line.text);
-            } catch (e) {
-              // try other format
+
+          // 1. Total Extraction (look for "total" or "summe" keywords)
+          if (text.contains('total') || text.contains('summe') || text.contains('betrag')) {
+            final match = priceRegex.firstMatch(text);
+            if (match != null) {
+               total = match.group(1)?.replaceAll(',', '.');
+            } else {
+               // Fallback: strip everything except numbers
+                total = text.replaceAll(RegExp(r'[^0-9.,]'), '').replaceAll(',', '.');
             }
           }
-          // Very basic vendor detection (first line)
+
+          // 2. Date parsing (look for common short date formats)
+          if (RegExp(r'\d{2}[./]\d{2}[./]\d{4}').hasMatch(text)) {
+            try {
+              // Extract just the date part if there's surrounding text
+              final match = RegExp(r'(\d{2}[./]\d{2}[./]\d{4})').firstMatch(text);
+              if (match != null) {
+                String dateStr = match.group(1)!.replaceAll('.', '/');
+                date = DateFormat('dd/MM/yyyy').parse(dateStr);
+              }
+            } catch (e) {
+              // ignore
+            }
+          }
+
+          // 3. Vendor detection (first prominent block usually)
           if (vendor == null && block == recognizedText.blocks.first) {
-            vendor = line.text;
+             // Let's assume the very first line of the first block is the store name
+             if (line == block.lines.first) {
+                 vendor = line.text;
+             }
+          }
+
+          // 4. Line Item Extraction Heuristics
+          // We look for a line that contains a price format (e.g. "1.99" or "4,50").
+          // If the line has text *and* a price, we assume it's an item.
+          // Ignore lines that look like totals or change given.
+          if (!text.contains('total') && !text.contains('summe') && !text.contains('betrag') && !text.contains('rückgeld') && !text.contains('change')) {
+              final match = priceRegex.firstMatch(line.text);
+              if (match != null) {
+                  // Found a price. Let's try to get the description (everything before the price)
+                  String priceStr = match.group(1)!;
+                  String desc = line.text.substring(0, match.start).trim();
+
+                  // Sometimes OCR splits amount and description into different blocks/lines.
+                  // For this simple heuristic, we just take lines that have both on the same line.
+                  if (desc.isNotEmpty && desc.length > 2) {
+                       double amount = double.tryParse(priceStr.replaceAll(',', '.')) ?? 0.0;
+                       extractedItems.add(LineItem(description: desc, amount: amount));
+                  }
+              }
           }
         }
       }
 
       final totalAmount = double.tryParse(total ?? '0.0') ?? 0.0;
+
+      // If heuristic failed to find any items, add a fallback Total item
+      if (extractedItems.isEmpty) {
+          extractedItems.add(LineItem(description: 'Total', amount: totalAmount));
+      }
+
       _showBillEntryDialog(
         context,
         bill: Bill(
           vendor: vendor ?? 'Unknown',
           date: date ?? DateTime.now(),
-          category:
-              Provider.of<AppState>(
-                context,
-                listen: false,
-              ).loggedInUser?.customCategories.first ??
+          category: Provider.of<AppState>(context, listen: false)
+                  .loggedInUser?.customCategories.first ??
               Category(name: 'Default', color: Colors.blue),
-          items: [LineItem(description: 'Total', amount: totalAmount)],
+          items: extractedItems,
         ),
       );
     }

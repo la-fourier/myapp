@@ -49,9 +49,12 @@ class StorageService {
   Future<List<User>> _readUsersFromFile() async {
     try {
       final file = await _localFile;
+      if (!await file.exists()) {
+        return [];
+      }
       final contents = await file.readAsString();
       final List<dynamic> json = jsonDecode(contents);
-      return json.map((e) => User.fromJson(e)).toList();
+      return json.map((e) => User.fromJson(e as Map<String, dynamic>)).toList();
     } catch (e) {
       // If the file doesn't exist or is invalid, return an empty list
       return [];
@@ -72,7 +75,7 @@ class StorageService {
         return [];
       }
       final List<dynamic> json = jsonDecode(contents);
-      return json.map((e) => User.fromJson(e)).toList();
+      return json.map((e) => User.fromJson(e as Map<String, dynamic>)).toList();
     } catch (e) {
       return [];
     }

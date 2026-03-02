@@ -1,3 +1,4 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
@@ -70,7 +71,7 @@ class AccountViewState extends State<AccountView> {
         body: TabBarView(
           children: [
             _buildProfilePage(context, appState, user),
-            _buildIntegrationsPage(context, appState),
+            IntegrationsPage(appState: appState),
           ],
         ),
       ),
@@ -379,88 +380,49 @@ class AccountViewState extends State<AccountView> {
       ),
     );
   }
+}
 
-  // Widget _buildIntegrationsPage(BuildContext context, AppState appState) {
-  //   return ListView(
-  //     children: [
-  //           SizedBox(
-  //             width: 80,
-  //             child: Text(
-  //               label,
-  //               style: const TextStyle(fontWeight: FontWeight.bold),
-  //             ),
-  //           ),
-  //           Expanded(child: Text(DateFormat.yMMMd().format(value))),
-  //           IconButton(
-  //             icon: const Icon(Icons.edit, size: 20),
-  //             onPressed: () => pickDate(context),
-  //           ),
-  //         ],
-  //   );
-  // }
+class IntegrationsPage extends StatefulWidget {
+  final AppState appState;
+  const IntegrationsPage({super.key, required this.appState});
 
-  Widget _buildIntegrationsPage(BuildContext context, AppState appState) {
-    return ListView(
-      children: [
-        ListTile(
-          leading: const Icon(Icons.cloud),
-          title: const Text('Google Drive'),
-          subtitle: const Text('Sync your data with Google Drive'),
-          trailing: ElevatedButton(
-            onPressed: () async {
-              final loadingService = LoadingService();
-              loadingService.show();
-              try {
-                await GoogleDriveService().connect();
-                Fluttertoast.showToast(
-                  msg: "Successfully connected to Google Drive",
-                );
-              } catch (e) {
-                Fluttertoast.showToast(
-                  msg: "Failed to connect to Google Drive: ${e.toString()}",
-                );
-              } finally {
-                loadingService.hide();
-              }
-            },
-            child: const Text('Connect'),
-          ),
-        ),
-        ListTile(
-          leading: const Icon(Icons.grain),
-          title: const Text('GitHub'),
-          subtitle: const Text('Sync your data with a private Gist'),
-          trailing: ElevatedButton(
-            onPressed: () async {
-              final loadingService = LoadingService();
-              loadingService.show();
-              try {
-                await GitHubService().connect();
-                Fluttertoast.showToast(msg: "Successfully connected to GitHub");
-              } catch (e) {
-                Fluttertoast.showToast(
-                  msg: "Failed to connect to GitHub: ${e.toString()}",
-                );
-              } finally {
-                loadingService.hide();
-              }
-            },
-            child: const Text('Connect'),
-          ),
-        ),
-        ListTile(
-          leading: const Icon(Icons.download),
-          title: const Text('Export Data'),
-          subtitle: const Text('Download all your data as a single file.'),
-          trailing: ElevatedButton(
-            onPressed: () => _showExportDialog(context, appState),
-            child: const Text('Export'),
-          ),
-        ),
-      ],
-    );
+  @override
+  State<IntegrationsPage> createState() => _IntegrationsPageState();
+}
+
+class _IntegrationsPageState extends State<IntegrationsPage> {
+  final TextEditingController googleController = TextEditingController();
+  final TextEditingController githubIdController = TextEditingController();
+  final TextEditingController githubSecretController = TextEditingController();
+  final storage = const FlutterSecureStorage();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadKeys();
   }
 
+  Future<void> _loadKeys() async {
+    final google = await storage.read(key: 'google_web_client_id');
+    final githubId = await storage.read(key: 'github_client_id');
+    final githubSec = await storage.read(key: 'github_client_secret');
+    if (mounted) {
+      setState(() {
+        googleController.text = google ?? '';
+        githubIdController.text = githubId ?? '';
+        githubSecretController.text = githubSec ?? '';
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    googleController.dispose();
+    githubIdController.dispose();
+    githubSecretController.dispose();
+    super.dispose();
+  }
+  
   void _showExportDialog(BuildContext context, AppState appState) {
     showDialog(
       context: context,
@@ -498,11 +460,7 @@ class AccountViewState extends State<AccountView> {
     );
   }
 
-  Future<void> _exportData(
-    BuildContext context,
-    AppState appState,
-    String format,
-  ) async {
+  Future<void> _exportData(BuildContext context, AppState appState, String format) async {
     final loadingService = LoadingService();
     loadingService.show();
     try {
@@ -514,5 +472,105 @@ class AccountViewState extends State<AccountView> {
     } finally {
       loadingService.hide();
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(16.0),
+      children: [
+        const Text(
+          'Google Integration',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        const Text('Enter your Google Web Client ID. OAuth is currently mocked.'),
+        TextField(
+          controller: googleController,
+          decoration: const InputDecoration(
+            labelText: 'Google Web Client ID',
+            border: OutlineInputBorder(),
+          ),
+          onChanged: (value) async {
+            await storage.write(key: 'google_web_client_id', value: value);
+          },
+        ),
+        const SizedBox(height: 8),
+        ElevatedButton.icon(
+          onPressed: () async {
+            final loadingService = LoadingService();
+            loadingService.show();
+            try {
+              await GoogleDriveService().connect();
+              Fluttertoast.showToast(msg: "Successfully connected to Google Drive");
+            } catch (e) {
+              Fluttertoast.showToast(msg: "Failed to connect to Google Drive: ${e.toString()}");
+            } finally {
+              loadingService.hide();
+            }
+          },
+          icon: const Icon(Icons.cloud),
+          label: const Text('Connect to Google Drive'),
+        ),
+        const Divider(height: 32),
+        const Text(
+          'GitHub Integration',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        const Text('Enter your GitHub App details. OAuth is currently mocked.'),
+        TextField(
+          controller: githubIdController,
+          decoration: const InputDecoration(
+            labelText: 'GitHub Client ID',
+            border: OutlineInputBorder(),
+          ),
+          onChanged: (value) async {
+            await storage.write(key: 'github_client_id', value: value);
+          },
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: githubSecretController,
+          decoration: const InputDecoration(
+            labelText: 'GitHub Client Secret',
+            border: OutlineInputBorder(),
+          ),
+          obscureText: true,
+          onChanged: (value) async {
+            await storage.write(key: 'github_client_secret', value: value);
+          },
+        ),
+        const SizedBox(height: 8),
+        ElevatedButton.icon(
+          onPressed: () async {
+            final loadingService = LoadingService();
+            loadingService.show();
+            try {
+              await GitHubService().connect();
+              Fluttertoast.showToast(msg: "Successfully connected to GitHub");
+            } catch (e) {
+              Fluttertoast.showToast(msg: "Failed to connect to GitHub: ${e.toString()}");
+            } finally {
+              loadingService.hide();
+            }
+          },
+          icon: const Icon(Icons.grain),
+          label: const Text('Connect to GitHub'),
+        ),
+        const Divider(height: 32),
+        const Text(
+          'Export Data',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        const Text('Download all your data as a single file.'),
+        ElevatedButton.icon(
+          onPressed: () => _showExportDialog(context, widget.appState),
+          icon: const Icon(Icons.download),
+          label: const Text('Export'),
+        ),
+      ],
+    );
   }
 }
