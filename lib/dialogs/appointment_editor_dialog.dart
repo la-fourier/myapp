@@ -455,41 +455,92 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                         const SizedBox(height: 10),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Text(
-                            //   textAlign: TextAlign.center,
-                            //   'Attachments',
-                            //   style: Theme.of(context).textTheme.titleMedium,
-                            // ),
-                            ..._attachments.map(
-                              (attachment) => ListTile(
-                                leading: const Icon(Icons.receipt),
-                                title: Text(attachment.name),
-                                subtitle: Text(attachment.type),
-                              ),
-                            ),
-                            TextButton.icon(
-                              icon: const Icon(Icons.add),
-                              label: const Text('Add Attachment'),
-                              onPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => BillEditorDialog(
-                                    onSave: (bill) {
-                                      setState(() {
-                                        _attachments.add(bill);
-                                      });
-                                      // Also add the bill to the user's main list of bills
-                                      Provider.of<AppState>(
-                                        context,
-                                        listen: false,
-                                      ).loggedInUser?.bills.add(bill);
-                                    },
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
+                           children: [
+                             // Text(
+                             //   textAlign: TextAlign.center,
+                             //   'Attachments',
+                             //   style: Theme.of(context).textTheme.titleMedium,
+                             // ),
+                             ..._attachments.map(
+                               (attachment) => ListTile(
+                                 leading: const Icon(Icons.receipt),
+                                 title: Text(attachment.name),
+                                 subtitle: Text(attachment.type),
+                                 trailing: IconButton(
+                                  icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+                                  onPressed: () {
+                                    setState(() {
+                                      _attachments.remove(attachment);
+                                    });
+                                  },
+                                ),
+                               ),
+                             ),
+                             const SizedBox(height: 12),
+                             Row(
+                               crossAxisAlignment: CrossAxisAlignment.center,
+                               children: [
+                                 Expanded(
+                                   child: DropdownButtonFormField<Attachment>(
+                                     decoration: const InputDecoration(
+                                       labelText: 'Add Existing File',
+                                       border: OutlineInputBorder(),
+                                       prefixIcon: Icon(Icons.search),
+                                     ),
+                                     items: [
+                                        const DropdownMenuItem<Attachment>(
+                                          value: null,
+                                          child: Text('Select a file to attach...'),
+                                        ),
+                                        ...Provider.of<AppState>(context, listen: false)
+                                           .loggedInUser?.bills.map((bill) {
+                                             return DropdownMenuItem<Attachment>(
+                                               value: bill,
+                                               child: Text('${bill.name} (${bill.type})'),
+                                             );
+                                           }) ?? []
+                                     ],
+                                     onChanged: (Attachment? selectedObj) {
+                                       if (selectedObj != null && !_attachments.any((a) => a.id == selectedObj.id)) {
+                                           setState(() {
+                                             _attachments.add(selectedObj);
+                                           });
+                                       }
+                                     },
+                                     value: null,
+                                   ),
+                                 ),
+                                 const SizedBox(width: 8),
+                                 Tooltip(
+                                   message: 'Create New File',
+                                   child: FilledButton.icon(
+                                     style: FilledButton.styleFrom(
+                                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                     ),
+                                     icon: const Icon(Icons.add),
+                                     label: const Text('New'),
+                                     onPressed: () {
+                                       showDialog(
+                                         context: context,
+                                         builder: (context) => BillEditorDialog(
+                                           onSave: (bill) {
+                                             setState(() {
+                                               _attachments.add(bill);
+                                             });
+                                             // Also add the bill to the user's main list of bills
+                                             Provider.of<AppState>(
+                                               context,
+                                               listen: false,
+                                             ).loggedInUser?.bills.add(bill);
+                                           },
+                                         ),
+                                       );
+                                     },
+                                   ),
+                                 ),
+                               ],
+                             ),
+                           ],
                         ),
                       ],
                     ),
