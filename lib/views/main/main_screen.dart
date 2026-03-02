@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:myapp/services/theme_provider.dart';
 import 'package:myapp/views/finance/finance_view.dart';
 import 'package:myapp/views/user/account_view.dart';
@@ -94,13 +95,18 @@ class _MainScreenState extends State<MainScreen> {
     ];
   }
 
-  static const List<String> _widgetTitles = <String>[
-    'Dashboard',
-    'Calendar',
-    'Today',
-    'Stats',
-    'Finance',
-  ];
+  String _getWidgetTitle(BuildContext context, int index) {
+    final loc = AppLocalizations.of(context);
+    if (loc == null) return '';
+    switch (index) {
+      case 0: return loc.dashboard;
+      case 1: return loc.calendar;
+      case 2: return 'Today';
+      case 3: return 'Stats';
+      case 4: return loc.finances;
+      default: return '';
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -168,7 +174,7 @@ class _MainScreenState extends State<MainScreen> {
               },
               tooltip: 'Logout',
             ),
-            title: Text(_widgetTitles[_selectedIndex]),
+            title: Text(_getWidgetTitle(context, _selectedIndex)),
             actions: [
               if (!isMobile)
                 const Center(
@@ -209,31 +215,31 @@ class _MainScreenState extends State<MainScreen> {
                       selectedIndex: _selectedIndex,
                       onDestinationSelected: _onItemTapped,
                       labelType: NavigationRailLabelType.all,
-                      destinations: const <NavigationRailDestination>[
+                      destinations: <NavigationRailDestination>[
                         NavigationRailDestination(
-                          icon: Icon(Icons.dashboard_outlined),
-                          selectedIcon: Icon(Icons.dashboard),
-                          label: Text('Dashboard'),
+                          icon: const Icon(Icons.dashboard_outlined),
+                          selectedIcon: const Icon(Icons.dashboard),
+                          label: Text(AppLocalizations.of(context)!.dashboard),
                         ),
                         NavigationRailDestination(
-                          icon: Icon(Icons.calendar_today_outlined),
-                          selectedIcon: Icon(Icons.calendar_today),
-                          label: Text('Calendar'),
+                          icon: const Icon(Icons.calendar_today_outlined),
+                          selectedIcon: const Icon(Icons.calendar_today),
+                          label: Text(AppLocalizations.of(context)!.calendar),
                         ),
-                        NavigationRailDestination(
+                        const NavigationRailDestination(
                           icon: Icon(Icons.today_outlined),
                           selectedIcon: Icon(Icons.today),
                           label: Text('Today'),
                         ),
-                        NavigationRailDestination(
+                        const NavigationRailDestination(
                           icon: Icon(Icons.bar_chart_outlined),
                           selectedIcon: Icon(Icons.bar_chart),
                           label: Text('Stats'),
                         ),
                         NavigationRailDestination(
-                          icon: Icon(Icons.attach_money),
-                          selectedIcon: Icon(Icons.money),
-                          label: Text('Finance'),
+                          icon: const Icon(Icons.attach_money),
+                          selectedIcon: const Icon(Icons.money),
+                          label: Text(AppLocalizations.of(context)!.finances),
                         ),
                       ],
                     ),
@@ -248,31 +254,31 @@ class _MainScreenState extends State<MainScreen> {
               ? NavigationBar(
                   onDestinationSelected: _onItemTapped,
                   selectedIndex: _selectedIndex,
-                  destinations: const <Widget>[
+                  destinations: <Widget>[
                     NavigationDestination(
-                      icon: Icon(Icons.dashboard_outlined),
-                      selectedIcon: Icon(Icons.dashboard),
-                      label: 'Dashboard',
+                      icon: const Icon(Icons.dashboard_outlined),
+                      selectedIcon: const Icon(Icons.dashboard),
+                      label: AppLocalizations.of(context)!.dashboard,
                     ),
                     NavigationDestination(
-                      icon: Icon(Icons.calendar_today_outlined),
-                      selectedIcon: Icon(Icons.calendar_today),
-                      label: 'Calendar',
+                      icon: const Icon(Icons.calendar_today_outlined),
+                      selectedIcon: const Icon(Icons.calendar_today),
+                      label: AppLocalizations.of(context)!.calendar,
                     ),
-                    NavigationDestination(
+                    const NavigationDestination(
                       icon: Icon(Icons.today_outlined),
                       selectedIcon: Icon(Icons.today),
                       label: 'Today',
                     ),
-                    NavigationDestination(
+                    const NavigationDestination(
                       icon: Icon(Icons.bar_chart_outlined),
                       selectedIcon: Icon(Icons.bar_chart),
                       label: 'Stats',
                     ),
                     NavigationDestination(
-                      icon: Icon(Icons.attach_money),
-                      selectedIcon: Icon(Icons.money),
-                      label: 'Finance',
+                      icon: const Icon(Icons.attach_money),
+                      selectedIcon: const Icon(Icons.money),
+                      label: AppLocalizations.of(context)!.finances,
                     ),
                   ],
                 )

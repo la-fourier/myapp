@@ -3,6 +3,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:myapp/services/app_state.dart';
 import 'package:myapp/services/theme_provider.dart';
 import 'package:myapp/views/auth/login_view.dart';
@@ -29,13 +31,25 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ThemeProvider>(
-      builder: (context, themeProvider, child) {
+    return Consumer2<ThemeProvider, AppState>(
+      builder: (context, themeProvider, appState, child) {
         return MaterialApp(
           title: 'Orgaa stuff',
           theme: themeProvider.getTheme(),
           darkTheme: themeProvider.getTheme(),
           themeMode: themeProvider.themeMode,
+          locale: appState.currentLocale,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('en'),
+            Locale('de'),
+            Locale('es'),
+          ],
           builder: (context, child) {
             return LoadingOverlay(child: child!);
           },

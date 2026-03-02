@@ -1,0 +1,16 @@
+{
+    "@@locale": "es",
+    "appTitle": "MyApp Calendario",
+    "dashboard": "Panel",
+    "calendar": "Calendario",
+    "finances": "Finanzas",
+    "habits": "Hábitos",
+    "settings": "Ajustes",
+    "account": "Cuenta",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "createNew": "Crear nuevo",
+    "search": "Buscar"
+}

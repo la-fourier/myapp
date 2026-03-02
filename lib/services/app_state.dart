@@ -33,15 +33,23 @@ class AppState extends ChangeNotifier {
 
   // Global Settings Settings
   bool _toastNotificationsEnabled = true;
+  Locale _currentLocale = const Locale('en');
 
   User? get loggedInUser => _loggedInUser;
   List<User> get users => _users;
   SelectableActivity? get currentlyTracking => _currentlyTracking;
   DateTime? get trackingStartTime => _trackingStartTime;
   bool get toastNotificationsEnabled => _toastNotificationsEnabled;
+  Locale get currentLocale => _currentLocale;
 
   AppState() {
     _loadUsers();
+  }
+
+  void setLocale(Locale newLocale) {
+    if (!['en', 'de', 'es'].contains(newLocale.languageCode)) return;
+    _currentLocale = newLocale;
+    notifyListeners();
   }
 
   void setToastNotificationsEnabled(bool value) {

@@ -1,0 +1,16 @@
+{
+    "@@locale": "de",
+    "appTitle": "MyApp Kalender",
+    "dashboard": "Dashboard",
+    "calendar": "Kalender",
+    "finances": "Finanzen",
+    "habits": "Gewohnheiten",
+    "settings": "Einstellungen",
+    "account": "Konto",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "createNew": "Neu erstellen",
+    "search": "Suchen"
+}

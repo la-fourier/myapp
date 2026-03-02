@@ -1,0 +1,19 @@
+{
+    "@@locale": "en",
+    "appTitle": "MyApp Calendar",
+    "@appTitle": {
+        "description": "The title of the application"
+    },
+    "dashboard": "Dashboard",
+    "calendar": "Calendar",
+    "finances": "Finances",
+    "habits": "Habits",
+    "settings": "Settings",
+    "account": "Account",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "createNew": "Create New",
+    "search": "Search"
+}

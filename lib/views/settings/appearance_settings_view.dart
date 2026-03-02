@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/services/theme_provider.dart';
+import 'package:myapp/services/app_state.dart';
 import 'package:myapp/views/settings/border_radius_settings_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -54,36 +55,33 @@ class AppearanceSettingsView extends StatelessWidget {
             );
           },
         ),
-        ListTile(
-          leading: const Icon(Icons.language),
-          title: const Text('Language'),
-          subtitle: const Text('English'), 
-          onTap: () {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: const Text('Select Language'),
-                  content: SingleChildScrollView(
-                    child: ListBody(
-                      children: <Widget>[
-                        ListTile(
-                          title: const Text('English'),
-                          onTap: () => _showLanguageToast(context, 'English'),
-                        ),
-                        ListTile(
-                          title: const Text('German'),
-                          onTap: () => _showLanguageToast(context, 'German'),
-                        ),
-                        ListTile(
-                          title: const Text('Spanish'),
-                          onTap: () => _showLanguageToast(context, 'Spanish'),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+        Consumer<AppState>(
+          builder: (context, appState, child) {
+            String localeName(Locale loc) {
+              switch (loc.languageCode) {
+                case 'en': return 'English';
+                case 'de': return 'German';
+                case 'es': return 'Spanish';
+                default: return 'English';
+              }
+            }
+            
+            return ListTile(
+              leading: const Icon(Icons.language),
+              title: const Text('Language'),
+              trailing: DropdownButton<Locale>(
+                value: appState.currentLocale,
+                onChanged: (Locale? newLocale) {
+                  if (newLocale != null) {
+                    appState.setLocale(newLocale);
+                  }
+                },
+                items: const [
+                  DropdownMenuItem(value: Locale('en'), child: Text('English')),
+                  DropdownMenuItem(value: Locale('de'), child: Text('German')),
+                  DropdownMenuItem(value: Locale('es'), child: Text('Spanish')),
+                ],
+              ),
             );
           },
         ),
