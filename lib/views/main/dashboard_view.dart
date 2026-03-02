@@ -10,6 +10,10 @@ import 'package:myapp/dialogs/category_editor_dialog.dart';
 import 'package:myapp/dialogs/person_editor_dialog.dart';
 import 'package:myapp/dialogs/appointment_editor_dialog.dart';
 
+import 'package:myapp/dialogs/read_views/person_read_view.dart';
+import 'package:myapp/dialogs/read_views/appointment_read_view.dart';
+import 'package:myapp/dialogs/read_views/tracked_activity_read_view.dart';
+
 class DashboardView extends StatefulWidget {
   final Function(Widget Function(ScrollController)) showAsModalSheet;
   const DashboardView({super.key, required this.showAsModalSheet});
@@ -190,6 +194,18 @@ class _DashboardViewState extends State<DashboardView> {
         return DataCard<Person>(
           filterText: _filterController.text,
           data: data as List<Person>,
+          onRowTap: (item) {
+            showDialog(
+              context: context,
+              builder: (ctx) => PersonReadView(
+                person: item,
+                onEdit: () {
+                  Navigator.pop(ctx);
+                  _showPersonEditor(person: item);
+                },
+              ),
+            );
+          },
           columns: [
             SortableColumn(
               label: 'Name',
@@ -228,6 +244,18 @@ class _DashboardViewState extends State<DashboardView> {
         return DataCard<Appointment>(
           filterText: _filterController.text,
           data: data as List<Appointment>,
+          onRowTap: (item) {
+            showDialog(
+              context: context,
+              builder: (ctx) => AppointmentReadView(
+                appointment: item,
+                onEdit: () {
+                  Navigator.pop(ctx);
+                  _showAppointmentEditor(appointment: item);
+                },
+              ),
+            );
+          },
           columns: [
             SortableColumn(
               label: 'Title',
@@ -266,6 +294,7 @@ class _DashboardViewState extends State<DashboardView> {
         return DataCard<Category>(
           filterText: _filterController.text,
           data: data as List<Category>,
+          onRowTap: (item) => _showCategoryEditor(category: item),
           columns: [
             SortableColumn(
               label: 'Color',
@@ -303,6 +332,15 @@ class _DashboardViewState extends State<DashboardView> {
         return DataCard<TrackedActivity>(
           filterText: _filterController.text,
           data: data as List<TrackedActivity>,
+          onRowTap: (item) {
+            showDialog(
+              context: context,
+              builder: (ctx) => TrackedActivityReadView(
+                activity: item,
+                onEdit: null, // Edit for this is not built yet
+              ),
+            );
+          },
           columns: [
             SortableColumn(
               label: 'Name',

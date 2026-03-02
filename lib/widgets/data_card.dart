@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-// A helper class to define a column, its data, and its sorting behavior.
 class SortableColumn<T> {
   final String label;
   final String? tooltip;
   final bool numeric;
   final Comparable Function(T item) getField;
   final Widget Function(T item) cellBuilder;
+  Alignment alignment;
 
   SortableColumn({
     required this.label,
@@ -14,6 +14,7 @@ class SortableColumn<T> {
     this.numeric = false,
     required this.getField,
     required this.cellBuilder,
+    this.alignment = Alignment.centerLeft,
   });
 }
 
@@ -21,12 +22,14 @@ class DataCard<T> extends StatefulWidget {
   final List<T> data;
   final List<SortableColumn<T>> columns;
   final String? filterText;
+  final void Function(T item)? onRowTap;
 
   const DataCard({
     super.key,
     required this.data,
     required this.columns,
     this.filterText,
+    this.onRowTap,
   });
 
   @override
@@ -54,8 +57,13 @@ class _DataCardState<T> extends State<DataCard<T>> {
     if (widget.data != oldWidget.data) {
       setState(() {
         _sortedData = List.from(widget.data);
-        _sortColumnIndex = null;
-        _sortAscending = true;
+        if (_sortColumnIndex != null) {
+          _sort(
+            _orderedColumns[_sortColumnIndex!].getField,
+            _sortColumnIndex!,
+            _sortAscending,
+          );
+        }
       });
     }
     if (widget.columns != oldWidget.columns) {
@@ -84,6 +92,63 @@ class _DataCardState<T> extends State<DataCard<T>> {
     });
   }
 
+  void _showColumnOptions(BuildContext context, SortableColumn<T> column, Offset position) {
+    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    final RelativeRect positionRect = RelativeRect.fromRect(
+      position & const Size(40, 40),
+      Offset.zero & overlay.size,
+    );
+
+    showMenu(
+      context: context,
+      position: positionRect,
+      elevation: 8,
+      items: [
+        PopupMenuItem(
+          value: 'hide',
+          child: const Row(children: [Icon(Icons.visibility_off, size: 20), SizedBox(width: 8), Text('Hide Column')]),
+        ),
+        PopupMenuItem(
+          value: 'sort_asc',
+          child: const Row(children: [Icon(Icons.arrow_upward, size: 20), SizedBox(width: 8), Text('Sort Ascending')]),
+        ),
+        PopupMenuItem(
+          value: 'sort_desc',
+          child: const Row(children: [Icon(Icons.arrow_downward, size: 20), SizedBox(width: 8), Text('Sort Descending')]),
+        ),
+        PopupMenuItem(
+          value: 'align_left',
+          child: const Row(children: [Icon(Icons.format_align_left, size: 20), SizedBox(width: 8), Text('Align Left')]),
+        ),
+        PopupMenuItem(
+          value: 'align_right',
+          child: const Row(children: [Icon(Icons.format_align_right, size: 20), SizedBox(width: 8), Text('Align Right')]),
+        ),
+      ],
+    ).then((value) {
+      if (value == null) return;
+      setState(() {
+        switch (value) {
+          case 'hide':
+            _columnVisibility[column.label] = false;
+            break;
+          case 'sort_asc':
+            _sort(column.getField, _orderedColumns.indexOf(column), true);
+            break;
+          case 'sort_desc':
+            _sort(column.getField, _orderedColumns.indexOf(column), false);
+            break;
+          case 'align_left':
+            column.alignment = Alignment.centerLeft;
+            break;
+          case 'align_right':
+            column.alignment = Alignment.centerRight;
+            break;
+        }
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final visibleColumns = _orderedColumns
@@ -100,11 +165,7 @@ class _DataCardState<T> extends State<DataCard<T>> {
             if (cellWidget.data!.toLowerCase().contains(filter)) {
               return true;
             }
-          } else if (cellWidget is Icon) {
-            // Cannot filter on icon, so we skip
           } else {
-            // For other widgets, we can try a generic toString()
-            // This is not ideal but a fallback
             try {
               if (item.toString().toLowerCase().contains(filter)) {
                 return true;
@@ -119,96 +180,90 @@ class _DataCardState<T> extends State<DataCard<T>> {
     }
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              PopupMenuButton<String>(
-                onSelected: (String value) {
-                  setState(() {
-                    _columnVisibility[value] = !_columnVisibility[value]!;
-                  });
-                },
-                itemBuilder: (context) {
-                  return widget.columns.map((column) {
-                    return CheckedPopupMenuItem<String>(
-                      value: column.label,
-                      checked: _columnVisibility[column.label] ?? true,
-                      child: Text(column.label),
-                    );
-                  }).toList();
-                },
-                child: IconButton(
-                  tooltip: 'Set visible columns',
-                  onPressed: null,
-                  icon: const Icon(Icons.view_column_outlined),
-                ),
-              ),
-            ],
-          ),
-        ),
         Expanded(
           child: SingleChildScrollView(
             scrollDirection: Axis.vertical,
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              child: DataTable(
-                sortColumnIndex: _sortColumnIndex,
-                sortAscending: _sortAscending,
-                columns: visibleColumns.map((column) {
-                  return DataColumn(
-                    label: DragTarget<SortableColumn<T>>(
-                      builder: (context, candidateData, rejectedData) {
-                        return Draggable<SortableColumn<T>>(
-                          data: column,
-                          feedback: Material(
-                            elevation: 4.0,
-                            child: Container(
-                              padding: const EdgeInsets.all(8.0),
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.surfaceVariant,
-                              child: Text(column.label),
+              child: Theme(
+                data: Theme.of(context).copyWith(
+                  dataTableTheme: DataTableThemeData(
+                    headingRowColor: MaterialStateProperty.all(
+                      Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.4)
+                    ),
+                    dataRowColor: MaterialStateProperty.resolveWith<Color?>(
+                        (Set<MaterialState> states) {
+                      if (states.contains(MaterialState.hovered)) {
+                        return Theme.of(context).colorScheme.primary.withOpacity(0.08);
+                      }
+                      return null;
+                    }),
+                  ),
+                ),
+                child: DataTable(
+                  showCheckboxColumn: false,
+                  sortColumnIndex: _sortColumnIndex != null && _sortColumnIndex! < visibleColumns.length ? _sortColumnIndex : null,
+                  sortAscending: _sortAscending,
+                  headingRowHeight: 56,
+                  dataRowMinHeight: 52,
+                  dataRowMaxHeight: 52,
+                  horizontalMargin: 24,
+                  columnSpacing: 48,
+                  columns: visibleColumns.map((column) {
+                    return DataColumn(
+                      label: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onSecondaryTapDown: (details) => _showColumnOptions(context, column, details.globalPosition),
+                          child: Builder(
+                            builder: (ctx) => InkWell(
+                              onTap: () {
+                                final RenderBox box = ctx.findRenderObject() as RenderBox;
+                                final Offset position = box.localToGlobal(Offset.zero);
+                                _showColumnOptions(ctx, column, position + const Offset(0, 40));
+                              },
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    column.label, 
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Icon(Icons.arrow_drop_down, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                                ],
+                              ),
                             ),
                           ),
-                          child: Text(column.label),
+                        ),
+                      ),
+                      tooltip: column.tooltip ?? 'Click for options',
+                      numeric: column.numeric,
+                      onSort: (columnIndex, ascending) {
+                        _sort(
+                          column.getField,
+                          visibleColumns.indexOf(column),
+                          ascending,
                         );
                       },
-                      onWillAcceptWithDetails: (data) => data != null,
-                      onAcceptWithDetails: (details) {
-                        setState(() {
-                          final draggedColumn = details.data;
-                          final draggedIndex = _orderedColumns.indexOf(
-                            draggedColumn,
-                          );
-                          final targetIndex = _orderedColumns.indexOf(column);
-                          if (draggedIndex != -1 && targetIndex != -1) {
-                            final item = _orderedColumns.removeAt(draggedIndex);
-                            _orderedColumns.insert(targetIndex, item);
-                          }
-                        });
-                      },
-                    ),
-                    tooltip: column.tooltip,
-                    numeric: column.numeric,
-                    onSort: (columnIndex, ascending) {
-                      _sort(
-                        column.getField,
-                        visibleColumns.indexOf(column),
-                        ascending,
-                      );
-                    },
-                  );
-                }).toList(),
-                rows: filteredData.map((item) {
-                  return DataRow(
-                    cells: visibleColumns.map((column) {
-                      return DataCell(column.cellBuilder(item));
-                    }).toList(),
-                  );
-                }).toList(),
+                    );
+                  }).toList(),
+                  rows: filteredData.map((item) {
+                    return DataRow(
+                      onSelectChanged: widget.onRowTap != null ? (_) => widget.onRowTap!(item) : null,
+                      cells: visibleColumns.map((column) {
+                        return DataCell(
+                          Align(
+                            alignment: column.alignment,
+                            child: column.cellBuilder(item)
+                          )
+                        );
+                      }).toList(),
+                    );
+                  }).toList(),
+                ),
               ),
             ),
           ),
@@ -217,3 +272,4 @@ class _DataCardState<T> extends State<DataCard<T>> {
     );
   }
 }
+
