@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:myapp/models/user.dart';
 import 'package:myapp/models/person.dart';
 import 'package:myapp/models/calendar/calendar.dart';
@@ -35,12 +36,18 @@ class AppState extends ChangeNotifier {
   bool _toastNotificationsEnabled = true;
   Locale _currentLocale = const Locale('en');
 
+  final Map<String, SingleActivator> _keybindings = {
+    'new_item': const SingleActivator(LogicalKeyboardKey.keyN, control: true),
+    'search': const SingleActivator(LogicalKeyboardKey.keyF, control: true),
+  };
+
   User? get loggedInUser => _loggedInUser;
   List<User> get users => _users;
   SelectableActivity? get currentlyTracking => _currentlyTracking;
   DateTime? get trackingStartTime => _trackingStartTime;
   bool get toastNotificationsEnabled => _toastNotificationsEnabled;
   Locale get currentLocale => _currentLocale;
+  Map<String, SingleActivator> get keybindings => _keybindings;
 
   AppState() {
     _loadUsers();

@@ -5,6 +5,8 @@ import 'package:myapp/views/settings/notification_settings_view.dart';
 import 'package:myapp/views/settings/advanced_settings_view.dart';
 import 'package:myapp/views/settings/about_settings_view.dart';
 
+import 'package:myapp/views/settings/keybindings_settings_view.dart';
+
 class SettingsView extends StatefulWidget {
   final ScrollController? scrollController;
   const SettingsView({super.key, this.scrollController});
@@ -17,7 +19,7 @@ class _SettingsViewState extends State<SettingsView> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 5,
+      length: 6,
       child: NestedScrollView(
         controller: widget.scrollController,
         headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
@@ -39,6 +41,7 @@ class _SettingsViewState extends State<SettingsView> {
                 tabs: [
                   Tab(text: 'Appearance'),
                   Tab(text: 'Borders'),
+                  Tab(text: 'Keybindings'),
                   Tab(text: 'Notifications'),
                   Tab(text: 'Advanced'),
                   Tab(text: 'About'),
@@ -51,6 +54,7 @@ class _SettingsViewState extends State<SettingsView> {
           children: [
             const AppearanceSettingsView(),
             const BorderRadiusSettingsView(),
+            const KeybindingsSettingsView(),
             const NotificationSettingsView(),
             const AdvancedSettingsView(),
             const AboutSettingsView(),

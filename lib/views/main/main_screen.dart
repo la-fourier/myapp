@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:myapp/services/shortcuts.dart';
+import 'package:myapp/dialogs/appointment_editor_dialog.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:myapp/services/theme_provider.dart';
@@ -165,15 +167,40 @@ class _MainScreenState extends State<MainScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isMobile = constraints.maxWidth < 600;
-        return Scaffold(
-          appBar: AppBar(
-            leading: IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: () {
-                Provider.of<AppState>(context, listen: false).logout();
-              },
-              tooltip: 'Logout',
-            ),
+        final appState = Provider.of<AppState>(context);
+        
+        return Shortcuts(
+          shortcuts: <ShortcutActivator, Intent>{
+            appState.keybindings['new_item']!: const NewItemIntent(),
+            appState.keybindings['search']!: const SearchIntent(),
+          },
+          child: Actions(
+            actions: <Type, Action<Intent>>{
+              NewItemIntent: CallbackAction<NewItemIntent>(
+                onInvoke: (NewItemIntent intent) {
+                  showDialog(
+                    context: context,
+                    builder: (context) => const AppointmentEditorDialog(),
+                  );
+                  return null;
+                },
+              ),
+              SearchIntent: CallbackAction<SearchIntent>(
+                onInvoke: (SearchIntent intent) {
+                  Fluttertoast.showToast(msg: "Search activated (mock)");
+                  return null;
+                },
+              ),
+            },
+            child: Scaffold(
+              appBar: AppBar(
+                leading: IconButton(
+                  icon: const Icon(Icons.logout),
+                  onPressed: () {
+                    Provider.of<AppState>(context, listen: false).logout();
+                  },
+                  tooltip: 'Logout',
+                ),
             title: Text(_getWidgetTitle(context, _selectedIndex)),
             actions: [
               if (!isMobile)
@@ -283,6 +310,8 @@ class _MainScreenState extends State<MainScreen> {
                   ],
                 )
               : const SizedBox.shrink(),
+            ),
+          ),
         );
       },
     );
