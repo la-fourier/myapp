@@ -22,7 +22,43 @@ class AccountView extends StatefulWidget {
 class AccountViewState extends State<AccountView> {
   final ScrollController? scrollController;
   final Key? key;
+  Person? _dirtyPerson;
+
   AccountViewState({this.key, this.scrollController});
+
+  bool _isDirty(Person original) {
+    if (_dirtyPerson == null) return false;
+    return _dirtyPerson!.fullName != original.fullName ||
+           _dirtyPerson!.nickname != original.nickname ||
+           _dirtyPerson!.email != original.email ||
+           _dirtyPerson!.address != original.address ||
+           _dirtyPerson!.dateOfBirth.year != original.dateOfBirth.year ||
+           _dirtyPerson!.dateOfBirth.month != original.dateOfBirth.month ||
+           _dirtyPerson!.dateOfBirth.day != original.dateOfBirth.day;
+  }
+
+  void _saveChanges(BuildContext context, User originalUser) {
+    if (_dirtyPerson == null) return;
+    
+    final appState = Provider.of<AppState>(context, listen: false);
+    appState.loggedInUser!.updatePerson(_dirtyPerson!);
+    
+    final updatedUser = User(
+      person: _dirtyPerson!,
+      contacts: originalUser.contacts,
+      calendar: originalUser.calendar,
+      customCategories: originalUser.customCategories,
+      bills: originalUser.bills,
+      accountBalance: originalUser.accountBalance,
+      password: originalUser.password,
+    );
+    appState.users.add(updatedUser); // This triggers listeners if needed
+    
+    setState(() {
+      _dirtyPerson = null;
+    });
+    Fluttertoast.showToast(msg: "Profile updated.");
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,128 +69,88 @@ class AccountViewState extends State<AccountView> {
       return const Center(child: Text('No user logged in.'));
     }
 
+    // Initialize dirty person if not set
+    _dirtyPerson ??= Person(
+      fullName: user.person.fullName,
+      dateOfBirth: user.person.dateOfBirth,
+      email: user.person.email,
+      nickname: user.person.nickname,
+      address: user.person.address,
+      profilePictureUrl: user.person.profilePictureUrl,
+    );
+
     return DefaultTabController(
       length: 2,
-      child: NestedScrollView(
-        controller: scrollController,
-        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-          return <Widget>[
-            SliverAppBar(
-              pinned: true,
-              floating: true,
-              automaticallyImplyLeading: false,
-              title: const Text('Account'),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-              bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(kToolbarHeight),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10.0),
-                    child: const TabBar(
-                      tabs: [
-                        Tab(text: 'Profile'),
-                        Tab(text: 'Integrations'),
-                      ],
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        floatingActionButton: _isDirty(user.person) ? FloatingActionButton.extended(
+          onPressed: () => _saveChanges(context, user),
+          icon: const Icon(Icons.save),
+          label: const Text('Save Changes'),
+        ) : null,
+        body: NestedScrollView(
+          controller: scrollController,
+          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+            return <Widget>[
+              SliverAppBar(
+                pinned: true,
+                floating: true,
+                automaticallyImplyLeading: false,
+                title: const Text('Account'),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(kToolbarHeight),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10.0),
+                      child: const TabBar(
+                        tabs: [
+                          Tab(text: 'Profile'),
+                          Tab(text: 'Integrations'),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ];
-        },
-        body: TabBarView(
-          children: [
-            _buildProfilePage(context, appState, user),
-            IntegrationsPage(appState: appState),
-          ],
+            ];
+          },
+          body: TabBarView(
+            children: [
+              _buildProfilePage(context, appState, user),
+              IntegrationsPage(appState: appState),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  void _updateUser(BuildContext context, User updatedUser) {
-    final appState = Provider.of<AppState>(context, listen: false);
-    Provider.of<AppState>(context, listen: false).users.add(updatedUser);
-  }
-
   Widget _buildProfilePage(BuildContext context, AppState appState, User user) {
-    final person = user.person;
-
-    void showEditDialog(
-      String title,
-      String initialValue,
-      Function(String) onSave,
-    ) {
-      final controller = TextEditingController(text: initialValue);
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text(title),
-            content: TextField(controller: controller, autofocus: true),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  onSave(controller.text);
-                  Navigator.of(context).pop();
-                  Fluttertoast.showToast(
-                    msg: "${title.split(' ').last} updated.",
-                  );
-                },
-                child: const Text('Save'),
-              ),
-            ],
-          );
-        },
-      );
-    }
-
     Future<void> pickDate(BuildContext context) async {
       final newDate = await showDatePicker(
         context: context,
-        initialDate: person.dateOfBirth,
+        initialDate: _dirtyPerson!.dateOfBirth,
         firstDate: DateTime(1900),
         lastDate: DateTime.now(),
       );
       if (newDate != null) {
-        appState.loggedInUser!.updatePerson(
-          Person(
-            fullName: person.fullName,
+        setState(() {
+          _dirtyPerson = Person(
+            fullName: _dirtyPerson!.fullName,
             dateOfBirth: newDate,
-            nickname: person.nickname,
-            profilePictureUrl: person.profilePictureUrl,
-            address: person.address,
-            email: person.email,
-          ),
-        );
-        final updatedUser = User(
-          person: Person(
-            fullName: person.fullName,
-            dateOfBirth: newDate,
-            email: person.email,
-            nickname: person.nickname,
-            address: person.address,
-            profilePictureUrl: person.profilePictureUrl,
-          ),
-          contacts: user.contacts,
-          calendar: user.calendar,
-          customCategories: user.customCategories,
-          bills: user.bills,
-          accountBalance: user.accountBalance,
-          password: user.password,
-        );
-        _updateUser(context, updatedUser);
-        Fluttertoast.showToast(msg: "Birthday updated.");
+            email: _dirtyPerson!.email,
+            nickname: _dirtyPerson!.nickname,
+            address: _dirtyPerson!.address,
+            profilePictureUrl: _dirtyPerson!.profilePictureUrl,
+          );
+        });
       }
     }
 
@@ -175,140 +171,72 @@ class AccountViewState extends State<AccountView> {
           _buildEditableRow(
             context,
             'Name',
-            person.fullName,
-            (newValue) => appState.loggedInUser!.updatePerson(
-              Person(
-                fullName: newValue,
-                dateOfBirth: person.dateOfBirth,
-                nickname: person.nickname,
-                profilePictureUrl: person.profilePictureUrl,
-                address: person.address,
-                email: person.email,
-              ),
-            ),
-            (newValue, oldValue, onSave) {
-              final updatedUser = User(
-                person: Person(
+            _dirtyPerson!.fullName,
+            (newValue) {
+              setState(() {
+                _dirtyPerson = Person(
                   fullName: newValue,
-                  dateOfBirth: person.dateOfBirth,
-                  email: person.email,
-                  nickname: person.nickname,
-                  address: person.address,
-                  profilePictureUrl: person.profilePictureUrl,
-                ),
-                contacts: user.contacts,
-                calendar: user.calendar,
-                customCategories: user.customCategories,
-                bills: user.bills,
-                accountBalance: user.accountBalance,
-                password: user.password,
-              );
-              _updateUser(context, updatedUser);
+                  dateOfBirth: _dirtyPerson!.dateOfBirth,
+                  nickname: _dirtyPerson!.nickname,
+                  profilePictureUrl: _dirtyPerson!.profilePictureUrl,
+                  address: _dirtyPerson!.address,
+                  email: _dirtyPerson!.email,
+                );
+              });
             },
           ),
           _buildEditableRow(
             context,
             'Nickname',
-            person.nickname ?? 'N/A',
-            (newValue) => appState.loggedInUser!.updatePerson(
-              Person(
-                fullName: person.fullName,
-                dateOfBirth: person.dateOfBirth,
-                nickname: newValue,
-                profilePictureUrl: person.profilePictureUrl,
-                address: person.address,
-                email: person.email,
-              ),
-            ),
-            (newValue, oldValue, onSave) {
-              final updatedUser = User(
-                person: Person(
-                  fullName: person.fullName,
-                  dateOfBirth: person.dateOfBirth,
-                  email: person.email,
+            _dirtyPerson!.nickname ?? 'N/A',
+            (newValue) {
+              setState(() {
+                _dirtyPerson = Person(
+                  fullName: _dirtyPerson!.fullName,
+                  dateOfBirth: _dirtyPerson!.dateOfBirth,
                   nickname: newValue,
-                  address: person.address,
-                  profilePictureUrl: person.profilePictureUrl,
-                ),
-                contacts: user.contacts,
-                calendar: user.calendar,
-                customCategories: user.customCategories,
-                bills: user.bills,
-                accountBalance: user.accountBalance,
-                password: user.password,
-              );
-              _updateUser(context, updatedUser);
+                  profilePictureUrl: _dirtyPerson!.profilePictureUrl,
+                  address: _dirtyPerson!.address,
+                  email: _dirtyPerson!.email,
+                );
+              });
             },
           ),
           _buildEditableRow(
             context,
             'Email',
-            person.email ?? 'N/A',
-            (newValue) => appState.loggedInUser!.updatePerson(
-              Person(
-                fullName: person.fullName,
-                dateOfBirth: person.dateOfBirth,
-                nickname: person.nickname,
-                profilePictureUrl: person.profilePictureUrl,
-                address: person.address,
-                email: newValue,
-              ),
-            ),
-            (newValue, oldValue, onSave) {
-              final updatedUser = User(
-                person: Person(
-                  fullName: person.fullName,
-                  dateOfBirth: person.dateOfBirth,
+            _dirtyPerson!.email ?? 'N/A',
+            (newValue) {
+              setState(() {
+                _dirtyPerson = Person(
+                  fullName: _dirtyPerson!.fullName,
+                  dateOfBirth: _dirtyPerson!.dateOfBirth,
+                  nickname: _dirtyPerson!.nickname,
+                  profilePictureUrl: _dirtyPerson!.profilePictureUrl,
+                  address: _dirtyPerson!.address,
                   email: newValue,
-                  nickname: person.nickname,
-                  address: person.address,
-                  profilePictureUrl: person.profilePictureUrl,
-                ),
-                contacts: user.contacts,
-                calendar: user.calendar,
-                customCategories: user.customCategories,
-                bills: user.bills,
-                accountBalance: user.accountBalance,
-                password: user.password,
-              );
-              _updateUser(context, updatedUser);
+                );
+              });
             },
           ),
           _buildEditableRow(
             context,
             'Address',
-            person.address ?? 'N/A',
-            (newValue) => appState.loggedInUser!.updatePerson(
-              Person(
-                fullName: person.fullName,
-                dateOfBirth: person.dateOfBirth,
-                nickname: person.nickname,
-                profilePictureUrl: person.profilePictureUrl,
-                address: newValue,
-                email: person.email,
-              ),
-            ),
-            (newValue, oldValue, onSave) {
-              final updatedUser = User(
-                person: Person(
-                  fullName: person.fullName,
-                  dateOfBirth: person.dateOfBirth,
-                  email: person.email,
-                  nickname: person.nickname,
+            _dirtyPerson!.address ?? 'N/A',
+            (newValue) {
+              setState(() {
+                _dirtyPerson = Person(
+                  fullName: _dirtyPerson!.fullName,
+                  dateOfBirth: _dirtyPerson!.dateOfBirth,
+                  nickname: _dirtyPerson!.nickname,
+                  profilePictureUrl: _dirtyPerson!.profilePictureUrl,
                   address: newValue,
-                  profilePictureUrl: person.profilePictureUrl,
-                ),
-                contacts: user.contacts,
-                calendar: user.calendar,
-                customCategories: user.customCategories,
-                bills: user.bills,
-                accountBalance: user.accountBalance,
-                password: user.password,
-              );
-              _updateUser(context, updatedUser);
+                  email: _dirtyPerson!.email,
+                );
+              });
             },
           ),
-          _buildDateRow(context, 'Birthday', person.dateOfBirth, pickDate),
+          _buildDateRow(context, 'Birthday', _dirtyPerson!.dateOfBirth, pickDate),
           const SizedBox(height: 24),
           ListTile(
             leading: const Icon(Icons.lock),
@@ -321,6 +249,7 @@ class AccountViewState extends State<AccountView> {
             title: const Text('Logout'),
             onTap: () => appState.logout(),
           ),
+          const SizedBox(height: 80), // Padding for FAB
         ],
       ),
     );
@@ -331,23 +260,26 @@ class AccountViewState extends State<AccountView> {
     String label,
     String value,
     Function(String) onSave,
-    Function(String, String, Function(String)) showEditDialog,
   ) {
+    import 'package:myapp/widgets/editable_text.dart' as editable_text;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 80,
+            width: 100,
             child: Text(
               label,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
           ),
-          Expanded(child: Text(value)),
-          IconButton(
-            icon: const Icon(Icons.edit, size: 20),
-            onPressed: () => showEditDialog('Change $label', value, onSave),
+          Expanded(
+            child: editable_text.EditableText(
+              initialText: value,
+              style: Theme.of(context).textTheme.bodyLarge!,
+              onSave: onSave,
+            ),
           ),
         ],
       ),
@@ -361,20 +293,29 @@ class AccountViewState extends State<AccountView> {
     Future<void> Function(BuildContext) pickDate,
   ) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(
-            width: 80,
+            width: 100,
             child: Text(
               label,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
           ),
-          Expanded(child: Text(DateFormat.yMMMd().format(value))),
-          IconButton(
-            icon: const Icon(Icons.edit, size: 20),
-            onPressed: () => pickDate(context),
+          Expanded(
+            child: InkWell(
+              onTap: () => pickDate(context),
+              borderRadius: BorderRadius.circular(4),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                child: Text(
+                  DateFormat.yMMMd().format(value),
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+              ),
+            ),
           ),
         ],
       ),
