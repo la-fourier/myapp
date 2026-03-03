@@ -21,7 +21,7 @@ void main() {
         ChangeNotifierProvider(create: (context) => AppState()),
         ChangeNotifierProvider(create: (context) => ThemeProvider()),
       ],
-      child: const MyApp(),
+      child: MyApp(key: UniqueKey()),
     ),
   );
 }
@@ -40,11 +40,10 @@ class MyApp extends StatelessWidget {
           themeMode: themeProvider.themeMode,
           locale: appState.currentLocale,
           localizationsDelegates: const [
-            AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
-          ],
+          ]..insert(0, AppLocalizations.delegate),
           supportedLocales: const [
             Locale('en'),
             Locale('de'),

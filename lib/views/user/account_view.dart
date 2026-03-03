@@ -10,6 +10,7 @@ import 'package:myapp/services/loading_service.dart';
 import 'package:myapp/models/user.dart';
 import 'package:myapp/models/person.dart';
 import 'package:myapp/services/export_service.dart';
+import 'package:myapp/widgets/editable_text.dart' as editable_text;
 
 class AccountView extends StatefulWidget {
   final ScrollController? scrollController;
@@ -261,7 +262,6 @@ class AccountViewState extends State<AccountView> {
     String value,
     Function(String) onSave,
   ) {
-    import 'package:myapp/widgets/editable_text.dart' as editable_text;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       child: Row(

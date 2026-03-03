@@ -25,10 +25,11 @@ class AppointmentReadView extends StatelessWidget {
     return Dialog(
        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
        elevation: 4,
-       child: Container(
-         width: double.infinity,
-         maxWidth: 500,
-         padding: const EdgeInsets.all(24),
+       child: ConstrainedBox(
+         constraints: const BoxConstraints(maxWidth: 500),
+         child: Container(
+           width: double.infinity,
+           padding: const EdgeInsets.all(24),
          child: Column(
            mainAxisSize: MainAxisSize.min,
            crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,6 +148,7 @@ class AppointmentReadView extends StatelessWidget {
            ],
          ),
        ),
+    ),
     );
   }
 

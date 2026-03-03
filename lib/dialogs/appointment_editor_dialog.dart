@@ -501,7 +501,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                                            }) ?? []
                                      ],
                                      onChanged: (Attachment? selectedObj) {
-                                       if (selectedObj != null && !_attachments.any((a) => a.id == selectedObj.id)) {
+                                       if (selectedObj != null && !_attachments.any((a) => a.name == selectedObj.name)) {
                                            setState(() {
                                              _attachments.add(selectedObj);
                                            });

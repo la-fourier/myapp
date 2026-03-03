@@ -26,10 +26,11 @@ class TrackedActivityReadView extends StatelessWidget {
     return Dialog(
        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
        elevation: 4,
-       child: Container(
-         width: double.infinity,
-         maxWidth: 450,
-         padding: const EdgeInsets.all(24),
+       child: ConstrainedBox(
+         constraints: const BoxConstraints(maxWidth: 450),
+         child: Container(
+           width: double.infinity,
+           padding: const EdgeInsets.all(24),
          child: Column(
            mainAxisSize: MainAxisSize.min,
            crossAxisAlignment: CrossAxisAlignment.start,
@@ -127,6 +128,7 @@ class TrackedActivityReadView extends StatelessWidget {
            ],
          ),
        ),
+    ),
     );
   }
 

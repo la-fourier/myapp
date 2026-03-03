@@ -1,4 +1,5 @@
 import 'dart:ui';
+// Trigger hot reload for localizations updates.
 import 'package:flutter/material.dart';
 import 'package:myapp/services/shortcuts.dart';
 import 'package:myapp/dialogs/appointment_editor_dialog.dart';
@@ -180,7 +181,9 @@ class _MainScreenState extends State<MainScreen> {
                 onInvoke: (NewItemIntent intent) {
                   showDialog(
                     context: context,
-                    builder: (context) => const AppointmentEditorDialog(),
+                    builder: (context) => AppointmentEditorDialog(
+                      onSave: (val) {},
+                    ),
                   );
                   return null;
                 },
@@ -246,12 +249,12 @@ class _MainScreenState extends State<MainScreen> {
                         NavigationRailDestination(
                           icon: const Icon(Icons.dashboard_outlined),
                           selectedIcon: const Icon(Icons.dashboard),
-                          label: Text(AppLocalizations.of(context)!.dashboard),
+                          label: Text(AppLocalizations.of(context)?.dashboard ?? 'Dashboard'),
                         ),
                         NavigationRailDestination(
                           icon: const Icon(Icons.calendar_today_outlined),
                           selectedIcon: const Icon(Icons.calendar_today),
-                          label: Text(AppLocalizations.of(context)!.calendar),
+                          label: Text(AppLocalizations.of(context)?.calendar ?? 'Calendar'),
                         ),
                         const NavigationRailDestination(
                           icon: Icon(Icons.today_outlined),
@@ -266,7 +269,7 @@ class _MainScreenState extends State<MainScreen> {
                         NavigationRailDestination(
                           icon: const Icon(Icons.attach_money),
                           selectedIcon: const Icon(Icons.money),
-                          label: Text(AppLocalizations.of(context)!.finances),
+                          label: Text(AppLocalizations.of(context)?.finances ?? 'Finance'),
                         ),
                       ],
                     ),
@@ -285,12 +288,12 @@ class _MainScreenState extends State<MainScreen> {
                     NavigationDestination(
                       icon: const Icon(Icons.dashboard_outlined),
                       selectedIcon: const Icon(Icons.dashboard),
-                      label: AppLocalizations.of(context)!.dashboard,
+                      label: AppLocalizations.of(context)?.dashboard ?? 'Dashboard',
                     ),
                     NavigationDestination(
                       icon: const Icon(Icons.calendar_today_outlined),
                       selectedIcon: const Icon(Icons.calendar_today),
-                      label: AppLocalizations.of(context)!.calendar,
+                      label: AppLocalizations.of(context)?.calendar ?? 'Calendar',
                     ),
                     const NavigationDestination(
                       icon: Icon(Icons.today_outlined),
@@ -305,7 +308,7 @@ class _MainScreenState extends State<MainScreen> {
                     NavigationDestination(
                       icon: const Icon(Icons.attach_money),
                       selectedIcon: const Icon(Icons.money),
-                      label: AppLocalizations.of(context)!.finances,
+                      label: AppLocalizations.of(context)?.finances ?? 'Finance',
                     ),
                   ],
                 )
