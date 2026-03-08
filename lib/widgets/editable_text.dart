@@ -58,6 +58,7 @@ class _EditableTextState extends State<EditableText> {
         focusNode: _focusNode,
         style: widget.style,
         autofocus: true,
+        onChanged: (value) => widget.onSave(value),
         onSubmitted: (value) => _save(),
         decoration: const InputDecoration(
           border: InputBorder.none,

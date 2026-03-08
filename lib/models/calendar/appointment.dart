@@ -28,6 +28,7 @@ class Appointment {
   final Category category;
   final List<Attachment> attachments;
   final Priority priority;
+  final List<String> contactUids;
 
   Appointment({
     required this.title,
@@ -37,8 +38,10 @@ class Appointment {
     Category? category,
     List<Attachment>? attachments,
     this.priority = Priority.normal,
+    List<String>? contactUids,
   }) : category = category ?? Category(name: 'Default', color: Colors.blue),
-       attachments = attachments ?? [];
+       attachments = attachments ?? [],
+       contactUids = contactUids ?? [];
 
   factory Appointment.fromJson(Map<String, dynamic> json) {
     List<Attachment> attachments = [];
@@ -63,6 +66,7 @@ class Appointment {
       priority: json['priority'] != null
           ? Priority.values.firstWhere((e) => e.toString() == json['priority'])
           : Priority.normal,
+      contactUids: List<String>.from(json['contactUids'] ?? []),
     );
   }
 
@@ -81,6 +85,7 @@ class Appointment {
         return {};
       }).toList(),
       'priority': priority.toString(),
+      'contactUids': contactUids,
     };
   }
 }

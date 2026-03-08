@@ -38,6 +38,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
   late List<Category> _categories;
   late List<Attachment> _attachments;
   late Priority _priority;
+  late Set<String> _contactUids;
 
   bool _isRawEditMode = false;
   final TextEditingController _rawTextController = TextEditingController();
@@ -58,6 +59,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
       _category = widget.appointment!.category;
       _attachments = List.from(widget.appointment!.attachments);
       _priority = widget.appointment!.priority;
+      _contactUids = Set<String>.from(widget.appointment!.contactUids);
 
       if (!_categories.contains(_category)) {
         _categories.insert(0, _category);
@@ -77,6 +79,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
       _category = _categories.first;
       _attachments = [];
       _priority = Priority.normal;
+      _contactUids = {};
     }
     _rawTextController.text = _appointmentToJson();
   }
@@ -101,6 +104,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
       ).toIso8601String(),
       'category': _category.toJson(),
       'priority': _priority.toString(),
+      'contactUids': _contactUids.toList(),
       // Attachments are not handled in raw edit mode for now
     };
     return const JsonEncoder.withIndent('  ').convert(data);
@@ -121,6 +125,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
           (e) => e.toString() == data['priority'],
           orElse: () => Priority.normal,
         );
+        _contactUids = Set<String>.from(data['contactUids'] ?? []);
       });
     } catch (e) {
       // Handle JSON parsing error
@@ -193,6 +198,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
         category: _category,
         attachments: _attachments,
         priority: _priority,
+        contactUids: _contactUids.toList(),
       );
 
       widget.onSave(newAppointment);
@@ -542,6 +548,15 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                              ),
                            ],
                         ),
+                        const Divider(),
+                        const Text('Link Contacts', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ...Provider.of<AppState>(context).loggedInUser!.contacts.map((contact) {
+                          return CheckboxListTile(
+                            title: Text(contact.fullName),
+                            value: _contactUids.contains(contact.uid),
+                            onChanged: (v) => setState(() => v! ? _contactUids.add(contact.uid) : _contactUids.remove(contact.uid)),
+                          );
+                        }),
                       ],
                     ),
                   ],

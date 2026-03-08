@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:myapp/services/shortcuts.dart';
 import 'package:myapp/dialogs/appointment_editor_dialog.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:myapp/l10n/app_localizations.dart';
 import 'package:myapp/services/theme_provider.dart';
 import 'package:myapp/views/finance/finance_view.dart';
 import 'package:myapp/views/user/account_view.dart';
@@ -14,6 +14,9 @@ import 'package:myapp/views/main/dashboard_view.dart';
 import 'package:myapp/views/settings/settings_view.dart';
 import 'package:myapp/views/main/stats_view.dart';
 import 'package:myapp/views/main/today_view.dart';
+import 'package:myapp/views/contacts/contacts_view.dart';
+import 'package:myapp/views/planner/planner_view.dart';
+import 'package:myapp/views/planner/planner_view.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/services/loading_service.dart';
 import 'package:myapp/backend_integrations/google.dart';
@@ -92,6 +95,8 @@ class _MainScreenState extends State<MainScreen> {
     _mainViews = <Widget>[
       DashboardView(showAsModalSheet: _showAsModalSheet),
       CalendarView(onDaySelected: _handleDaySelected),
+      const PlannerView(),
+      const ContactsView(),
       const TodayView(),
       const StatsView(),
       const FinanceView(),
@@ -104,9 +109,11 @@ class _MainScreenState extends State<MainScreen> {
     switch (index) {
       case 0: return loc.dashboard;
       case 1: return loc.calendar;
-      case 2: return 'Today';
-      case 3: return 'Stats';
-      case 4: return loc.finances;
+      case 2: return 'Planner';
+      case 3: return 'Contacts';
+      case 4: return 'Today';
+      case 6: return 'Stats';
+      case 7: return loc.finances;
       default: return '';
     }
   }
@@ -121,10 +128,6 @@ class _MainScreenState extends State<MainScreen> {
     final loadingService = LoadingService();
     final appState = Provider.of<AppState>(context, listen: false);
     final appData = {
-      'user': appState
-          .loggedInUser!
-          .person
-          .fullName, // Just an example of data to sync
       'user': appState
           .loggedInUser!
           .person
@@ -167,7 +170,7 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isMobile = constraints.maxWidth < 600;
+        final isMobile = constraints.maxWidth < 900;
         final appState = Provider.of<AppState>(context);
         
         return Shortcuts(
@@ -211,7 +214,7 @@ class _MainScreenState extends State<MainScreen> {
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 8.0),
                     child: SizedBox(
-                      width: 350,
+                      width: 250,
                       child: PlayBar(viewType: PlayBarViewType.full),
                     ),
                   ),
@@ -257,6 +260,16 @@ class _MainScreenState extends State<MainScreen> {
                           label: Text(AppLocalizations.of(context)?.calendar ?? 'Calendar'),
                         ),
                         const NavigationRailDestination(
+                          icon: Icon(Icons.event_note),
+                          selectedIcon: Icon(Icons.event_note_rounded),
+                          label: Text('Planner'),
+                        ),
+                        const NavigationRailDestination(
+                          icon: Icon(Icons.people_outline),
+                          selectedIcon: Icon(Icons.people),
+                          label: Text('Contacts'),
+                        ),
+                        const NavigationRailDestination(
                           icon: Icon(Icons.today_outlined),
                           selectedIcon: Icon(Icons.today),
                           label: Text('Today'),
@@ -296,19 +309,14 @@ class _MainScreenState extends State<MainScreen> {
                       label: AppLocalizations.of(context)?.calendar ?? 'Calendar',
                     ),
                     const NavigationDestination(
-                      icon: Icon(Icons.today_outlined),
-                      selectedIcon: Icon(Icons.today),
-                      label: 'Today',
+                      icon: Icon(Icons.event_note),
+                      selectedIcon: Icon(Icons.event_note_rounded),
+                      label: 'Planner',
                     ),
                     const NavigationDestination(
-                      icon: Icon(Icons.bar_chart_outlined),
-                      selectedIcon: Icon(Icons.bar_chart),
-                      label: 'Stats',
-                    ),
-                    NavigationDestination(
-                      icon: const Icon(Icons.attach_money),
-                      selectedIcon: const Icon(Icons.money),
-                      label: AppLocalizations.of(context)?.finances ?? 'Finance',
+                      icon: Icon(Icons.people_outline),
+                      selectedIcon: Icon(Icons.people),
+                      label: 'Contacts',
                     ),
                   ],
                 )

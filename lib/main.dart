@@ -4,7 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:myapp/l10n/app_localizations.dart';
 import 'package:myapp/services/app_state.dart';
 import 'package:myapp/services/theme_provider.dart';
 import 'package:myapp/views/auth/login_view.dart';
@@ -40,10 +40,11 @@ class MyApp extends StatelessWidget {
           themeMode: themeProvider.themeMode,
           locale: appState.currentLocale,
           localizationsDelegates: const [
+            AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
-          ]..insert(0, AppLocalizations.delegate),
+          ],
           supportedLocales: const [
             Locale('en'),
             Locale('de'),

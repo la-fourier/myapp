@@ -44,17 +44,6 @@ class AppearanceSettingsView extends StatelessWidget {
           },
           secondary: const Icon(Icons.dark_mode),
         ),
-        ListTile(
-          leading: const Icon(Icons.rounded_corner),
-          title: const Text('Border Radius'),
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => const BorderRadiusSettingsView(),
-              ),
-            );
-          },
-        ),
         Consumer<AppState>(
           builder: (context, appState, child) {
             String localeName(Locale loc) {

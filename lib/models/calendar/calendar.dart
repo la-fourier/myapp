@@ -5,7 +5,8 @@ class Calendar {
   final List<Appointment> appointments;
   final List<TrackedActivity> trackedActivities;
 
-  Calendar({required this.appointments, this.trackedActivities = const []});
+  Calendar({required this.appointments, List<TrackedActivity>? trackedActivities})
+      : trackedActivities = trackedActivities ?? [];
 
   factory Calendar.fromJson(Map<String, dynamic> json) {
     return Calendar(

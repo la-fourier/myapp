@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:myapp/dialogs/appointment_editor_dialog.dart';
+import 'package:myapp/dialogs/read_views/appointment_read_view.dart';
 import 'package:myapp/models/calendar/appointment.dart';
 import 'package:myapp/services/app_state.dart';
 import 'package:myapp/utils/date_utils.dart';
@@ -397,7 +398,18 @@ class _WeekViewState extends State<WeekView> {
             width: dayWidth - 2, // Margin
             height: height,
             child: GestureDetector(
-              onTap: () => _showAppointmentEditorForEditing(app),
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AppointmentReadView(
+                    appointment: app,
+                    onEdit: () {
+                      Navigator.pop(context);
+                      _showAppointmentEditorForEditing(app);
+                    },
+                  ),
+                );
+              },
               child: Container(
                 margin: const EdgeInsets.all(1.0),
                 padding: const EdgeInsets.all(4.0),

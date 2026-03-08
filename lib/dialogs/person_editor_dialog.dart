@@ -18,6 +18,8 @@ class _PersonEditorDialogState extends State<PersonEditorDialog> {
   final _formKey = GlobalKey<FormState>();
   late String _fullName;
   late DateTime _dateOfBirth;
+  String? _email;
+  String? _phoneNumber;
 
   bool _isRawEditMode = false;
   final TextEditingController _rawTextController = TextEditingController();
@@ -28,6 +30,8 @@ class _PersonEditorDialogState extends State<PersonEditorDialog> {
     if (widget.person != null) {
       _fullName = widget.person!.fullName;
       _dateOfBirth = widget.person!.dateOfBirth;
+      _email = widget.person!.email;
+      _phoneNumber = widget.person!.phoneNumber;
     } else {
       _fullName = '';
       _dateOfBirth = DateTime.now();
@@ -37,8 +41,11 @@ class _PersonEditorDialogState extends State<PersonEditorDialog> {
 
   String _personToJson() {
     final data = {
+      'uid': widget.person?.uid ?? 'new_${DateTime.now().millisecondsSinceEpoch}',
       'fullName': _fullName,
       'dateOfBirth': _dateOfBirth.toIso8601String(),
+      'email': _email,
+      'phoneNumber': _phoneNumber,
     };
     return const JsonEncoder.withIndent('  ').convert(data);
   }
@@ -49,6 +56,8 @@ class _PersonEditorDialogState extends State<PersonEditorDialog> {
       setState(() {
         _fullName = data['fullName'];
         _dateOfBirth = DateTime.parse(data['dateOfBirth']);
+        _email = data['email'];
+        _phoneNumber = data['phoneNumber'];
       });
     } catch (e) {
       // Handle JSON parsing error
@@ -77,7 +86,13 @@ class _PersonEditorDialogState extends State<PersonEditorDialog> {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
-      final newPerson = Person(fullName: _fullName, dateOfBirth: _dateOfBirth);
+      final newPerson = Person(
+        uid: widget.person?.uid ?? DateTime.now().millisecondsSinceEpoch.toString(),
+        fullName: _fullName,
+        dateOfBirth: _dateOfBirth,
+        email: _email,
+        phoneNumber: _phoneNumber,
+      );
 
       widget.onSave(newPerson);
       Navigator.of(context).pop();
@@ -122,39 +137,39 @@ class _PersonEditorDialogState extends State<PersonEditorDialog> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    editable_text.EditableText(
-                      initialText: _fullName,
-                      style: Theme.of(context).textTheme.titleLarge!,
-                      onSave: (value) {
-                        setState(() {
-                          _fullName = value;
-                        });
-                      },
+                    TextFormField(
+                      initialValue: _fullName,
+                      decoration: const InputDecoration(labelText: 'Full Name'),
+                      onChanged: (value) => _fullName = value,
+                      validator: (value) => value!.isEmpty ? 'Enter a name' : null,
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     Row(
                       children: [
                         Expanded(
-                          child: editable_text.EditableText(
-                            initialText: DateFormat.yMd().format(_dateOfBirth),
-                            style: Theme.of(context).textTheme.bodyLarge!,
-                            onSave: (value) {
-                              try {
-                                final newDate = DateFormat.yMd().parse(value);
-                                setState(() {
-                                  _dateOfBirth = newDate;
-                                });
-                              } catch (e) {
-                                // Handle parsing error
-                              }
-                            },
+                          child: InkWell(
+                            onTap: () => _selectDate(context),
+                            child: InputDecorator(
+                              decoration: const InputDecoration(labelText: 'Birthday'),
+                              child: Text(DateFormat.yMd().format(_dateOfBirth)),
+                            ),
                           ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.calendar_today),
-                          onPressed: () => _selectDate(context),
-                        ),
                       ],
+                    ),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      initialValue: _email,
+                      decoration: const InputDecoration(labelText: 'Email'),
+                      keyboardType: TextInputType.emailAddress,
+                      onChanged: (value) => _email = value,
+                    ),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      initialValue: _phoneNumber,
+                      decoration: const InputDecoration(labelText: 'Phone Number'),
+                      keyboardType: TextInputType.phone,
+                      onChanged: (value) => _phoneNumber = value,
                     ),
                   ],
                 ),

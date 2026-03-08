@@ -70,7 +70,11 @@ class _UserEditorDialogState extends State<UserEditorDialog> {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
-      final newPerson = Person(fullName: _fullName, dateOfBirth: _dateOfBirth);
+      final newPerson = Person(
+        uid: DateTime.now().millisecondsSinceEpoch.toString(),
+        fullName: _fullName,
+        dateOfBirth: _dateOfBirth,
+      );
 
       widget.onSave(newPerson);
       Navigator.of(context).pop();

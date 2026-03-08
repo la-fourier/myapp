@@ -4,6 +4,9 @@ import 'package:myapp/views/settings/border_radius_settings_view.dart';
 import 'package:myapp/views/settings/notification_settings_view.dart';
 import 'package:myapp/views/settings/advanced_settings_view.dart';
 import 'package:myapp/views/settings/about_settings_view.dart';
+import 'package:myapp/services/app_state.dart';
+import 'package:provider/provider.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:myapp/views/settings/keybindings_settings_view.dart';
 
@@ -30,6 +33,14 @@ class _SettingsViewState extends State<SettingsView> {
               automaticallyImplyLeading: false, // No back button
               title: const Text('Settings'),
               actions: [
+                TextButton.icon(
+                  onPressed: () {
+                    Provider.of<AppState>(context, listen: false).saveSettings();
+                    Fluttertoast.showToast(msg: "Settings saved.");
+                  },
+                  icon: const Icon(Icons.save, color: Colors.white),
+                  label: const Text('Save', style: TextStyle(color: Colors.white)),
+                ),
                 IconButton(
                   icon: const Icon(Icons.close),
                   onPressed: () => Navigator.of(context).pop(),

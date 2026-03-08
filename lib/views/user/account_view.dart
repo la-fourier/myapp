@@ -72,6 +72,7 @@ class AccountViewState extends State<AccountView> {
 
     // Initialize dirty person if not set
     _dirtyPerson ??= Person(
+      uid: user.person.uid,
       fullName: user.person.fullName,
       dateOfBirth: user.person.dateOfBirth,
       email: user.person.email,
@@ -144,6 +145,7 @@ class AccountViewState extends State<AccountView> {
       if (newDate != null) {
         setState(() {
           _dirtyPerson = Person(
+            uid: _dirtyPerson!.uid,
             fullName: _dirtyPerson!.fullName,
             dateOfBirth: newDate,
             email: _dirtyPerson!.email,
@@ -176,6 +178,7 @@ class AccountViewState extends State<AccountView> {
             (newValue) {
               setState(() {
                 _dirtyPerson = Person(
+                  uid: _dirtyPerson!.uid,
                   fullName: newValue,
                   dateOfBirth: _dirtyPerson!.dateOfBirth,
                   nickname: _dirtyPerson!.nickname,
@@ -193,6 +196,7 @@ class AccountViewState extends State<AccountView> {
             (newValue) {
               setState(() {
                 _dirtyPerson = Person(
+                  uid: _dirtyPerson!.uid,
                   fullName: _dirtyPerson!.fullName,
                   dateOfBirth: _dirtyPerson!.dateOfBirth,
                   nickname: newValue,
@@ -210,6 +214,7 @@ class AccountViewState extends State<AccountView> {
             (newValue) {
               setState(() {
                 _dirtyPerson = Person(
+                  uid: _dirtyPerson!.uid,
                   fullName: _dirtyPerson!.fullName,
                   dateOfBirth: _dirtyPerson!.dateOfBirth,
                   nickname: _dirtyPerson!.nickname,
@@ -227,6 +232,7 @@ class AccountViewState extends State<AccountView> {
             (newValue) {
               setState(() {
                 _dirtyPerson = Person(
+                  uid: _dirtyPerson!.uid,
                   fullName: _dirtyPerson!.fullName,
                   dateOfBirth: _dirtyPerson!.dateOfBirth,
                   nickname: _dirtyPerson!.nickname,
