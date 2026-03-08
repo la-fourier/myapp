@@ -7,6 +7,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:myapp/l10n/app_localizations.dart';
 import 'package:myapp/services/app_state.dart';
 import 'package:myapp/services/theme_provider.dart';
+import 'package:myapp/services/map_service.dart';
 import 'package:myapp/views/auth/login_view.dart';
 import 'package:myapp/views/main/main_screen.dart';
 import 'package:myapp/widgets/loading_overlay.dart';
@@ -20,6 +21,7 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (context) => AppState()),
         ChangeNotifierProvider(create: (context) => ThemeProvider()),
+        ChangeNotifierProvider(create: (context) => MapService()),
       ],
       child: MyApp(key: UniqueKey()),
     ),
