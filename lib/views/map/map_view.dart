@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:myapp/l10n/app_localizations.dart';
 import 'package:myapp/models/map_location.dart';
 import 'package:myapp/services/map_service.dart';
+import 'package:myapp/views/map/map_side_panel.dart';
 import 'package:provider/provider.dart';
 
 class MapView extends StatefulWidget {
@@ -50,75 +51,85 @@ class _MapViewState extends State<MapView> {
           ),
         ],
       ),
-      body: FlutterMap(
-        mapController: _mapController,
-        options: MapOptions(
-          initialCenter: const LatLng(52.5200, 13.4050), // Berlin
-          initialZoom: 13.0,
-          onLongPress: (tapPosition, point) {
-            _addNewLocation(tapPosition, point);
-          },
-        ),
-        children: [
-          TileLayer(
-            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            userAgentPackageName: 'com.crealcraft.myapp',
-            tileProvider: CancellableNetworkTileProvider(),
-          ),
-          PolylineLayer(
-            polylines: mapService.routes
-                .where((r) => r.isVisible)
-                .map((r) => Polyline(
-                      points: r.points,
-                      color: r.color,
-                      strokeWidth: r.strokeWidth,
-                      isFilled: false,
-                    ))
-                .toList(),
-          ),
-          MarkerLayer(
-            markers: mapService.locations.map((loc) {
-              return Marker(
-                point: loc.position,
-                width: 80,
-                height: 80,
-                child: GestureDetector(
-                  onTap: () {
-                    _showLocationDetails(context, loc);
+      body: DefaultTabController(
+        length: 3,
+        child: Row(
+          children: [
+            Expanded(
+              child: FlutterMap(
+                mapController: _mapController,
+                options: MapOptions(
+                  initialCenter: const LatLng(52.5200, 13.4050), // Berlin
+                  initialZoom: 13.0,
+                  onLongPress: (tapPosition, point) {
+                    _addNewLocation(tapPosition, point);
                   },
-                  child: Column(
-                    children: [
-                      _getMarkerIcon(loc.type),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(4),
-                          boxShadow: const [
-                            BoxShadow(color: Colors.black26, blurRadius: 2),
-                          ],
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.crealcraft.myapp',
+                    tileProvider: CancellableNetworkTileProvider(),
+                  ),
+                  PolylineLayer(
+                    polylines: mapService.routes
+                        .where((r) => r.isVisible)
+                        .map((r) => Polyline(
+                              points: r.points,
+                              color: r.color,
+                              strokeWidth: r.strokeWidth,
+                            ))
+                        .toList()
+                        .cast<Polyline>(),
+                  ),
+                  MarkerLayer(
+                    markers: mapService.locations.map((loc) {
+                      return Marker(
+                        point: loc.position,
+                        width: 80,
+                        height: 80,
+                        child: GestureDetector(
+                          onTap: () {
+                            _showLocationDetails(context, loc);
+                          },
+                          child: Column(
+                            children: [
+                              _getMarkerIcon(loc.type),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.9),
+                                  borderRadius: BorderRadius.circular(4),
+                                  boxShadow: const [
+                                    BoxShadow(color: Colors.black12, blurRadius: 2),
+                                  ],
+                                ),
+                                child: Text(
+                                  loc.name,
+                                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        child: Text(
-                          loc.name,
-                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                      );
+                    }).toList(),
+                  ),
+                  RichAttributionWidget(
+                    attributions: [
+                      TextSourceAttribution(
+                        'OpenStreetMap contributors',
+                        onTap: () => {}, // In a real app, launch the OSM URL
                       ),
                     ],
                   ),
-                ),
-              );
-            }).toList(),
-          ),
-          RichAttributionWidget(
-            attributions: [
-              TextSourceAttribution(
-                'OpenStreetMap contributors',
-                onTap: () => {}, // In a real app, launch the OSM URL
+                ],
               ),
-            ],
-          ),
-        ],
+            ),
+            MapSidePanel(mapController: _mapController),
+          ],
+        ),
       ),
     );
   }
@@ -149,21 +160,22 @@ class _MapViewState extends State<MapView> {
   }
 
   void _addNewLocation(TapPosition tapPosition, LatLng point) {
+    final loc = AppLocalizations.of(context);
     String? newName;
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Neuen Ort hinzufügen'),
+          title: Text(loc?.map_add_location ?? (loc?.appTitle != null ? 'Neuen Ort hinzufügen' : 'Add New Place')),
           content: TextField(
             autofocus: true,
-            decoration: const InputDecoration(labelText: 'Name des Ortes'),
+            decoration: InputDecoration(labelText: loc?.name ?? 'Name'),
             onChanged: (value) => newName = value,
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Abbrechen'),
+              child: Text(loc?.cancel ?? 'Abbrechen'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -177,7 +189,7 @@ class _MapViewState extends State<MapView> {
                   Navigator.pop(context);
                 }
               },
-              child: const Text('Speichern'),
+              child: Text(loc?.save ?? 'Speichern'),
             ),
           ],
         );
@@ -186,6 +198,7 @@ class _MapViewState extends State<MapView> {
   }
 
   void _showLocationDetails(BuildContext context, MapLocation location) {
+    final loc = AppLocalizations.of(context);
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -207,7 +220,7 @@ class _MapViewState extends State<MapView> {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Schließen'),
+                child: Text(loc?.close ?? 'Schließen'),
               ),
             ],
           ),

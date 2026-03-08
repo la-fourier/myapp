@@ -291,6 +291,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Map View'**
   String get mapTitle;
+
+  /// No description provided for @plugins.
+  ///
+  /// In en, this message translates to:
+  /// **'Plugins'**
+  String get plugins;
+
+  /// No description provided for @overview.
+  ///
+  /// In en, this message translates to:
+  /// **'Overview'**
+  String get overview;
+
+  /// No description provided for @details.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get details;
+
+  /// No description provided for @name.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get name;
+
+  /// No description provided for @type.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get type;
+
+  /// No description provided for @position.
+  ///
+  /// In en, this message translates to:
+  /// **'Position'**
+  String get position;
+
+  /// No description provided for @description.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get description;
+
+  /// No description provided for @collections.
+  ///
+  /// In en, this message translates to:
+  /// **'Collections'**
+  String get collections;
+
+  /// No description provided for @tours.
+  ///
+  /// In en, this message translates to:
+  /// **'Tours'**
+  String get tours;
+
+  /// No description provided for @transportMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Transport Mode'**
+  String get transportMode;
+
+  /// No description provided for @walking.
+  ///
+  /// In en, this message translates to:
+  /// **'Walking'**
+  String get walking;
+
+  /// No description provided for @cycling.
+  ///
+  /// In en, this message translates to:
+  /// **'Cycling'**
+  String get cycling;
+
+  /// No description provided for @driving.
+  ///
+  /// In en, this message translates to:
+  /// **'Driving'**
+  String get driving;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @map_add_location.
+  ///
+  /// In en, this message translates to:
+  /// **'Add New Place'**
+  String get map_add_location;
 }
 
 class _AppLocalizationsDelegate

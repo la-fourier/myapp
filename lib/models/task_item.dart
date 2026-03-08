@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:latlong2/latlong.dart';
 
 abstract class TaskItem {
   final String id;
@@ -6,6 +7,7 @@ abstract class TaskItem {
   final String? description;
   final List<String> contactUids;
   final String? categoryId;
+  final LatLng? location;
 
   TaskItem({
     required this.id,
@@ -13,6 +15,7 @@ abstract class TaskItem {
     this.description,
     List<String>? contactUids,
     this.categoryId,
+    this.location,
   }) : contactUids = contactUids ?? [];
 
   DateTime? get deadline;
@@ -43,6 +46,7 @@ class Task extends TaskItem {
     super.description,
     super.contactUids,
     super.categoryId,
+    super.location,
     DateTime? deadline,
     int priority = 3,
     int froggyness = 0,
@@ -74,6 +78,9 @@ class Task extends TaskItem {
       'froggyness': froggyness,
       'duration': duration.inMinutes,
       'categoryId': categoryId,
+      'location': location != null
+          ? {'lat': location!.latitude, 'lng': location!.longitude}
+          : null,
     };
   }
 
@@ -88,6 +95,9 @@ class Task extends TaskItem {
       froggyness: json['froggyness'] ?? 0,
       duration: Duration(minutes: json['duration'] ?? 30),
       categoryId: json['categoryId'],
+      location: json['location'] != null
+          ? LatLng(json['location']['lat'], json['location']['lng'])
+          : null,
     );
   }
 }
@@ -101,6 +111,7 @@ class Project extends TaskItem {
     super.description,
     super.contactUids,
     super.categoryId,
+    super.location,
     List<TaskItem>? children,
   }) : children = children ?? [];
 
@@ -143,6 +154,9 @@ class Project extends TaskItem {
       'contactUids': contactUids,
       'children': children.map((e) => e.toJson()).toList(),
       'categoryId': categoryId,
+      'location': location != null
+          ? {'lat': location!.latitude, 'lng': location!.longitude}
+          : null,
     };
   }
 
@@ -153,9 +167,12 @@ class Project extends TaskItem {
       description: json['description'],
       contactUids: List<String>.from(json['contactUids'] ?? []),
       children: (json['children'] as List? ?? [])
-          .map((e) => TaskItem.fromJson(e as Map<String, dynamic>))
+          .map((e) => TaskItem.fromJson(Map<String, dynamic>.from(e as Map)))
           .toList(),
       categoryId: json['categoryId'],
+      location: json['location'] != null
+          ? LatLng(json['location']['lat'], json['location']['lng'])
+          : null,
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:latlong2/latlong.dart';
 
 enum HabitTimeWindow {
   morning,
@@ -31,6 +32,7 @@ class Habit {
   final int froggyness; // 0 to 5
   final List<String> contactUids;
   final String? categoryId;
+  final LatLng? location;
 
   Habit({
     required this.id,
@@ -44,6 +46,7 @@ class Habit {
     this.froggyness = 0,
     List<String>? contactUids,
     this.categoryId,
+    this.location,
   }) : contactUids = contactUids ?? [];
 
   factory Habit.fromJson(Map<String, dynamic> json) {
@@ -62,6 +65,9 @@ class Habit {
       froggyness: json['froggyness'] ?? 0,
       contactUids: List<String>.from(json['contactUids'] ?? []),
       categoryId: json['categoryId'],
+      location: json['location'] != null
+          ? LatLng(json['location']['lat'], json['location']['lng'])
+          : null,
     );
   }
 
@@ -78,6 +84,9 @@ class Habit {
       'froggyness': froggyness,
       'contactUids': contactUids,
       'categoryId': categoryId,
+      'location': location != null
+          ? {'lat': location!.latitude, 'lng': location!.longitude}
+          : null,
     };
   }
 }

@@ -15,6 +15,7 @@ class User {
   List<TaskItem> tasks;
   double accountBalance;
   String password;
+  String? linkedAccountId;
 
   User({
     required this.person,
@@ -26,6 +27,7 @@ class User {
     List<TaskItem>? tasks,
     this.accountBalance = 0.0,
     required this.password,
+    this.linkedAccountId,
   })  : customCategories = customCategories ?? [],
         bills = bills ?? [],
         habits = habits ?? [],
@@ -75,6 +77,7 @@ class User {
           : [],
       accountBalance: json['accountBalance'] ?? 0.0,
       password: json['password'],
+      linkedAccountId: json['linkedAccountId'],
     );
   }
 
@@ -89,6 +92,7 @@ class User {
       'tasks': tasks.map((e) => e.toJson()).toList(),
       'accountBalance': accountBalance,
       'password': password,
+      'linkedAccountId': linkedAccountId,
     };
   }
 }

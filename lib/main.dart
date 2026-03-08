@@ -8,6 +8,10 @@ import 'package:myapp/l10n/app_localizations.dart';
 import 'package:myapp/services/app_state.dart';
 import 'package:myapp/services/theme_provider.dart';
 import 'package:myapp/services/map_service.dart';
+import 'package:myapp/services/settings_service.dart';
+import 'package:myapp/services/plugin_service.dart';
+import 'package:myapp/services/action_registry.dart';
+import 'package:myapp/services/travel_time_service.dart';
 import 'package:myapp/views/auth/login_view.dart';
 import 'package:myapp/views/main/main_screen.dart';
 import 'package:myapp/widgets/loading_overlay.dart';
@@ -15,13 +19,22 @@ import 'package:myapp/views/auth/signup_view.dart';
 
 // All main Todos from this file have been addressed.
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  final settingsService = SettingsService();
+  await settingsService.init();
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => AppState()),
         ChangeNotifierProvider(create: (context) => ThemeProvider()),
         ChangeNotifierProvider(create: (context) => MapService()),
+        ChangeNotifierProvider.value(value: settingsService),
+        ChangeNotifierProvider(create: (context) => PluginService(settingsService)),
+        ChangeNotifierProvider(create: (context) => ActionRegistry()),
+        Provider(create: (context) => TravelTimeService()),
       ],
       child: MyApp(key: UniqueKey()),
     ),

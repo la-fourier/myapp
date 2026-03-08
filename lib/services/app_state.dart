@@ -11,6 +11,7 @@ import 'package:myapp/models/habit.dart';
 import 'package:myapp/models/task_item.dart';
 import 'package:myapp/models/finance/bill.dart';
 import 'package:myapp/services/storage_service.dart';
+import 'package:myapp/services/travel_time_service.dart';
 
 // Helper class for the activity selection UI
 class SelectableActivity {
@@ -287,8 +288,7 @@ class AppState extends ChangeNotifier {
       } else if (item is Bill) {
         _loggedInUser!.bills.add(item);
       }
-      _saveUsers();
-      notifyListeners();
+      _onDataChanged();
     }
   }
 
@@ -307,8 +307,7 @@ class AppState extends ChangeNotifier {
       } else if (item is Bill) {
         _loggedInUser!.bills.remove(item);
       }
-      _saveUsers();
-      notifyListeners();
+      _onDataChanged();
     }
   }
 
@@ -333,17 +332,53 @@ class AppState extends ChangeNotifier {
         final index = _loggedInUser!.bills.indexOf(oldItem);
         if (index != -1) _loggedInUser!.bills[index] = newItem;
       }
-      _saveUsers();
-      notifyListeners();
+      _onDataChanged();
     }
   }
 
-  // PROFILE MANAGEMENT
+  // TRAVEL VALIDATION
+  List<String> getTravelConflicts() {
+    if (_loggedInUser == null) return [];
+    
+    final appointments = List<Appointment>.from(_loggedInUser!.calendar.appointments);
+    appointments.sort((a, b) => a.start.compareTo(b.start));
+
+    final travelService = TravelTimeService();
+    final conflicts = <String>[];
+
+    for (int i = 0; i < appointments.length - 1; i++) {
+      final first = appointments[i];
+      final second = appointments[i + 1];
+
+      // Only check same day
+      if (first.start.year == second.start.year &&
+          first.start.month == second.start.month &&
+          first.start.day == second.start.day) {
+        
+        final msg = travelService.getConflictMessage(first, second);
+        if (msg != null) {
+          conflicts.add(msg);
+        }
+      }
+    }
+    return conflicts;
+  }
+
+  void _onDataChanged() {
+    _saveUsers();
+    final conflicts = getTravelConflicts();
+    for (final conflict in conflicts) {
+      // Just a toast for now as per "automatically check"
+      // In a real app we might want a persistent warning bar
+      debugPrint('Travel Conflict: $conflict');
+    }
+    notifyListeners();
+  }
+
   void updateProfile(Person newProfile) {
     if (_loggedInUser != null) {
       _loggedInUser!.person = newProfile;
-      _saveUsers();
-      notifyListeners();
+      _onDataChanged();
     }
   }
 }

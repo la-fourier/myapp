@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:flutter/material.dart';
 import 'package:myapp/models/map_location.dart';
 import 'package:myapp/models/map_route.dart';
 
@@ -25,9 +26,45 @@ class MapService with ChangeNotifier {
     notifyListeners();
   }
 
+  void createTour(String name, List<MapLocation> tourLocations, TransportMode mode) {
+    if (tourLocations.isEmpty) return;
+    
+    final id = 'tour_${DateTime.now().millisecondsSinceEpoch}';
+    final points = tourLocations.map((l) => l.position).toList();
+    
+    // In a real app, we'd fetch actual routing points from an API for the transport mode
+    // For now, we use straight lines between locations
+    
+    final route = MapRoute(
+      id: id,
+      name: name,
+      points: points,
+      transportMode: mode,
+      color: _getRouteColor(mode),
+    );
+    
+    addRoute(route);
+  }
+
+  Color _getRouteColor(TransportMode mode) {
+    switch (mode) {
+      case TransportMode.walking: return Colors.green;
+      case TransportMode.cycling: return Colors.orange;
+      case TransportMode.driving: return Colors.blue;
+    }
+  }
+
   void removeRoute(String id) {
     _routes.removeWhere((route) => route.id == id);
     notifyListeners();
+  }
+
+  void toggleRouteVisibility(String id) {
+    final index = _routes.indexWhere((r) => r.id == id);
+    if (index != -1) {
+      _routes[index] = _routes[index].copyWith(isVisible: !_routes[index].isVisible);
+      notifyListeners();
+    }
   }
 
   void clearAll() {
@@ -56,14 +93,18 @@ class MapService with ChangeNotifier {
       type: MapLocationType.sight,
     ));
 
-    addRoute(const MapRoute(
-      id: 'r1',
-      name: 'Tourist Walk',
-      points: [
-        LatLng(52.5163, 13.3777), // Brandenburger Tor
-        LatLng(52.5186, 13.3761), // Reichstag
-        LatLng(52.5208, 13.4094), // Fernsehturm
-      ],
+    addLocation(const MapLocation(
+      id: '3',
+      name: 'Checkpoint Charlie',
+      description: 'Ehemaliger Grenzübergang',
+      position: LatLng(52.5074, 13.3904),
+      type: MapLocationType.sight,
     ));
+
+    createTour(
+      'Berlin City Sightseeing (Walking)', 
+      [_locations[0], _locations[2], _locations[1]], 
+      TransportMode.walking
+    );
   }
 }

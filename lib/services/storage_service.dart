@@ -53,8 +53,8 @@ class StorageService {
         return [];
       }
       final contents = await file.readAsString();
-      final List<dynamic> json = jsonDecode(contents);
-      return json.map((e) => User.fromJson(e as Map<String, dynamic>)).toList();
+      final List<dynamic> jsonList = jsonDecode(contents);
+      return jsonList.map((e) => User.fromJson(Map<String, dynamic>.from(e as Map))).toList();
     } catch (e) {
       // If the file doesn't exist or is invalid, return an empty list
       return [];
@@ -74,8 +74,8 @@ class StorageService {
       if (contents == null) {
         return [];
       }
-      final List<dynamic> json = jsonDecode(contents);
-      return json.map((e) => User.fromJson(e as Map<String, dynamic>)).toList();
+      final List<dynamic> jsonList = jsonDecode(contents);
+      return jsonList.map((e) => User.fromJson(Map<String, dynamic>.from(e as Map))).toList();
     } catch (e) {
       return [];
     }

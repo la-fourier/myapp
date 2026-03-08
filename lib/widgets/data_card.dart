@@ -6,6 +6,7 @@ class SortableColumn<T> {
   final bool numeric;
   final Comparable Function(T item) getField;
   final Widget Function(T item) cellBuilder;
+  double? width;
   Alignment alignment;
 
   SortableColumn({
@@ -14,6 +15,7 @@ class SortableColumn<T> {
     this.numeric = false,
     required this.getField,
     required this.cellBuilder,
+    this.width,
     this.alignment = Alignment.centerLeft,
   });
 }
@@ -42,6 +44,8 @@ class _DataCardState<T> extends State<DataCard<T>> {
   late List<T> _sortedData;
   late Map<String, bool> _columnVisibility;
   late List<SortableColumn<T>> _orderedColumns;
+  final ScrollController _verticalController = ScrollController();
+  final ScrollController _horizontalController = ScrollController();
 
   @override
   void initState() {
@@ -49,6 +53,13 @@ class _DataCardState<T> extends State<DataCard<T>> {
     _sortedData = List.from(widget.data);
     _columnVisibility = {for (var col in widget.columns) col.label: true};
     _orderedColumns = List.from(widget.columns);
+  }
+
+  @override
+  void dispose() {
+    _verticalController.dispose();
+    _horizontalController.dispose();
+    super.dispose();
   }
 
   @override
@@ -184,87 +195,130 @@ class _DataCardState<T> extends State<DataCard<T>> {
       children: [
         Expanded(
           child: SingleChildScrollView(
+            controller: _verticalController,
             scrollDirection: Axis.vertical,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Theme(
-                data: Theme.of(context).copyWith(
-                  dataTableTheme: DataTableThemeData(
-                    headingRowColor: MaterialStateProperty.all(
-                      Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.4)
-                    ),
-                    dataRowColor: MaterialStateProperty.resolveWith<Color?>(
-                        (Set<MaterialState> states) {
-                      if (states.contains(MaterialState.hovered)) {
-                        return Theme.of(context).colorScheme.primary.withOpacity(0.08);
-                      }
-                      return null;
-                    }),
-                  ),
-                ),
-                child: DataTable(
-                  showCheckboxColumn: false,
-                  sortColumnIndex: _sortColumnIndex != null && _sortColumnIndex! < visibleColumns.length ? _sortColumnIndex : null,
-                  sortAscending: _sortAscending,
-                  headingRowHeight: 56,
-                  dataRowMinHeight: 52,
-                  dataRowMaxHeight: 52,
-                  horizontalMargin: 24,
-                  columnSpacing: 48,
-                  columns: visibleColumns.map((column) {
-                    return DataColumn(
-                      label: MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: GestureDetector(
-                          onSecondaryTapDown: (details) => _showColumnOptions(context, column, details.globalPosition),
-                          child: Builder(
-                            builder: (ctx) => InkWell(
-                              onTap: () {
-                                final RenderBox box = ctx.findRenderObject() as RenderBox;
-                                final Offset position = box.localToGlobal(Offset.zero);
-                                _showColumnOptions(ctx, column, position + const Offset(0, 40));
-                              },
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    column.label, 
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Icon(Icons.arrow_drop_down, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
-                                ],
-                              ),
-                            ),
-                          ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  controller: _horizontalController,
+                  scrollDirection: Axis.horizontal,
+                  child: Theme(
+                    data: Theme.of(context).copyWith(
+                      dataTableTheme: DataTableThemeData(
+                        headingRowColor: MaterialStateProperty.all(
+                          Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.4)
                         ),
                       ),
-                      tooltip: column.tooltip ?? 'Click for options',
-                      numeric: column.numeric,
-                      onSort: (columnIndex, ascending) {
-                        _sort(
-                          column.getField,
-                          visibleColumns.indexOf(column),
-                          ascending,
-                        );
-                      },
-                    );
-                  }).toList(),
-                  rows: filteredData.map((item) {
-                    return DataRow(
-                      onSelectChanged: widget.onRowTap != null ? (_) => widget.onRowTap!(item) : null,
-                      cells: visibleColumns.map((column) {
-                        return DataCell(
-                          Align(
-                            alignment: column.alignment,
-                            child: column.cellBuilder(item)
-                          )
-                        );
-                      }).toList(),
-                    );
-                  }).toList(),
-                ),
-              ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                        child: DataTable(
+                          showCheckboxColumn: false,
+                          sortColumnIndex: _sortColumnIndex != null && _sortColumnIndex! < visibleColumns.length ? _sortColumnIndex : null,
+                          sortAscending: _sortAscending,
+                          headingRowHeight: 56,
+                          dataRowMinHeight: 52,
+                          dataRowMaxHeight: 52,
+                          horizontalMargin: 24,
+                          columnSpacing: 0,
+                          columns: visibleColumns.map((column) {
+                            return DataColumn(
+                              label: SizedBox(
+                                width: column.width ?? 150,
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: MouseRegion(
+                                        cursor: SystemMouseCursors.click,
+                                        child: GestureDetector(
+                                          onSecondaryTapDown: (details) => _showColumnOptions(context, column, details.globalPosition),
+                                          child: Builder(
+                                            builder: (ctx) => InkWell(
+                                              onTap: () {
+                                                final RenderBox box = ctx.findRenderObject() as RenderBox;
+                                                final Offset position = box.localToGlobal(Offset.zero);
+                                                _showColumnOptions(ctx, column, position + const Offset(0, 40));
+                                              },
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Flexible(
+                                                    child: Text(
+                                                      column.label, 
+                                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  Icon(Icons.arrow_drop_down, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onHorizontalDragUpdate: (details) {
+                                        setState(() {
+                                          column.width = (column.width ?? 150) + details.delta.dx;
+                                          if (column.width! < 50) column.width = 50;
+                                        });
+                                      },
+                                      child: MouseRegion(
+                                        cursor: SystemMouseCursors.resizeLeftRight,
+                                        child: Container(
+                                          width: 10,
+                                          height: 24,
+                                          color: Colors.transparent,
+                                          child: Center(
+                                            child: Container(
+                                              width: 1,
+                                              height: 16,
+                                              color: Theme.of(context).dividerColor.withOpacity(0.5),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              tooltip: column.tooltip ?? 'Click for options',
+                              numeric: column.numeric,
+                              onSort: (columnIndex, ascending) {
+                                _sort(
+                                  column.getField,
+                                  visibleColumns.indexOf(column),
+                                  ascending,
+                                );
+                              },
+                            );
+                          }).toList(),
+                          rows: filteredData.map((item) {
+                            return DataRow(
+                              onSelectChanged: widget.onRowTap != null ? (_) => widget.onRowTap!(item) : null,
+                              cells: visibleColumns.map((column) {
+                                return DataCell(
+                                  SizedBox(
+                                    width: column.width ?? 150,
+                                    child: Align(
+                                      alignment: column.alignment,
+                                      child: column.cellBuilder(item)
+                                    ),
+                                  )
+                                );
+                              }).toList(),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ),
@@ -272,4 +326,3 @@ class _DataCardState<T> extends State<DataCard<T>> {
     );
   }
 }
-

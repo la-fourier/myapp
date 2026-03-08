@@ -83,13 +83,18 @@ class ExportService {
     final List<List<dynamic>> csvData = [];
     data.forEach((key, value) {
       if (value is List && value.isNotEmpty) {
-        final headers = (value.first as Map<String, dynamic>).keys.toList();
-        csvData.add([key]);
-        csvData.add(headers);
-        for (var item in value) {
-          csvData.add((item as Map<String, dynamic>).values.toList());
+        final firstItem = value.first;
+        if (firstItem is Map) {
+          final headers = Map<String, dynamic>.from(firstItem).keys.toList();
+          csvData.add([key]);
+          csvData.add(headers);
+          for (var item in value) {
+            if (item is Map) {
+              csvData.add(Map<String, dynamic>.from(item).values.toList());
+            }
+          }
+          csvData.add([]); // Add empty line between sections
         }
-        csvData.add([]); // Add empty line between sections
       }
     });
     return const ListToCsvConverter().convert(csvData);

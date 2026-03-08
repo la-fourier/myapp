@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:myapp/models/calendar/category.dart';
 import 'package:myapp/models/finance/attachment.dart';
 import 'package:myapp/models/finance/bill.dart';
@@ -29,6 +30,7 @@ class Appointment {
   final List<Attachment> attachments;
   final Priority priority;
   final List<String> contactUids;
+  final LatLng? location;
 
   Appointment({
     required this.title,
@@ -39,6 +41,7 @@ class Appointment {
     List<Attachment>? attachments,
     this.priority = Priority.normal,
     List<String>? contactUids,
+    this.location,
   }) : category = category ?? Category(name: 'Default', color: Colors.blue),
        attachments = attachments ?? [],
        contactUids = contactUids ?? [];
@@ -67,6 +70,9 @@ class Appointment {
           ? Priority.values.firstWhere((e) => e.toString() == json['priority'])
           : Priority.normal,
       contactUids: List<String>.from(json['contactUids'] ?? []),
+      location: json['location'] != null
+          ? LatLng(json['location']['lat'], json['location']['lng'])
+          : null,
     );
   }
 
@@ -86,6 +92,9 @@ class Appointment {
       }).toList(),
       'priority': priority.toString(),
       'contactUids': contactUids,
+      'location': location != null
+          ? {'lat': location!.latitude, 'lng': location!.longitude}
+          : null,
     };
   }
 }

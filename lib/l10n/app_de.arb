@@ -31,5 +31,20 @@
     "integrations": "Integrationen",
     "saveSettings": "Einstellungen speichern",
     "map": "Karte",
-    "mapTitle": "Kartenansicht"
+    "mapTitle": "Kartenansicht",
+    "plugins": "Plugins",
+    "overview": "Übersicht",
+    "details": "Details",
+    "name": "Name",
+    "type": "Typ",
+    "position": "Position",
+    "description": "Beschreibung",
+    "collections": "Kollektionen",
+    "tours": "Touren",
+    "transportMode": "Verkehrsmittel",
+    "walking": "Zu Fuß",
+    "cycling": "Fahrrad",
+    "driving": "Auto",
+    "close": "Schließen",
+    "map_add_location": "Neuen Ort hinzufügen"
 }

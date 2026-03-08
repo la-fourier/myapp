@@ -48,59 +48,104 @@ class AppLocalizationsEs extends AppLocalizations {
   String get search => 'Buscar';
 
   @override
-  String get planner => 'Planner';
+  String get planner => 'Planificador';
 
   @override
-  String get contacts => 'Contacts';
+  String get contacts => 'Contactos';
 
   @override
-  String get today => 'Today';
+  String get today => 'Hoy';
 
   @override
-  String get stats => 'Stats';
+  String get stats => 'Estadísticas';
 
   @override
-  String get appearance => 'Appearance';
+  String get appearance => 'Apariencia';
 
   @override
-  String get borders => 'Borders';
+  String get borders => 'Bordes';
 
   @override
-  String get keybindings => 'Keybindings';
+  String get keybindings => 'Atajos de teclado';
 
   @override
-  String get notifications => 'Notifications';
+  String get notifications => 'Notificaciones';
 
   @override
-  String get advanced => 'Advanced';
+  String get advanced => 'Avanzado';
 
   @override
-  String get about => 'About';
+  String get about => 'Acerca de';
 
   @override
-  String get language => 'Language';
+  String get language => 'Idioma';
 
   @override
-  String get theme => 'Theme';
+  String get theme => 'Tema';
 
   @override
-  String get darkMode => 'Dark Mode';
+  String get darkMode => 'Modo oscuro';
 
   @override
-  String get systemTheme => 'System Theme';
+  String get systemTheme => 'Tema del sistema';
 
   @override
-  String get profile => 'Profile';
+  String get profile => 'Perfil';
 
   @override
-  String get integrations => 'Integrations';
+  String get integrations => 'Integraciones';
 
   @override
-  String get saveSettings => 'Save Settings';
+  String get saveSettings => 'Guardar ajustes';
 
   @override
-  String get map => 'Map';
+  String get map => 'Mapa';
 
   @override
-  String get mapTitle => 'Map View';
+  String get mapTitle => 'Vista de mapa';
+
+  @override
+  String get plugins => 'Complementos';
+
+  @override
+  String get overview => 'Resumen';
+
+  @override
+  String get details => 'Detalles';
+
+  @override
+  String get name => 'Nombre';
+
+  @override
+  String get type => 'Tipo';
+
+  @override
+  String get position => 'Posición';
+
+  @override
+  String get description => 'Descripción';
+
+  @override
+  String get collections => 'Colecciones';
+
+  @override
+  String get tours => 'Recorridos';
+
+  @override
+  String get transportMode => 'Modo de transporte';
+
+  @override
+  String get walking => 'Caminando';
+
+  @override
+  String get cycling => 'Ciclismo';
+
+  @override
+  String get driving => 'Conduciendo';
+
+  @override
+  String get close => 'Cerrar';
+
+  @override
+  String get map_add_location => 'Añadir nuevo lugar';
 }

@@ -278,23 +278,53 @@ class _WeekViewState extends State<WeekView> {
   Widget _buildMonthHeader(Color arrowColor) {
     final weekNumber = _getWeekNumber(_currentWeek);
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton(
-            icon: Icon(Icons.chevron_left, color: arrowColor),
+          _buildNavButton(
+            icon: Icons.chevron_left,
             onPressed: _previousWeek,
+            isLeft: true,
           ),
           Text(
             '${DateFormat.yMMMM().format(_currentWeek)} - CW $weekNumber',
-            style: const TextStyle(fontSize: 18),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          IconButton(
-            icon: Icon(Icons.chevron_right, color: arrowColor),
+          _buildNavButton(
+            icon: Icons.chevron_right,
             onPressed: _nextWeek,
+            isLeft: false,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildNavButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+    required bool isLeft,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.horizontal(
+          left: isLeft ? const Radius.circular(30) : Radius.zero,
+          right: !isLeft ? const Radius.circular(30) : Radius.zero,
+        ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            border: Border.all(color: Theme.of(context).dividerColor),
+            borderRadius: BorderRadius.horizontal(
+              left: isLeft ? const Radius.circular(30) : Radius.zero,
+              right: !isLeft ? const Radius.circular(30) : Radius.zero,
+            ),
+          ),
+          child: Icon(icon),
+        ),
       ),
     );
   }
@@ -429,87 +459,6 @@ class _WeekViewState extends State<WeekView> {
         .toList();
   }
 
-  DateTime? _calculateHoverTime2(
-    Offset position,
-    double dayWidth,
-    List<DateTime> weekDays,
-    double hourHeight,
-    double timeColWidth,
-  ) {
-    final dx = position.dx - timeColWidth;
-    final dy = position.dy;
-    if (dx < 0) return null;
-
-    final dayIndex = (dx / dayWidth).floor();
-    if (dayIndex < 0 || dayIndex >= 7) return null;
-
-    final quarterHour = (dy / (hourHeight / 4)).floor();
-    final hour = (quarterHour / 4).floor();
-    final minute = (quarterHour % 4) * 15;
-
-    final weekDay = weekDays[dayIndex];
-    return DateTime(weekDay.year, weekDay.month, weekDay.day, hour, minute);
-  }
-
-  Widget _buildHoverIndicator2(
-    double dayWidth,
-    double hourHeight,
-    double timeColWidth,
-    List<DateTime> weekDays,
-  ) {
-    final hoverTime = _calculateHoverTime(
-      _hoverPosition,
-      dayWidth,
-      weekDays,
-      hourHeight,
-      timeColWidth,
-    );
-    if (hoverTime == null) return const SizedBox.shrink();
-
-    final dayIndex = hoverTime.weekday - 1;
-    final top =
-        (hoverTime.hour * hourHeight) + (hoverTime.minute / 60 * hourHeight);
-    final left = timeColWidth + (dayIndex * dayWidth);
-
-    return Positioned(
-      top: top,
-      left: left,
-      width: dayWidth - 2,
-      height: hourHeight,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 1.0),
-        decoration: BoxDecoration(
-          color: Theme.of(context).hoverColor,
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-        child: const Center(
-          child: Icon(Icons.add_circle_outline, color: Colors.grey),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCurrentTimeIndicator2(
-    double dayWidth,
-    double hourHeight,
-    double timeColWidth,
-  ) {
-    final now = DateTime.now();
-    if (now.isBefore(_currentWeek) ||
-        now.isAfter(_currentWeek.add(const Duration(days: 7)))) {
-      return const SizedBox.shrink();
-    }
-    final dayIndex = now.weekday - 1;
-    final top = (now.hour * hourHeight) + (now.minute / 60 * hourHeight);
-    final left = timeColWidth + (dayIndex * dayWidth);
-
-    return Positioned(
-      top: top,
-      left: left,
-      width: dayWidth,
-      child: Container(height: 2, color: Colors.red),
-    );
-  }
 }
 
 class _TimeColumn extends StatelessWidget {

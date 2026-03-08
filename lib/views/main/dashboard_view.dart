@@ -172,6 +172,9 @@ class _DashboardViewState extends State<DashboardView> {
           Expanded(
             child: Card(
               elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.0),
+              ),
               child: _buildConfiguredDataCard(
                 appState,
                 _selectedDataSourceId,

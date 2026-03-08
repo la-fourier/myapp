@@ -34,5 +34,20 @@
     "integrations": "Integrations",
     "saveSettings": "Save Settings",
     "map": "Map",
-    "mapTitle": "Map View"
+    "mapTitle": "Map View",
+    "plugins": "Plugins",
+    "overview": "Overview",
+    "details": "Details",
+    "name": "Name",
+    "type": "Type",
+    "position": "Position",
+    "description": "Description",
+    "collections": "Collections",
+    "tours": "Tours",
+    "transportMode": "Transport Mode",
+    "walking": "Walking",
+    "cycling": "Cycling",
+    "driving": "Driving",
+    "close": "Close",
+    "map_add_location": "Add New Place"
 }

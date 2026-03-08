@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:myapp/l10n/app_localizations.dart';
 import 'package:myapp/models/calendar/appointment.dart';
 
 class AppointmentReadView extends StatelessWidget {
@@ -16,6 +17,7 @@ class AppointmentReadView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     
@@ -23,166 +25,158 @@ class AppointmentReadView extends StatelessWidget {
     final timeFormat = DateFormat.Hm();
 
     return Dialog(
-       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-       elevation: 4,
-       child: ConstrainedBox(
-         constraints: const BoxConstraints(maxWidth: 500),
-         child: Container(
-           width: double.infinity,
-           padding: const EdgeInsets.all(24),
-         child: Column(
-           mainAxisSize: MainAxisSize.min,
-           crossAxisAlignment: CrossAxisAlignment.start,
-           children: [
-             // Header Row
-             Row(
-               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-               crossAxisAlignment: CrossAxisAlignment.start,
-               children: [
-                 Expanded(
-                   child: Row(
-                     crossAxisAlignment: CrossAxisAlignment.start,
-                     children: [
-                       Container(
-                         width: 16,
-                         height: 48,
-                         decoration: BoxDecoration(
-                           color: appointment.category.color,
-                           borderRadius: BorderRadius.circular(4),
-                         ),
-                       ),
-                       const SizedBox(width: 16),
-                       Expanded(
-                         child: Column(
-                           crossAxisAlignment: CrossAxisAlignment.start,
-                           children: [
-                             Text(
-                               appointment.title,
-                               style: theme.textTheme.headlineSmall?.copyWith(
-                                 fontWeight: FontWeight.bold,
-                               ),
-                             ),
-                             const SizedBox(height: 4),
-                             Text(
-                               appointment.category.name,
-                               style: theme.textTheme.bodyMedium?.copyWith(
-                                 color: colorScheme.onSurfaceVariant,
-                                 fontWeight: FontWeight.w500,
-                               ),
-                             ),
-                           ],
-                         ),
-                       ),
-                     ],
-                   ),
-                 ),
-                 Row(
-                   children: [
-                     if (onEdit != null)
-                      IconButton(
-                        tooltip: 'Edit Appointment',
-                        icon: const Icon(Icons.edit_outlined),
-                        onPressed: onEdit,
-                      ),
-                      IconButton(
-                        tooltip: 'Close',
-                        icon: const Icon(Icons.close),
-                        onPressed: onClose ?? () => Navigator.of(context).pop(),
-                      ),
-                   ],
-                 ),
-               ],
-             ),
-             
-             const Divider(height: 32),
-             
-             // Time Info
-             Flexible(
-               child: SingleChildScrollView(
-                 child: Column(
-                   crossAxisAlignment: CrossAxisAlignment.start,
-                   children: [
-                     _buildDataRow(
-                       context,
-                       Icons.schedule,
-                       'Time',
-                       '${dateFormat.format(appointment.start)}  ${timeFormat.format(appointment.start)} - ${timeFormat.format(appointment.end)}',
-                     ),
-                     
-                     if (appointment.description != null && appointment.description!.isNotEmpty)
-                       _buildDataRow(
-                         context,
-                         Icons.notes,
-                         'Description',
-                         appointment.description!,
-                       ),
-                       
-                     _buildDataRow(
-                       context,
-                       Icons.priority_high,
-                       'Priority',
-                       appointment.priority.toString(),
-                     ),
-                     
-                     if (appointment.attachments.isNotEmpty) ...[
-                       const SizedBox(height: 16),
-                       Text(
-                         'Attachments (${appointment.attachments.length})',
-                         style: theme.textTheme.titleSmall?.copyWith(
-                           color: colorScheme.onSurfaceVariant,
-                           fontWeight: FontWeight.bold,
-                         ),
-                       ),
-                       const SizedBox(height: 8),
-                       ...appointment.attachments.map((file) => ListTile(
-                         contentPadding: EdgeInsets.zero,
-                         leading: const Icon(Icons.attach_file),
-                         title: Text(file.name),
-                         subtitle: Text(file.type),
-                       )),
-                     ]
-                   ],
-                 ),
-               ),
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+       child: Container(
+         constraints: const BoxConstraints(maxWidth: 450),
+         decoration: BoxDecoration(
+           color: theme.colorScheme.surface.withOpacity(0.95),
+           borderRadius: BorderRadius.circular(28),
+           border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
+           boxShadow: [
+             BoxShadow(
+               color: Colors.black.withOpacity(0.1),
+               blurRadius: 20,
+               offset: const Offset(0, 10),
              ),
            ],
          ),
+         child: ClipRRect(
+           borderRadius: BorderRadius.circular(28),
+           child: Column(
+             mainAxisSize: MainAxisSize.min,
+             children: [
+               // Header with category color
+               Container(
+                 width: double.infinity,
+                 height: 120,
+                 decoration: BoxDecoration(
+                   gradient: LinearGradient(
+                     begin: Alignment.topLeft,
+                     end: Alignment.bottomRight,
+                     colors: [
+                       appointment.category.color,
+                       appointment.category.color.withOpacity(0.7),
+                     ],
+                   ),
+                 ),
+                 child: Stack(
+                   children: [
+                     Positioned(
+                       bottom: 16,
+                       left: 20,
+                       right: 60,
+                       child: Text(
+                         appointment.title,
+                         style: theme.textTheme.headlineSmall?.copyWith(
+                           color: Colors.white,
+                           fontWeight: FontWeight.bold,
+                         ),
+                         maxLines: 2,
+                         overflow: TextOverflow.ellipsis,
+                       ),
+                     ),
+                     Positioned(
+                       top: 8,
+                       right: 8,
+                       child: IconButton(
+                         icon: const Icon(Icons.close, color: Colors.white),
+                         onPressed: onClose ?? () => Navigator.pop(context),
+                       ),
+                     ),
+                   ],
+                 ),
+               ),
+               
+               Padding(
+                 padding: const EdgeInsets.all(24),
+                 child: Column(
+                   crossAxisAlignment: CrossAxisAlignment.start,
+                   children: [
+                     _buildInfoItem(
+                       context,
+                       Icons.event_outlined,
+                       dateFormat.format(appointment.start),
+                       '${timeFormat.format(appointment.start)} - ${timeFormat.format(appointment.end)}',
+                     ),
+                     const SizedBox(height: 20),
+                     _buildInfoItem(
+                       context,
+                       Icons.category_outlined,
+                       'Category',
+                       appointment.category.name,
+                     ),
+                     if (appointment.description != null && appointment.description!.isNotEmpty) ...[
+                       const SizedBox(height: 20),
+                       _buildInfoItem(
+                         context,
+                         Icons.description_outlined,
+                         'Description',
+                         appointment.description!,
+                       ),
+                     ],
+                     const SizedBox(height: 32),
+                     Row(
+                       mainAxisAlignment: MainAxisAlignment.end,
+                       children: [
+                         if (onEdit != null)
+                           FilledButton.icon(
+                             onPressed: onEdit,
+                             icon: const Icon(Icons.edit_outlined, size: 20),
+                             label: Text(loc?.edit ?? 'Edit'),
+                           ),
+                         const SizedBox(width: 12),
+                         TextButton(
+                           onPressed: onClose ?? () => Navigator.pop(context),
+                           child: Text(loc?.close ?? 'Close'),
+                         ),
+                       ],
+                     ),
+                   ],
+                 ),
+               ),
+             ],
+           ),
+         ),
        ),
-    ),
     );
   }
 
-  Widget _buildDataRow(BuildContext context, IconData icon, String label, String value) {
+  Widget _buildInfoItem(BuildContext context, IconData icon, String label, String value) {
     final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 20, color: theme.colorScheme.onSurfaceVariant),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: theme.colorScheme.onSurface,
-                  ),
-                ),
-              ],
-            ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+            borderRadius: BorderRadius.circular(12),
           ),
-        ],
-      ),
+          child: Icon(icon, size: 20, color: theme.colorScheme.primary),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

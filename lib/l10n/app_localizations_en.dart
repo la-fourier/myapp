@@ -103,4 +103,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mapTitle => 'Map View';
+
+  @override
+  String get plugins => 'Plugins';
+
+  @override
+  String get overview => 'Overview';
+
+  @override
+  String get details => 'Details';
+
+  @override
+  String get name => 'Name';
+
+  @override
+  String get type => 'Type';
+
+  @override
+  String get position => 'Position';
+
+  @override
+  String get description => 'Description';
+
+  @override
+  String get collections => 'Collections';
+
+  @override
+  String get tours => 'Tours';
+
+  @override
+  String get transportMode => 'Transport Mode';
+
+  @override
+  String get walking => 'Walking';
+
+  @override
+  String get cycling => 'Cycling';
+
+  @override
+  String get driving => 'Driving';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get map_add_location => 'Add New Place';
 }
