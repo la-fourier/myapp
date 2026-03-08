@@ -8,6 +8,7 @@ class AdvancedSettingsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
+      primary: false,
       children: [
         Consumer<ThemeProvider>(
           builder: (context, themeProvider, child) {

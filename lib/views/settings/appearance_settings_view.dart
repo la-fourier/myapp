@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/services/theme_provider.dart';
 import 'package:myapp/services/app_state.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:myapp/services/toast_service.dart';
 import 'package:myapp/l10n/app_localizations.dart';
 
 class AppearanceSettingsView extends StatelessWidget {
   const AppearanceSettingsView({super.key});
 
   void _showLanguageToast(BuildContext context, String language) {
-    Fluttertoast.showToast(msg: "Language set to $language (not implemented)");
+    AppToast.info(context, 'Language set to $language (not implemented)');
     Navigator.of(context).pop();
   }
 
@@ -17,6 +17,7 @@ class AppearanceSettingsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     return ListView(
+      primary: false,
       children: [
         ListTile(
           leading: const Icon(Icons.color_lens),

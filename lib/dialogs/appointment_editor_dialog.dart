@@ -39,6 +39,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
   late List<Attachment> _attachments;
   late Priority _priority;
   late Set<String> _contactUids;
+  String _address = '';
 
   bool _isRawEditMode = false;
   final TextEditingController _rawTextController = TextEditingController();
@@ -60,6 +61,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
       _attachments = List.from(widget.appointment!.attachments);
       _priority = widget.appointment!.priority;
       _contactUids = Set<String>.from(widget.appointment!.contactUids);
+      _address = widget.appointment!.address ?? '';
 
       if (!_categories.contains(_category)) {
         _categories.insert(0, _category);
@@ -199,6 +201,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
         attachments: _attachments,
         priority: _priority,
         contactUids: _contactUids.toList(),
+        address: _address.isEmpty ? null : _address,
       );
 
       widget.onSave(newAppointment);
@@ -262,6 +265,14 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                         labelText: 'Description',
                       ),
                       onSaved: (value) => _description = value ?? '',
+                    ),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      initialValue: _address,
+                      decoration: const InputDecoration(
+                        labelText: 'Address (optional)',
+                      ),
+                      onSaved: (value) => _address = value ?? '',
                     ),
                     const SizedBox(height: 10),
                     Table(

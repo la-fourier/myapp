@@ -12,31 +12,38 @@ class TasksView extends StatelessWidget {
     final appState = Provider.of<AppState>(context);
     final tasks = appState.loggedInUser?.tasks ?? [];
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Tasks & Projects'),
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == 'task') _showTaskEditor(context);
-              if (value == 'project') _showProjectEditor(context);
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(value: 'task', child: Text('Add Task')),
-              const PopupMenuItem(value: 'project', child: Text('Add Project')),
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              PopupMenuButton<String>(
+                onSelected: (value) {
+                  if (value == 'task') _showTaskEditor(context);
+                  if (value == 'project') _showProjectEditor(context);
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(value: 'task', child: Text('Add Task')),
+                  const PopupMenuItem(value: 'project', child: Text('Add Project')),
+                ],
+                icon: const Icon(Icons.add),
+              ),
             ],
-            icon: const Icon(Icons.add),
           ),
-        ],
-      ),
-      body: tasks.isEmpty
-          ? const Center(child: Text('No tasks or projects yet.'))
-          : ListView.builder(
-              itemCount: tasks.length,
-              itemBuilder: (context, index) {
-                return TaskItemWidget(item: tasks[index], isRoot: true);
-              },
-            ),
+        ),
+        Expanded(
+          child: tasks.isEmpty
+              ? const Center(child: Text('No tasks or projects yet.'))
+              : ListView.builder(
+                  itemCount: tasks.length,
+                  itemBuilder: (context, index) {
+                    return TaskItemWidget(item: tasks[index], isRoot: true);
+                  },
+                ),
+        ),
+      ],
     );
   }
 
@@ -184,9 +191,11 @@ class TaskEditorDialog extends StatefulWidget {
 class _TaskEditorDialogState extends State<TaskEditorDialog> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _addressController = TextEditingController();
   int _priority = 3;
   int _froggyness = 0;
   int _duration = 30;
+  DateTime? _deadline;
   final Set<String> _contactUids = {};
   String? _categoryId;
 
@@ -196,9 +205,11 @@ class _TaskEditorDialogState extends State<TaskEditorDialog> {
     _categoryId = widget.task?.categoryId ?? widget.parent?.categoryId;
     if (widget.task != null) {
       _nameController.text = widget.task!.name;
+      _addressController.text = widget.task!.address ?? '';
       _priority = widget.task!.priority;
       _froggyness = widget.task!.froggyness;
       _duration = widget.task!.duration.inMinutes;
+      _deadline = widget.task!.deadline;
       _contactUids.addAll(widget.task!.contactUids);
     }
   }
@@ -224,6 +235,26 @@ class _TaskEditorDialogState extends State<TaskEditorDialog> {
                 decoration: const InputDecoration(labelText: 'Task Name'),
                 validator: (val) => val == null || val.isEmpty ? 'Enter a name' : null,
               ),
+              TextFormField(
+                controller: _addressController,
+                decoration: const InputDecoration(labelText: 'Address (optional)'),
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.calendar_today, size: 18),
+                label: Text(_deadline != null
+                    ? 'Deadline: ${_deadline!.day}.${_deadline!.month}.${_deadline!.year}'
+                    : 'Set Deadline (optional)'),
+                onPressed: () async {
+                  final d = await showDatePicker(
+                    context: context,
+                    initialDate: _deadline ?? DateTime.now().add(const Duration(days: 7)),
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
+                  );
+                  if (d != null) setState(() => _deadline = d);
+                },
+              ),
               const SizedBox(height: 16),
               const Text('Priority (0-5)'),
               Slider(
@@ -238,7 +269,7 @@ class _TaskEditorDialogState extends State<TaskEditorDialog> {
                 onChanged: (v) => setState(() => _froggyness = v.round()),
               ),
               TextFormField(
-                initialValue: '30',
+                initialValue: _duration.toString(),
                 decoration: const InputDecoration(labelText: 'Duration (minutes)'),
                 keyboardType: TextInputType.number,
                 onChanged: (v) => _duration = int.tryParse(v) ?? 30,
@@ -270,8 +301,11 @@ class _TaskEditorDialogState extends State<TaskEditorDialog> {
                 priority: _priority,
                 froggyness: _froggyness,
                 duration: Duration(minutes: _duration),
+                deadline: _deadline,
                 contactUids: _contactUids.toList(),
                 categoryId: _categoryId,
+                address: _addressController.text.isEmpty ? null : _addressController.text,
+                sessionIds: widget.task?.sessionIds,
               );
 
               if (widget.task != null) {

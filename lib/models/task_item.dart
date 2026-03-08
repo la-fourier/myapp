@@ -8,6 +8,7 @@ abstract class TaskItem {
   final List<String> contactUids;
   final String? categoryId;
   final LatLng? location;
+  final String? address;
 
   TaskItem({
     required this.id,
@@ -16,12 +17,14 @@ abstract class TaskItem {
     List<String>? contactUids,
     this.categoryId,
     this.location,
+    this.address,
   }) : contactUids = contactUids ?? [];
 
   DateTime? get deadline;
   int get priority;
   int get froggyness;
   Duration get duration;
+  double get progress;
 
   Map<String, dynamic> toJson();
 
@@ -39,6 +42,7 @@ class Task extends TaskItem {
   final int _priority;
   final int _froggyness;
   final Duration _duration;
+  final List<String> sessionIds; // references TrackedActivity ids
 
   Task({
     required super.id,
@@ -47,14 +51,17 @@ class Task extends TaskItem {
     super.contactUids,
     super.categoryId,
     super.location,
+    super.address,
     DateTime? deadline,
     int priority = 3,
     int froggyness = 0,
     Duration duration = const Duration(minutes: 30),
+    List<String>? sessionIds,
   })  : _deadline = deadline,
         _priority = priority,
         _froggyness = froggyness,
-        _duration = duration;
+        _duration = duration,
+        sessionIds = sessionIds ?? [];
 
   @override
   DateTime? get deadline => _deadline;
@@ -64,6 +71,18 @@ class Task extends TaskItem {
   int get froggyness => _froggyness;
   @override
   Duration get duration => _duration;
+
+  /// Progress is computed externally by comparing session durations to _duration.
+  /// This getter returns 0 here; the view layer computes actual progress
+  /// by summing TrackedActivity durations matching sessionIds.
+  @override
+  double get progress => 0.0; // placeholder – computed in view layer
+
+  /// Compute progress given actual worked duration.
+  double computeProgress(Duration workedDuration) {
+    if (_duration.inMinutes <= 0) return 1.0;
+    return (workedDuration.inMinutes / _duration.inMinutes).clamp(0.0, 1.0);
+  }
 
   @override
   Map<String, dynamic> toJson() {
@@ -81,6 +100,8 @@ class Task extends TaskItem {
       'location': location != null
           ? {'lat': location!.latitude, 'lng': location!.longitude}
           : null,
+      'address': address,
+      'sessionIds': sessionIds,
     };
   }
 
@@ -98,6 +119,8 @@ class Task extends TaskItem {
       location: json['location'] != null
           ? LatLng(json['location']['lat'], json['location']['lng'])
           : null,
+      address: json['address'],
+      sessionIds: List<String>.from(json['sessionIds'] ?? []),
     );
   }
 }
@@ -112,6 +135,7 @@ class Project extends TaskItem {
     super.contactUids,
     super.categoryId,
     super.location,
+    super.address,
     List<TaskItem>? children,
   }) : children = children ?? [];
 
@@ -145,6 +169,13 @@ class Project extends TaskItem {
   }
 
   @override
+  double get progress {
+    if (children.isEmpty) return 0.0;
+    final total = children.map((e) => e.progress).sum;
+    return total / children.length;
+  }
+
+  @override
   Map<String, dynamic> toJson() {
     return {
       'type': 'Project',
@@ -157,6 +188,7 @@ class Project extends TaskItem {
       'location': location != null
           ? {'lat': location!.latitude, 'lng': location!.longitude}
           : null,
+      'address': address,
     };
   }
 
@@ -173,6 +205,7 @@ class Project extends TaskItem {
       location: json['location'] != null
           ? LatLng(json['location']['lat'], json['location']['lng'])
           : null,
+      address: json['address'],
     );
   }
 }

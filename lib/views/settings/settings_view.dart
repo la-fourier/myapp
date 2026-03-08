@@ -5,7 +5,7 @@ import 'package:myapp/views/settings/advanced_settings_view.dart';
 import 'package:myapp/views/settings/about_settings_view.dart';
 import 'package:myapp/services/app_state.dart';
 import 'package:provider/provider.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:myapp/services/toast_service.dart';
 import 'package:myapp/views/settings/keybindings_settings_view.dart';
 import 'package:myapp/views/settings/plugins_settings_view.dart';
 import 'package:myapp/l10n/app_localizations.dart';
@@ -69,7 +69,7 @@ class _SettingsViewState extends State<SettingsView> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Provider.of<AppState>(context, listen: false).saveSettings();
-          Fluttertoast.showToast(msg: AppLocalizations.of(context)?.saveSettings ?? "Settings saved.");
+          AppToast.success(context, AppLocalizations.of(context)?.saveSettings ?? 'Settings saved.');
         },
         icon: const Icon(Icons.save),
         label: Text(AppLocalizations.of(context)?.save ?? 'Save'),

@@ -267,20 +267,14 @@ class _DataCardState<T> extends State<DataCard<T>> {
                                           if (column.width! < 50) column.width = 50;
                                         });
                                       },
+                                      onDoubleTap: () {
+                                        setState(() {
+                                          column.width = null; // Reset to default
+                                        });
+                                      },
                                       child: MouseRegion(
                                         cursor: SystemMouseCursors.resizeLeftRight,
-                                        child: Container(
-                                          width: 10,
-                                          height: 24,
-                                          color: Colors.transparent,
-                                          child: Center(
-                                            child: Container(
-                                              width: 1,
-                                              height: 16,
-                                              color: Theme.of(context).dividerColor.withOpacity(0.5),
-                                            ),
-                                          ),
-                                        ),
+                                        child: _ResizeHandle(),
                                       ),
                                     ),
                                   ],
@@ -323,6 +317,61 @@ class _DataCardState<T> extends State<DataCard<T>> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ResizeHandle extends StatefulWidget {
+  @override
+  State<_ResizeHandle> createState() => _ResizeHandleState();
+}
+
+class _ResizeHandleState extends State<_ResizeHandle> {
+  bool _hovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovering = true),
+      onExit: (_) => setState(() => _hovering = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        width: 16,
+        height: 32,
+        decoration: BoxDecoration(
+          color: _hovering
+              ? theme.colorScheme.primary.withAlpha(30)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _dot(theme),
+              const SizedBox(height: 3),
+              _dot(theme),
+              const SizedBox(height: 3),
+              _dot(theme),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _dot(ThemeData theme) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      width: 3,
+      height: 3,
+      decoration: BoxDecoration(
+        color: _hovering
+            ? theme.colorScheme.primary
+            : theme.colorScheme.onSurfaceVariant.withAlpha(100),
+        shape: BoxShape.circle,
+      ),
     );
   }
 }

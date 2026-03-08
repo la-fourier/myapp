@@ -11,6 +11,7 @@ class PluginsSettingsView extends StatelessWidget {
     final plugins = pluginService.getAvailablePlugins();
 
     return ListView.builder(
+      primary: false,
       padding: const EdgeInsets.all(16),
       itemCount: plugins.length,
       itemBuilder: (context, index) {

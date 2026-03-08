@@ -444,13 +444,31 @@ class _WeekViewState extends State<WeekView> {
                 margin: const EdgeInsets.all(1.0),
                 padding: const EdgeInsets.all(4.0),
                 decoration: BoxDecoration(
-                  color: app.category.color.withAlpha(204),
+                  color: app.category.color.withAlpha(app.calculated ? 140 : 204),
                   borderRadius: BorderRadius.circular(4.0),
+                  border: app.calculated
+                      ? Border.all(color: app.category.color, width: 1.5, strokeAlign: BorderSide.strokeAlignInside)
+                      : null,
                 ),
-                child: Text(
-                  app.title,
-                  style: const TextStyle(fontSize: 12, color: Colors.white),
-                  overflow: TextOverflow.ellipsis,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (app.calculated)
+                      Row(
+                        children: [
+                          const Icon(Icons.auto_fix_high, size: 10, color: Colors.white70),
+                          const SizedBox(width: 2),
+                          Text('calc', style: const TextStyle(fontSize: 9, color: Colors.white70, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    Expanded(
+                      child: Text(
+                        app.title,
+                        style: const TextStyle(fontSize: 12, color: Colors.white),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

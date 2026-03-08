@@ -11,38 +11,45 @@ class ContactsView extends StatelessWidget {
     final appState = Provider.of<AppState>(context);
     final contacts = appState.loggedInUser?.contacts ?? [];
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Contacts'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => _showContactEditor(context),
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.add),
+                onPressed: () => _showContactEditor(context),
+              ),
+            ],
           ),
-        ],
-      ),
-      body: contacts.isEmpty
-          ? const Center(child: Text('No contacts yet.'))
-          : ListView.builder(
-              itemCount: contacts.length,
-              itemBuilder: (context, index) {
-                final contact = contacts[index];
-                return ListTile(
-                  leading: CircleAvatar(
-                    child: Text(contact.fullName[0].toUpperCase()),
-                  ),
-                  title: Text(contact.fullName),
-                  subtitle: Text(contact.email ?? contact.phoneNumber ?? 'No contact info'),
-                  onTap: () => _showContactEditor(context, contact: contact),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    onPressed: () {
-                      appState.deleteItem<Person>(contact);
-                    },
-                  ),
-                );
-              },
-            ),
+        ),
+        Expanded(
+          child: contacts.isEmpty
+              ? const Center(child: Text('No contacts yet.'))
+              : ListView.builder(
+                  itemCount: contacts.length,
+                  itemBuilder: (context, index) {
+                    final contact = contacts[index];
+                    return ListTile(
+                      leading: CircleAvatar(
+                        child: Text(contact.fullName[0].toUpperCase()),
+                      ),
+                      title: Text(contact.fullName),
+                      subtitle: Text(contact.email ?? contact.phoneNumber ?? 'No contact info'),
+                      onTap: () => _showContactEditor(context, contact: contact),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: () {
+                          appState.deleteItem<Person>(contact);
+                        },
+                      ),
+                    );
+                  },
+                ),
+        ),
+      ],
     );
   }
 
@@ -68,6 +75,7 @@ class _ContactEditorDialogState extends State<ContactEditorDialog> {
   late TextEditingController _nameController;
   late TextEditingController _emailController;
   late TextEditingController _phoneController;
+  late TextEditingController _addressController;
 
   @override
   void initState() {
@@ -75,6 +83,7 @@ class _ContactEditorDialogState extends State<ContactEditorDialog> {
     _nameController = TextEditingController(text: widget.contact?.fullName);
     _emailController = TextEditingController(text: widget.contact?.email);
     _phoneController = TextEditingController(text: widget.contact?.phoneNumber);
+    _addressController = TextEditingController(text: widget.contact?.address);
   }
 
   @override
@@ -103,6 +112,10 @@ class _ContactEditorDialogState extends State<ContactEditorDialog> {
                 decoration: const InputDecoration(labelText: 'Phone Number'),
                 keyboardType: TextInputType.phone,
               ),
+              TextFormField(
+                controller: _addressController,
+                decoration: const InputDecoration(labelText: 'Address'),
+              ),
             ],
           ),
         ),
@@ -122,6 +135,7 @@ class _ContactEditorDialogState extends State<ContactEditorDialog> {
                 dateOfBirth: widget.contact?.dateOfBirth ?? DateTime(1990, 1, 1),
                 email: _emailController.text.isEmpty ? null : _emailController.text,
                 phoneNumber: _phoneController.text.isEmpty ? null : _phoneController.text,
+                address: _addressController.text.isEmpty ? null : _addressController.text,
               );
 
               if (widget.contact == null) {

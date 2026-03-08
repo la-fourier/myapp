@@ -24,6 +24,7 @@ class AboutSettingsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
+      primary: false,
       children: [
         ListTile(
           leading: const Icon(Icons.info_outline),

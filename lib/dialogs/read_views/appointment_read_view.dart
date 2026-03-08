@@ -106,6 +106,38 @@ class AppointmentReadView extends StatelessWidget {
                        'Category',
                        appointment.category.name,
                      ),
+                     if (appointment.address != null && appointment.address!.isNotEmpty) ...[
+                       const SizedBox(height: 20),
+                       _buildInfoItem(
+                         context,
+                         Icons.location_on_outlined,
+                         'Address',
+                         appointment.address!,
+                       ),
+                     ],
+                     if (appointment.calculated) ...[
+                       const SizedBox(height: 12),
+                       Container(
+                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                         decoration: BoxDecoration(
+                           color: theme.colorScheme.secondaryContainer,
+                           borderRadius: BorderRadius.circular(16),
+                         ),
+                         child: Row(
+                           mainAxisSize: MainAxisSize.min,
+                           children: [
+                             Icon(Icons.auto_fix_high, size: 16, color: colorScheme.onSecondaryContainer),
+                             const SizedBox(width: 6),
+                             Text('Calculated',
+                               style: theme.textTheme.labelSmall?.copyWith(
+                                 color: colorScheme.onSecondaryContainer,
+                                 fontWeight: FontWeight.bold,
+                               ),
+                             ),
+                           ],
+                         ),
+                       ),
+                     ],
                      if (appointment.description != null && appointment.description!.isNotEmpty) ...[
                        const SizedBox(height: 20),
                        _buildInfoItem(

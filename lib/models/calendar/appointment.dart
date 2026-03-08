@@ -31,6 +31,9 @@ class Appointment {
   final Priority priority;
   final List<String> contactUids;
   final LatLng? location;
+  final String? address;
+  final bool calculated;
+  final String? sourceId; // links to Task/Habit/Project id
 
   Appointment({
     required this.title,
@@ -42,6 +45,9 @@ class Appointment {
     this.priority = Priority.normal,
     List<String>? contactUids,
     this.location,
+    this.address,
+    this.calculated = false,
+    this.sourceId,
   }) : category = category ?? Category(name: 'Default', color: Colors.blue),
        attachments = attachments ?? [],
        contactUids = contactUids ?? [];
@@ -53,7 +59,6 @@ class Appointment {
         if (attachmentJson['attachmentType'] == 'Bill') {
           attachments.add(Bill.fromJson(attachmentJson));
         }
-        // Add other attachment types here in the future
       }
     }
 
@@ -73,6 +78,9 @@ class Appointment {
       location: json['location'] != null
           ? LatLng(json['location']['lat'], json['location']['lng'])
           : null,
+      address: json['address'],
+      calculated: json['calculated'] ?? false,
+      sourceId: json['sourceId'],
     );
   }
 
@@ -87,7 +95,6 @@ class Appointment {
         if (attachment is Bill) {
           return attachment.toJson();
         }
-        // Add other attachment types here
         return {};
       }).toList(),
       'priority': priority.toString(),
@@ -95,6 +102,9 @@ class Appointment {
       'location': location != null
           ? {'lat': location!.latitude, 'lng': location!.longitude}
           : null,
+      'address': address,
+      'calculated': calculated,
+      'sourceId': sourceId,
     };
   }
 }

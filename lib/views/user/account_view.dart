@@ -1,6 +1,6 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:myapp/services/toast_service.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/services/app_state.dart';
@@ -58,7 +58,7 @@ class AccountViewState extends State<AccountView> {
     setState(() {
       _dirtyPerson = null;
     });
-    Fluttertoast.showToast(msg: "Profile updated.");
+    if (mounted) AppToast.success(context, 'Profile updated.');
   }
 
   @override
@@ -91,7 +91,7 @@ class AccountViewState extends State<AccountView> {
           label: const Text('Save Changes'),
         ) : null,
         body: NestedScrollView(
-          controller: scrollController,
+          controller: widget.scrollController,
           headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
             return <Widget>[
               SliverAppBar(
@@ -158,13 +158,12 @@ class AccountViewState extends State<AccountView> {
     }
 
     return SingleChildScrollView(
+      primary: false,
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
           GestureDetector(
-            onTap: () => Fluttertoast.showToast(
-              msg: "Changing profile picture is not yet implemented.",
-            ),
+            onTap: () => AppToast.info(context, 'Changing profile picture is not yet implemented.'),
             child: const CircleAvatar(
               radius: 50,
               child: Icon(Icons.camera_alt, size: 30),
@@ -248,7 +247,7 @@ class AccountViewState extends State<AccountView> {
           ListTile(
             leading: const Icon(Icons.lock),
             title: const Text('Change Password'),
-            onTap: () => Fluttertoast.showToast(msg: "Not implemented yet."),
+            onTap: () => AppToast.info(context, 'Not implemented yet.'),
           ),
           const Divider(),
           ListTile(
@@ -413,9 +412,9 @@ class _IntegrationsPageState extends State<IntegrationsPage> {
     try {
       final exportService = ExportService();
       await exportService.exportData(appState, format);
-      Fluttertoast.showToast(msg: 'Data exported successfully as $format');
+      if (context.mounted) AppToast.success(context, 'Data exported successfully as $format');
     } catch (e) {
-      Fluttertoast.showToast(msg: 'Failed to export data: ${e.toString()}');
+      if (context.mounted) AppToast.error(context, 'Failed to export data: ${e.toString()}');
     } finally {
       loadingService.hide();
     }
@@ -449,9 +448,9 @@ class _IntegrationsPageState extends State<IntegrationsPage> {
             loadingService.show();
             try {
               await GoogleDriveService().connect();
-              Fluttertoast.showToast(msg: "Successfully connected to Google Drive");
+              if (context.mounted) AppToast.success(context, 'Successfully connected to Google Drive');
             } catch (e) {
-              Fluttertoast.showToast(msg: "Failed to connect to Google Drive: ${e.toString()}");
+              if (context.mounted) AppToast.error(context, 'Failed to connect to Google Drive: ${e.toString()}');
             } finally {
               loadingService.hide();
             }
@@ -495,9 +494,9 @@ class _IntegrationsPageState extends State<IntegrationsPage> {
             loadingService.show();
             try {
               await GitHubService().connect();
-              Fluttertoast.showToast(msg: "Successfully connected to GitHub");
+              if (context.mounted) AppToast.success(context, 'Successfully connected to GitHub');
             } catch (e) {
-              Fluttertoast.showToast(msg: "Failed to connect to GitHub: ${e.toString()}");
+              if (context.mounted) AppToast.error(context, 'Failed to connect to GitHub: ${e.toString()}');
             } finally {
               loadingService.hide();
             }

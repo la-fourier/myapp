@@ -155,6 +155,7 @@ class _DayViewState extends State<DayView> {
               ),
             Expanded(
               child: ListView.builder(
+                primary: false,
                 itemCount: _filteredAppointments.length,
                 itemBuilder: (context, index) {
                   final appointment = _filteredAppointments[index];

@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:myapp/dialogs/appointment_editor_dialog.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:myapp/services/toast_service.dart';
 import 'package:myapp/l10n/app_localizations.dart';
 import 'package:myapp/views/finance/finance_view.dart';
 import 'package:myapp/views/user/account_view.dart';
@@ -192,7 +192,7 @@ class _MainScreenState extends State<MainScreen> {
         category: ActionCategory.planner,
         icon: Icons.repeat,
         onExecute: () {
-          Fluttertoast.showToast(msg: "Habit Editor (Coming soon)");
+          AppToast.info(context, 'Habit Editor (Coming soon)');
         },
       ),
       AppAction(
@@ -203,7 +203,7 @@ class _MainScreenState extends State<MainScreen> {
         category: ActionCategory.planner,
         icon: Icons.check_circle_outline,
         onExecute: () {
-          Fluttertoast.showToast(msg: "Task Editor (Coming soon)");
+          AppToast.info(context, 'Task Editor (Coming soon)');
         },
       ),
       AppAction(
@@ -214,7 +214,7 @@ class _MainScreenState extends State<MainScreen> {
         category: ActionCategory.finances,
         icon: Icons.receipt_long,
         onExecute: () {
-          Fluttertoast.showToast(msg: "Finance Editor (Coming soon)");
+          AppToast.info(context, 'Finance Editor (Coming soon)');
         },
       ),
       AppAction(
@@ -225,7 +225,7 @@ class _MainScreenState extends State<MainScreen> {
         category: ActionCategory.contacts,
         icon: Icons.person_add,
         onExecute: () {
-          Fluttertoast.showToast(msg: "Contact Editor (Coming soon)");
+          AppToast.info(context, 'Contact Editor (Coming soon)');
         },
       ),
       AppAction(
@@ -236,7 +236,7 @@ class _MainScreenState extends State<MainScreen> {
         category: ActionCategory.map,
         icon: Icons.add_location_alt,
         onExecute: () {
-          Fluttertoast.showToast(msg: "Long-press map to add locations");
+          AppToast.info(context, 'Long-press map to add locations');
         },
       ),
     ]);
@@ -357,21 +357,9 @@ class _MainScreenState extends State<MainScreen> {
         await githubService.connect();
         await githubService.uploadJson('app_data.json', appData);
       }
-      Fluttertoast.showToast(
-        msg: "Sync successful",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        backgroundColor: Colors.green,
-        textColor: Colors.white,
-      );
+      if (mounted) AppToast.success(context, 'Sync successful');
     } catch (e) {
-      Fluttertoast.showToast(
-        msg: "Sync failed: ${e.toString()}",
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.BOTTOM,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-      );
+      if (mounted) AppToast.error(context, 'Sync failed: ${e.toString()}');
     } finally {
       loadingService.hide();
     }

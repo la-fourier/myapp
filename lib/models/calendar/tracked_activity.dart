@@ -6,6 +6,7 @@ class TrackedActivity {
   final Category category;
   final DateTime startTime;
   final DateTime endTime;
+  final String? taskId; // links to a Task for progress tracking
 
   TrackedActivity({
     String? id,
@@ -13,7 +14,10 @@ class TrackedActivity {
     required this.category,
     required this.startTime,
     required this.endTime,
+    this.taskId,
   }) : id = id ?? DateTime.now().millisecondsSinceEpoch.toString();
+
+  Duration get duration => endTime.difference(startTime);
 
   factory TrackedActivity.fromJson(Map<String, dynamic> json) {
     return TrackedActivity(
@@ -22,6 +26,7 @@ class TrackedActivity {
       category: Category.fromJson(json['category']),
       startTime: DateTime.parse(json['startTime']),
       endTime: DateTime.parse(json['endTime']),
+      taskId: json['taskId'],
     );
   }
 
@@ -32,6 +37,7 @@ class TrackedActivity {
       'category': category.toJson(),
       'startTime': startTime.toIso8601String(),
       'endTime': endTime.toIso8601String(),
+      'taskId': taskId,
     };
   }
 

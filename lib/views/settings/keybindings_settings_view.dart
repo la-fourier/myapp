@@ -25,6 +25,7 @@ class KeybindingsSettingsView extends StatelessWidget {
     }
 
     return ListView(
+      primary: false,
       padding: const EdgeInsets.all(16.0),
       children: groupedActions.entries.map((entry) {
         return Column(

@@ -12,44 +12,51 @@ class HabitsView extends StatelessWidget {
     final appState = Provider.of<AppState>(context);
     final habits = appState.loggedInUser?.habits ?? [];
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Habits'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => _showHabitEditor(context),
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.add),
+                onPressed: () => _showHabitEditor(context),
+              ),
+            ],
           ),
-        ],
-      ),
-      body: habits.isEmpty
-          ? const Center(child: Text('No habits yet.'))
-          : ListView.builder(
-              itemCount: habits.length,
-              itemBuilder: (context, index) {
-                final habit = habits[index];
-                return ListTile(
-                  leading: Icon(Icons.circle, color: appState.loggedInUser?.customCategories.firstWhereOrNull((c) => c.name == habit.categoryId)?.color ?? Colors.grey),
-                  title: Text(habit.name),
-                  subtitle: Text('${habit.frequencyPerWeek}x per week • ${habit.preferredTimeWindow}'),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text('P${habit.priority}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        icon: const Icon(Icons.edit_outlined),
-                        onPressed: () => _showHabitEditor(context, habit: habit),
+        ),
+        Expanded(
+          child: habits.isEmpty
+              ? const Center(child: Text('No habits yet.'))
+              : ListView.builder(
+                  itemCount: habits.length,
+                  itemBuilder: (context, index) {
+                    final habit = habits[index];
+                    return ListTile(
+                      leading: Icon(Icons.circle, color: appState.loggedInUser?.customCategories.firstWhereOrNull((c) => c.name == habit.categoryId)?.color ?? Colors.grey),
+                      title: Text(habit.name),
+                      subtitle: Text(habit.frequencyLabel),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('P${habit.priority}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            icon: const Icon(Icons.edit_outlined),
+                            onPressed: () => _showHabitEditor(context, habit: habit),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline),
+                            onPressed: () => appState.deleteItem<Habit>(habit),
+                          ),
+                        ],
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.delete_outline),
-                        onPressed: () => appState.deleteItem<Habit>(habit),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                    );
+                  },
+                ),
+        ),
+      ],
     );
   }
 
@@ -73,8 +80,11 @@ class HabitEditorDialog extends StatefulWidget {
 class _HabitEditorDialogState extends State<HabitEditorDialog> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
-  late int _frequency;
-  late HabitTimeWindow _timeWindow;
+  late TextEditingController _addressController;
+  late int _frequencyTimes;
+  late FrequencyPeriod _frequencyPeriod;
+  TimeOfDay? _preferredStart;
+  TimeOfDay? _preferredEnd;
   late int _priority;
   late int _froggyness;
   late Set<String> _contactUids;
@@ -86,8 +96,11 @@ class _HabitEditorDialogState extends State<HabitEditorDialog> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.habit?.name);
-    _frequency = widget.habit?.frequencyPerWeek ?? 7;
-    _timeWindow = widget.habit?.preferredTimeWindow ?? HabitTimeWindow.anytime;
+    _addressController = TextEditingController(text: widget.habit?.address);
+    _frequencyTimes = widget.habit?.frequencyTimes ?? 3;
+    _frequencyPeriod = widget.habit?.frequencyPeriod ?? FrequencyPeriod.week;
+    _preferredStart = widget.habit?.preferredStartTime;
+    _preferredEnd = widget.habit?.preferredEndTime;
     _priority = widget.habit?.priority ?? 3;
     _froggyness = widget.habit?.froggyness ?? 0;
     _contactUids = Set<String>.from(widget.habit?.contactUids ?? []);
@@ -95,6 +108,8 @@ class _HabitEditorDialogState extends State<HabitEditorDialog> {
     _maxLength = widget.habit?.maxLength ?? const Duration(minutes: 60);
     _categoryId = widget.habit?.categoryId;
   }
+
+  String _formatTime(TimeOfDay? t) => t != null ? '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}' : 'Any';
 
   @override
   Widget build(BuildContext context) {
@@ -117,22 +132,67 @@ class _HabitEditorDialogState extends State<HabitEditorDialog> {
                 decoration: const InputDecoration(labelText: 'Name'),
                 validator: (value) => value == null || value.isEmpty ? 'Please enter a name' : null,
               ),
-              DropdownButtonFormField<int>(
-                value: _frequency,
-                decoration: const InputDecoration(labelText: 'Frequency (times per week)'),
-                items: List.generate(7, (i) => i + 1)
-                    .map((i) => DropdownMenuItem(value: i, child: Text('$i')))
-                    .toList(),
-                onChanged: (val) => setState(() => _frequency = val!),
+              TextFormField(
+                controller: _addressController,
+                decoration: const InputDecoration(labelText: 'Address (optional)'),
               ),
-              DropdownButtonFormField<HabitTimeWindow>(
-                value: _timeWindow,
-                decoration: const InputDecoration(labelText: 'Preferred Time'),
-                items: HabitTimeWindow.values
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e.toString())))
-                    .toList(),
-                onChanged: (val) => setState(() => _timeWindow = val!),
+              const SizedBox(height: 16),
+              // Frequency
+              Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<int>(
+                      value: _frequencyTimes,
+                      decoration: const InputDecoration(labelText: 'Times'),
+                      items: List.generate(10, (i) => i + 1)
+                          .map((i) => DropdownMenuItem(value: i, child: Text('$i')))
+                          .toList(),
+                      onChanged: (val) => setState(() => _frequencyTimes = val!),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text('per'),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: DropdownButtonFormField<FrequencyPeriod>(
+                      value: _frequencyPeriod,
+                      decoration: const InputDecoration(labelText: 'Period'),
+                      items: FrequencyPeriod.values
+                          .map((e) => DropdownMenuItem(value: e, child: Text(e.toString())))
+                          .toList(),
+                      onChanged: (val) => setState(() => _frequencyPeriod = val!),
+                    ),
+                  ),
+                ],
               ),
+              const SizedBox(height: 16),
+              // Preferred time window
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.access_time, size: 18),
+                      label: Text('From: ${_formatTime(_preferredStart)}'),
+                      onPressed: () async {
+                        final t = await showTimePicker(context: context, initialTime: _preferredStart ?? const TimeOfDay(hour: 8, minute: 0));
+                        if (t != null) setState(() => _preferredStart = t);
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.access_time, size: 18),
+                      label: Text('To: ${_formatTime(_preferredEnd)}'),
+                      onPressed: () async {
+                        final t = await showTimePicker(context: context, initialTime: _preferredEnd ?? const TimeOfDay(hour: 20, minute: 0));
+                        if (t != null) setState(() => _preferredEnd = t);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
               Row(
                 children: [
                   Expanded(
@@ -206,14 +266,17 @@ class _HabitEditorDialogState extends State<HabitEditorDialog> {
               final newHabit = Habit(
                 id: widget.habit?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
                 name: _nameController.text,
-                frequencyPerWeek: _frequency,
-                preferredTimeWindow: _timeWindow,
+                frequencyTimes: _frequencyTimes,
+                frequencyPeriod: _frequencyPeriod,
+                preferredStartTime: _preferredStart,
+                preferredEndTime: _preferredEnd,
                 priority: _priority,
                 froggyness: _froggyness,
                 minLength: _minLength,
                 maxLength: _maxLength,
                 contactUids: _contactUids.toList(),
                 categoryId: _categoryId,
+                address: _addressController.text.isEmpty ? null : _addressController.text,
               );
 
               if (widget.habit == null) {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:myapp/services/toast_service.dart';
 import 'package:myapp/services/app_state.dart';
 
 class NotificationSettingsView extends StatelessWidget {
@@ -9,6 +9,7 @@ class NotificationSettingsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
+      primary: false,
       children: [
         Consumer<AppState>(
           builder: (context, appState, child) {
@@ -17,8 +18,9 @@ class NotificationSettingsView extends StatelessWidget {
               value: appState.toastNotificationsEnabled,
               onChanged: (value) {
                 appState.setToastNotificationsEnabled(value);
-                Fluttertoast.showToast(
-                  msg: "Toast notifications are now ${value ? 'enabled' : 'disabled'}",
+                AppToast.info(
+                  context,
+                  "Toast notifications are now ${value ? 'enabled' : 'disabled'}",
                 );
               },
               secondary: const Icon(Icons.message),
