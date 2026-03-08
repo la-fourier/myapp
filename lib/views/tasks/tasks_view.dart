@@ -83,6 +83,10 @@ class TaskItemWidget extends StatelessWidget {
                 ),
               ),
             IconButton(
+              icon: const Icon(Icons.edit_outlined, size: 20),
+              onPressed: () => _showTaskEditor(context, task: task),
+            ),
+            IconButton(
               icon: const Icon(Icons.delete_outline, size: 20),
               onPressed: () => Provider.of<AppState>(context, listen: false).deleteItem(item),
             ),
@@ -110,6 +114,10 @@ class TaskItemWidget extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.add, size: 20),
               onPressed: () => _showSubItemOptions(context, project),
+            ),
+            IconButton(
+              icon: const Icon(Icons.edit_outlined, size: 20),
+              onPressed: () => _showProjectEditor(context, project: project),
             ),
             IconButton(
               icon: const Icon(Icons.delete_outline, size: 20),
@@ -149,24 +157,25 @@ class TaskItemWidget extends StatelessWidget {
     );
   }
 
-  void _showTaskEditor(BuildContext context, {Project? parent}) {
+  void _showTaskEditor(BuildContext context, {Project? parent, Task? task}) {
     showDialog(
       context: context,
-      builder: (context) => TaskEditorDialog(parent: parent),
+      builder: (context) => TaskEditorDialog(parent: parent, task: task),
     );
   }
 
-  void _showProjectEditor(BuildContext context, {Project? parent}) {
+  void _showProjectEditor(BuildContext context, {Project? parent, Project? project}) {
     showDialog(
       context: context,
-      builder: (context) => ProjectEditorDialog(parent: parent),
+      builder: (context) => ProjectEditorDialog(parent: parent, project: project),
     );
   }
 }
 
 class TaskEditorDialog extends StatefulWidget {
   final Project? parent;
-  const TaskEditorDialog({super.key, this.parent});
+  final Task? task;
+  const TaskEditorDialog({super.key, this.parent, this.task});
 
   @override
   State<TaskEditorDialog> createState() => _TaskEditorDialogState();
@@ -184,7 +193,14 @@ class _TaskEditorDialogState extends State<TaskEditorDialog> {
   @override
   void initState() {
     super.initState();
-    _categoryId = widget.parent?.categoryId;
+    _categoryId = widget.task?.categoryId ?? widget.parent?.categoryId;
+    if (widget.task != null) {
+      _nameController.text = widget.task!.name;
+      _priority = widget.task!.priority;
+      _froggyness = widget.task!.froggyness;
+      _duration = widget.task!.duration.inMinutes;
+      _contactUids.addAll(widget.task!.contactUids);
+    }
   }
 
   @override
@@ -249,7 +265,7 @@ class _TaskEditorDialogState extends State<TaskEditorDialog> {
             if (_formKey.currentState!.validate()) {
               final appState = Provider.of<AppState>(context, listen: false);
               final newTask = Task(
-                id: DateTime.now().millisecondsSinceEpoch.toString(),
+                id: widget.task?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
                 name: _nameController.text,
                 priority: _priority,
                 froggyness: _froggyness,
@@ -258,13 +274,16 @@ class _TaskEditorDialogState extends State<TaskEditorDialog> {
                 categoryId: _categoryId,
               );
 
-              if (widget.parent != null) {
+              if (widget.task != null) {
+                appState.updateItem<TaskItem>(widget.task!, newTask);
+              } else if (widget.parent != null) {
                 final newProject = Project(
                   id: widget.parent!.id,
                   name: widget.parent!.name,
                   description: widget.parent!.description,
                   contactUids: widget.parent!.contactUids,
                   children: [...widget.parent!.children, newTask],
+                  categoryId: widget.parent!.categoryId,
                 );
                 appState.updateItem<TaskItem>(widget.parent!, newProject);
               } else {
@@ -273,7 +292,7 @@ class _TaskEditorDialogState extends State<TaskEditorDialog> {
               Navigator.pop(context);
             }
           },
-          child: const Text('Add'),
+          child: Text(widget.task != null ? 'Save' : 'Add'),
         ),
       ],
     );
@@ -282,7 +301,8 @@ class _TaskEditorDialogState extends State<TaskEditorDialog> {
 
 class ProjectEditorDialog extends StatefulWidget {
   final Project? parent;
-  const ProjectEditorDialog({super.key, this.parent});
+  final Project? project;
+  const ProjectEditorDialog({super.key, this.parent, this.project});
 
   @override
   State<ProjectEditorDialog> createState() => _ProjectEditorDialogState();
@@ -297,13 +317,25 @@ class _ProjectEditorDialogState extends State<ProjectEditorDialog> {
   @override
   void initState() {
     super.initState();
-    _categoryId = widget.parent?.categoryId;
+    if (widget.project != null) {
+      _nameController.text = widget.project!.name;
+      _contactUids.addAll(widget.project!.contactUids);
+      _categoryId = widget.project!.categoryId;
+    } else {
+      _categoryId = widget.parent?.categoryId;
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.parent == null ? 'New Project' : 'New Sub-Project for ${widget.parent!.name}'),
+      title: Text(widget.project != null ? 'Edit Project' : (widget.parent == null ? 'New Project' : 'New Sub-Project for ${widget.parent!.name}')),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -343,19 +375,22 @@ class _ProjectEditorDialogState extends State<ProjectEditorDialog> {
             if (_formKey.currentState!.validate()) {
               final appState = Provider.of<AppState>(context, listen: false);
               final newProj = Project(
-                id: DateTime.now().millisecondsSinceEpoch.toString(),
+                id: widget.project?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
                 name: _nameController.text,
                 contactUids: _contactUids.toList(),
                 categoryId: _categoryId,
               );
 
-              if (widget.parent != null) {
+              if (widget.project != null) {
+                appState.updateItem<TaskItem>(widget.project!, newProj);
+              } else if (widget.parent != null) {
                 final updatedParent = Project(
                   id: widget.parent!.id,
                   name: widget.parent!.name,
                   description: widget.parent!.description,
                   contactUids: widget.parent!.contactUids,
                   children: [...widget.parent!.children, newProj],
+                  categoryId: widget.parent!.categoryId,
                 );
                 appState.updateItem<TaskItem>(widget.parent!, updatedParent);
               } else {

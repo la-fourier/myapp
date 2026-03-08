@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/views/habits/habits_view.dart';
 import 'package:myapp/views/tasks/tasks_view.dart';
+import 'package:myapp/l10n/app_localizations.dart';
 
 class PlannerView extends StatelessWidget {
   const PlannerView({super.key});
@@ -11,13 +12,13 @@ class PlannerView extends StatelessWidget {
       length: 2,
       child: Column(
         children: [
-          const TabBar(
+          TabBar(
             tabs: [
-              Tab(icon: Icon(Icons.repeat), text: 'Habits'),
-              Tab(icon: Icon(Icons.check_circle_outline), text: 'Tasks'),
+              Tab(icon: const Icon(Icons.repeat), text: AppLocalizations.of(context)?.habits ?? 'Habits'),
+              Tab(icon: const Icon(Icons.check_circle_outline), text: AppLocalizations.of(context)?.planner ?? 'Tasks & Projects'),
             ],
           ),
-          Expanded(
+          const Expanded(
             child: TabBarView(
               children: [
                 const HabitsView(),

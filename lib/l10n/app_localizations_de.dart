@@ -46,4 +46,61 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get search => 'Suchen';
+
+  @override
+  String get planner => 'Planer';
+
+  @override
+  String get contacts => 'Kontakte';
+
+  @override
+  String get today => 'Heute';
+
+  @override
+  String get stats => 'Statistiken';
+
+  @override
+  String get appearance => 'Aussehen';
+
+  @override
+  String get borders => 'Ränder';
+
+  @override
+  String get keybindings => 'Tastenkombinationen';
+
+  @override
+  String get notifications => 'Benachrichtigungen';
+
+  @override
+  String get advanced => 'Erweitert';
+
+  @override
+  String get about => 'Über';
+
+  @override
+  String get language => 'Sprache';
+
+  @override
+  String get theme => 'Design';
+
+  @override
+  String get darkMode => 'Dunkelmodus';
+
+  @override
+  String get systemTheme => 'System-Design';
+
+  @override
+  String get profile => 'Profil';
+
+  @override
+  String get integrations => 'Integrationen';
+
+  @override
+  String get saveSettings => 'Einstellungen speichern';
+
+  @override
+  String get map => 'Karte';
+
+  @override
+  String get mapTitle => 'Kartenansicht';
 }

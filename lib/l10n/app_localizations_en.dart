@@ -46,4 +46,61 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get search => 'Search';
+
+  @override
+  String get planner => 'Planner';
+
+  @override
+  String get contacts => 'Contacts';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String get stats => 'Stats';
+
+  @override
+  String get appearance => 'Appearance';
+
+  @override
+  String get borders => 'Borders';
+
+  @override
+  String get keybindings => 'Keybindings';
+
+  @override
+  String get notifications => 'Notifications';
+
+  @override
+  String get advanced => 'Advanced';
+
+  @override
+  String get about => 'About';
+
+  @override
+  String get language => 'Language';
+
+  @override
+  String get theme => 'Theme';
+
+  @override
+  String get darkMode => 'Dark Mode';
+
+  @override
+  String get systemTheme => 'System Theme';
+
+  @override
+  String get profile => 'Profile';
+
+  @override
+  String get integrations => 'Integrations';
+
+  @override
+  String get saveSettings => 'Save Settings';
+
+  @override
+  String get map => 'Map';
+
+  @override
+  String get mapTitle => 'Map View';
 }

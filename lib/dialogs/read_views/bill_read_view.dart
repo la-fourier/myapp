@@ -25,7 +25,7 @@ class BillReadView extends StatelessWidget {
       elevation: 4,
       child: Container(
         width: double.infinity,
-        maxWidth: 500,
+        constraints: const BoxConstraints(maxWidth: 500),
         padding: const EdgeInsets.all(24),
         child: Column(
            mainAxisSize: MainAxisSize.min,

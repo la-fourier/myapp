@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/services/theme_provider.dart';
 import 'package:myapp/services/app_state.dart';
-import 'package:myapp/views/settings/border_radius_settings_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:myapp/l10n/app_localizations.dart';
 
 class AppearanceSettingsView extends StatelessWidget {
   const AppearanceSettingsView({super.key});
@@ -20,7 +20,7 @@ class AppearanceSettingsView extends StatelessWidget {
       children: [
         ListTile(
           leading: const Icon(Icons.color_lens),
-          title: const Text('Theme'),
+          title: Text(AppLocalizations.of(context)?.theme ?? 'Theme'),
           trailing: DropdownButton<AppTheme>(
             value: themeProvider.currentTheme,
             onChanged: (AppTheme? newValue) {
@@ -37,7 +37,7 @@ class AppearanceSettingsView extends StatelessWidget {
           ),
         ),
         SwitchListTile(
-          title: const Text('Dark Mode'),
+          title: Text(AppLocalizations.of(context)?.darkMode ?? 'Dark Mode'),
           value: themeProvider.themeMode == ThemeMode.dark,
           onChanged: (value) {
             themeProvider.toggleThemeMode();
@@ -57,7 +57,7 @@ class AppearanceSettingsView extends StatelessWidget {
             
             return ListTile(
               leading: const Icon(Icons.language),
-              title: const Text('Language'),
+              title: Text(AppLocalizations.of(context)?.language ?? 'Language'),
               trailing: DropdownButton<Locale>(
                 value: appState.currentLocale,
                 onChanged: (Locale? newLocale) {

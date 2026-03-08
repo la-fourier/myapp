@@ -16,7 +16,7 @@ import 'package:myapp/views/main/stats_view.dart';
 import 'package:myapp/views/main/today_view.dart';
 import 'package:myapp/views/contacts/contacts_view.dart';
 import 'package:myapp/views/planner/planner_view.dart';
-import 'package:myapp/views/planner/planner_view.dart';
+import 'package:myapp/views/map/map_view.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/services/loading_service.dart';
 import 'package:myapp/backend_integrations/google.dart';
@@ -99,6 +99,7 @@ class _MainScreenState extends State<MainScreen> {
       const ContactsView(),
       const TodayView(),
       const StatsView(),
+      const MapView(),
       const FinanceView(),
     ];
   }
@@ -109,10 +110,11 @@ class _MainScreenState extends State<MainScreen> {
     switch (index) {
       case 0: return loc.dashboard;
       case 1: return loc.calendar;
-      case 2: return 'Planner';
-      case 3: return 'Contacts';
-      case 4: return 'Today';
-      case 6: return 'Stats';
+      case 2: return loc.planner;
+      case 3: return loc.contacts;
+      case 4: return loc.today;
+      case 5: return loc.stats;
+      case 6: return loc.map;
       case 7: return loc.finances;
       default: return '';
     }
@@ -259,25 +261,30 @@ class _MainScreenState extends State<MainScreen> {
                           selectedIcon: const Icon(Icons.calendar_today),
                           label: Text(AppLocalizations.of(context)?.calendar ?? 'Calendar'),
                         ),
-                        const NavigationRailDestination(
-                          icon: Icon(Icons.event_note),
-                          selectedIcon: Icon(Icons.event_note_rounded),
-                          label: Text('Planner'),
+                        NavigationRailDestination(
+                          icon: const Icon(Icons.event_note),
+                          selectedIcon: const Icon(Icons.event_note_rounded),
+                          label: Text(AppLocalizations.of(context)?.planner ?? 'Planner'),
                         ),
-                        const NavigationRailDestination(
-                          icon: Icon(Icons.people_outline),
-                          selectedIcon: Icon(Icons.people),
-                          label: Text('Contacts'),
+                        NavigationRailDestination(
+                          icon: const Icon(Icons.people_outline),
+                          selectedIcon: const Icon(Icons.people),
+                          label: Text(AppLocalizations.of(context)?.contacts ?? 'Contacts'),
                         ),
-                        const NavigationRailDestination(
-                          icon: Icon(Icons.today_outlined),
-                          selectedIcon: Icon(Icons.today),
-                          label: Text('Today'),
+                        NavigationRailDestination(
+                          icon: const Icon(Icons.today_outlined),
+                          selectedIcon: const Icon(Icons.today),
+                          label: Text(AppLocalizations.of(context)?.today ?? 'Today'),
                         ),
-                        const NavigationRailDestination(
-                          icon: Icon(Icons.bar_chart_outlined),
-                          selectedIcon: Icon(Icons.bar_chart),
-                          label: Text('Stats'),
+                        NavigationRailDestination(
+                          icon: const Icon(Icons.bar_chart_outlined),
+                          selectedIcon: const Icon(Icons.bar_chart),
+                          label: Text(AppLocalizations.of(context)?.stats ?? 'Stats'),
+                        ),
+                        NavigationRailDestination(
+                          icon: const Icon(Icons.map_outlined),
+                          selectedIcon: const Icon(Icons.map),
+                          label: Text(AppLocalizations.of(context)?.map ?? 'Map'),
                         ),
                         NavigationRailDestination(
                           icon: const Icon(Icons.attach_money),
@@ -308,15 +315,20 @@ class _MainScreenState extends State<MainScreen> {
                       selectedIcon: const Icon(Icons.calendar_today),
                       label: AppLocalizations.of(context)?.calendar ?? 'Calendar',
                     ),
-                    const NavigationDestination(
-                      icon: Icon(Icons.event_note),
-                      selectedIcon: Icon(Icons.event_note_rounded),
-                      label: 'Planner',
+                    NavigationDestination(
+                      icon: const Icon(Icons.event_note),
+                      selectedIcon: const Icon(Icons.event_note_rounded),
+                      label: AppLocalizations.of(context)?.planner ?? 'Planner',
                     ),
-                    const NavigationDestination(
-                      icon: Icon(Icons.people_outline),
-                      selectedIcon: Icon(Icons.people),
-                      label: 'Contacts',
+                    NavigationDestination(
+                      icon: const Icon(Icons.people_outline),
+                      selectedIcon: const Icon(Icons.people),
+                      label: AppLocalizations.of(context)?.contacts ?? 'Contacts',
+                    ),
+                    NavigationDestination(
+                      icon: const Icon(Icons.map_outlined),
+                      selectedIcon: const Icon(Icons.map),
+                      label: AppLocalizations.of(context)?.map ?? 'Map',
                     ),
                   ],
                 )

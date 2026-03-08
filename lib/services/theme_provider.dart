@@ -3,21 +3,16 @@ import 'package:google_fonts/google_fonts.dart';
 
 enum AppTheme { purple, green, warm }
 
-enum AppBorderRadius { rounded, squared }
-
 class ThemeProvider extends ChangeNotifier {
   AppTheme _currentTheme = AppTheme.purple;
   ThemeMode _themeMode = ThemeMode.light;
   bool _showQueryField = false;
-  AppBorderRadius _borderRadius = AppBorderRadius.rounded;
-
+ 
   AppTheme get currentTheme => _currentTheme;
   ThemeMode get themeMode => _themeMode;
   bool get showQueryField => _showQueryField;
-  AppBorderRadius get borderRadius => _borderRadius;
-
-  double get _radiusValue =>
-      _borderRadius == AppBorderRadius.rounded ? 12.0 : 4.0;
+ 
+  double get _radiusValue => 16.0;
 
   ThemeData getTheme() {
     switch (_currentTheme) {
@@ -30,16 +25,11 @@ class ThemeProvider extends ChangeNotifier {
     }
   }
 
-  void setBorderRadius(AppBorderRadius borderRadius) {
-    _borderRadius = borderRadius;
-    notifyListeners();
-  }
-
   ThemeData _buildDefaultTheme() {
     final baseTheme = _themeMode == ThemeMode.light
         ? ThemeData.light()
         : ThemeData.dark();
-    final radius = _borderRadius == AppBorderRadius.rounded ? 12.0 : 2.0;
+    final radius = _radiusValue;
     return baseTheme.copyWith(
       splashFactory: InkSparkle.splashFactory,
       inputDecorationTheme: baseTheme.inputDecorationTheme.copyWith(
