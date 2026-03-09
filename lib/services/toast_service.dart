@@ -20,24 +20,24 @@ class AppToast {
 
     switch (type) {
       case ToastType.success:
-        backgroundColor = const Color(0xFF1B5E20);
-        foregroundColor = Colors.white;
+        backgroundColor = colorScheme.primaryContainer;
+        foregroundColor = colorScheme.onPrimaryContainer;
         icon = Icons.check_circle_rounded;
         break;
       case ToastType.error:
-        backgroundColor = const Color(0xFFB71C1C);
-        foregroundColor = Colors.white;
+        backgroundColor = colorScheme.errorContainer;
+        foregroundColor = colorScheme.onErrorContainer;
         icon = Icons.error_rounded;
         duration = const Duration(seconds: 5);
         break;
       case ToastType.warning:
-        backgroundColor = const Color(0xFFF57F17);
-        foregroundColor = Colors.black87;
+        backgroundColor = colorScheme.tertiaryContainer;
+        foregroundColor = colorScheme.onTertiaryContainer;
         icon = Icons.warning_rounded;
         break;
       case ToastType.info:
-        backgroundColor = colorScheme.inverseSurface;
-        foregroundColor = colorScheme.onInverseSurface;
+        backgroundColor = colorScheme.secondaryContainer;
+        foregroundColor = colorScheme.onSecondaryContainer;
         icon = Icons.info_rounded;
         break;
     }

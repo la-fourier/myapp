@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/models/habit.dart';
+import 'package:myapp/models/calendar/category.dart';
+import 'package:myapp/models/person.dart';
 import 'package:myapp/services/app_state.dart';
+import 'package:myapp/widgets/empty_state_widget.dart';
+import 'package:myapp/widgets/shimmer_loading_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:collection/collection.dart';
 
@@ -27,30 +31,66 @@ class HabitsView extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: habits.isEmpty
-              ? const Center(child: Text('No habits yet.'))
-              : ListView.builder(
-                  itemCount: habits.length,
+          child: !appState.isInitialized
+              ? ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: 5,
+                  itemBuilder: (context, index) => const SkeletonListTile(),
+                )
+              : habits.isEmpty
+                  ? EmptyStateWidget(
+                      title: 'No habits yet',
+                      message: 'Start building better routines today!',
+                      icon: Icons.repeat,
+                      actionLabel: 'Add Habit',
+                      onAction: () => _showHabitEditor(context),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: habits.length,
+// ... existing itemBuilder logic
                   itemBuilder: (context, index) {
                     final habit = habits[index];
-                    return ListTile(
-                      leading: Icon(Icons.circle, color: appState.loggedInUser?.customCategories.firstWhereOrNull((c) => c.name == habit.categoryId)?.color ?? Colors.grey),
-                      title: Text(habit.name),
-                      subtitle: Text(habit.frequencyLabel),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text('P${habit.priority}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                          const SizedBox(width: 8),
-                          IconButton(
-                            icon: const Icon(Icons.edit_outlined),
-                            onPressed: () => _showHabitEditor(context, habit: habit),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline),
-                            onPressed: () => appState.deleteItem<Habit>(habit),
-                          ),
-                        ],
+                    final category = appState.loggedInUser?.customCategories.firstWhereOrNull((c) => c.name == habit.categoryId);
+                    
+                    return Card(
+                      elevation: 0,
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(50),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: ListTile(
+                        leading: Icon(Icons.circle, color: category?.color ?? Colors.grey),
+                        title: Text(habit.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: Text(habit.frequencyLabel),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primaryContainer,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                'P${habit.priority}', 
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            IconButton(
+                              icon: const Icon(Icons.edit_outlined, size: 20),
+                              onPressed: () => _showHabitEditor(context, habit: habit),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline, size: 20),
+                              onPressed: () => appState.deleteItem<Habit>(habit),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -158,7 +198,7 @@ class _HabitEditorDialogState extends State<HabitEditorDialog> {
                       value: _frequencyPeriod,
                       decoration: const InputDecoration(labelText: 'Period'),
                       items: FrequencyPeriod.values
-                          .map((e) => DropdownMenuItem(value: e, child: Text(e.toString())))
+                          .map((e) => DropdownMenuItem(value: e, child: Text(e.name)))
                           .toList(),
                       onChanged: (val) => setState(() => _frequencyPeriod = val!),
                     ),
@@ -290,6 +330,22 @@ class _HabitEditorDialogState extends State<HabitEditorDialog> {
           child: const Text('Save'),
         ),
       ],
+    );
+  }
+}
+
+class SkeletonListTile extends StatelessWidget {
+  const SkeletonListTile({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: ShimmerLoadingWidget(
+        width: double.infinity,
+        height: 72,
+        borderRadius: 16,
+      ),
     );
   }
 }

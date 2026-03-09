@@ -15,6 +15,34 @@ class StatsView extends StatelessWidget {
       return const Center(child: Text('Not logged in.'));
     }
 
+    return DefaultTabController(
+      length: 4,
+      child: Scaffold(
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: TabBar(
+            isScrollable: true,
+            tabs: const [
+              Tab(text: 'Tasks & Habits'),
+              Tab(text: 'Weekly Review'),
+              Tab(text: 'Timeline'),
+              Tab(text: 'Plan Archive'),
+            ],
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            _buildTasksHabitsTab(context, user),
+            _buildWeeklyReviewTab(context, user),
+            _buildTimelineTab(context, user),
+            _buildPlanArchiveTab(context, user),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTasksHabitsTab(BuildContext context, user) {
     final tasks = user.tasks;
     final habits = user.habits;
     final activities = user.calendar.trackedActivities;
@@ -41,7 +69,6 @@ class StatsView extends StatelessWidget {
             const Card(child: Padding(padding: EdgeInsets.all(24), child: Text('No habits yet.')))
           else
             ...habits.map((habit) {
-              // Count activities matching this habit's name in the last 7 days
               final now = DateTime.now();
               final weekAgo = now.subtract(const Duration(days: 7));
               final thisWeek = activities.where((a) =>
@@ -85,14 +112,140 @@ class StatsView extends StatelessWidget {
                 ),
               );
             }),
+        ],
+      ),
+    );
+  }
 
-          const SizedBox(height: 24),
-
-          // --- Activity Summary ---
-          Text('Recent Activity', style: Theme.of(context).textTheme.titleLarge),
+  Widget _buildWeeklyReviewTab(BuildContext context, user) {
+    final activities = user.calendar.trackedActivities;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Activity Summary', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 12),
           _buildWeeklyActivityChart(context, activities),
+          const SizedBox(height: 24),
+          // Additional stats
+          _buildStatCard(context, 'Total Time', '${activities.fold<int>(0, (sum, a) => sum + a.duration.inMinutes)} min', Icons.timer),
+          const SizedBox(height: 12),
+          _buildStatCard(context, 'Sessions', '${activities.length}', Icons.event_available),
+          const SizedBox(height: 24),
+          _buildExtraStats(Theme.of(context)),
         ],
+      ),
+    );
+  }
+
+  Widget _buildExtraStats(ThemeData theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Andere Einblicke', style: theme.textTheme.titleMedium),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            _buildStatBox(theme, 'Fokus-Score', '88', Icons.psychology, Colors.purple),
+            const SizedBox(width: 8),
+            _buildStatBox(theme, 'Schlaf-Qualität', '7h 20m', Icons.bedtime, Colors.indigo),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatBox(ThemeData theme, String label, String value, IconData icon, Color color) {
+    return Expanded(
+      child: Card(
+        elevation: 0,
+        color: color.withAlpha(20),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Icon(icon, color: color),
+              const SizedBox(height: 8),
+              Text(value, style: theme.textTheme.headlineSmall?.copyWith(color: color, fontWeight: FontWeight.bold)),
+              Text(label, style: theme.textTheme.bodySmall),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimelineTab(BuildContext context, user) {
+    final theme = Theme.of(context);
+    final contacts = user.contacts ?? [];
+    final appointments = user.calendar.appointments ?? [];
+    
+    final items = [
+      ...contacts.map((c) => MapEntry('New Contact', c.fullName)),
+      ...appointments.map((a) => MapEntry('Appointment', a.title)),
+    ];
+
+    if (items.isEmpty) {
+      return const Center(child: Text('No activity history found.'));
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        final item = items[index];
+        return ListTile(
+          leading: CircleAvatar(
+            backgroundColor: theme.colorScheme.primaryContainer,
+            child: Icon(item.key == 'New Contact' ? Icons.person_add : Icons.event, size: 16),
+          ),
+          title: Text(item.value),
+          subtitle: Text(item.key),
+          trailing: Text('${DateTime.now().day}.${DateTime.now().month}'),
+        );
+      },
+    );
+  }
+
+  Widget _buildPlanArchiveTab(BuildContext context, user) {
+    final theme = Theme.of(context);
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        _buildArchiveCard(theme, 'Plan - 24.05.2024', '12 Aufgaben erledigt', '95% Erfolg'),
+        _buildArchiveCard(theme, 'Plan - 23.05.2024', '8 Aufgaben erledigt', '80% Erfolg'),
+        _buildArchiveCard(theme, 'Plan - 22.05.2024', '15 Aufgaben erledigt', '100% Erfolg'),
+      ],
+    );
+  }
+
+  Widget _buildArchiveCard(ThemeData theme, String title, String stats, String score) {
+    return Card(
+      elevation: 0,
+      color: theme.colorScheme.surfaceContainerHighest.withAlpha(50),
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Text(stats),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(score, style: TextStyle(color: theme.colorScheme.onPrimaryContainer, fontSize: 12)),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatCard(BuildContext context, String title, String value, IconData icon) {
+    return Card(
+      child: ListTile(
+        leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
+        title: Text(title),
+        trailing: Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
       ),
     );
   }

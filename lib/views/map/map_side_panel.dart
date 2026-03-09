@@ -7,10 +7,17 @@ import 'package:myapp/services/map_service.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/l10n/app_localizations.dart';
 
-class MapSidePanel extends StatelessWidget {
+class MapSidePanel extends StatefulWidget {
   final MapController mapController;
 
   const MapSidePanel({super.key, required this.mapController});
+
+  @override
+  State<MapSidePanel> createState() => _MapSidePanelState();
+}
+
+class _MapSidePanelState extends State<MapSidePanel> {
+  String? _selectedRouteId;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +26,7 @@ class MapSidePanel extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      width: 300,
+      width: 320,
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         border: Border(
@@ -30,22 +37,92 @@ class MapSidePanel extends StatelessWidget {
         children: [
           TabBar(
             tabs: [
-              Tab(text: loc?.overview ?? 'Overview'),
-              Tab(text: loc?.collections ?? 'Collections'),
-              Tab(text: loc?.tours ?? 'Tours'),
+              Tab(text: loc?.overview ?? 'Items'),
+              Tab(text: loc?.tours ?? 'Routes'),
             ],
           ),
           Expanded(
             child: TabBarView(
               children: [
                 _buildLocationsList(context, mapService, loc),
-                _buildCollectionsList(context, mapService, loc),
-                _buildToursList(context, mapService, loc),
+                _selectedRouteId == null 
+                  ? _buildToursList(context, mapService, loc)
+                  : _buildRouteDetails(context, mapService, loc, theme),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildRouteDetails(BuildContext context, MapService mapService, AppLocalizations? loc, ThemeData theme) {
+    final route = mapService.routes.firstWhere((r) => r.id == _selectedRouteId);
+    
+    return Column(
+      children: [
+        AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => setState(() => _selectedRouteId = null),
+          ),
+          title: Text(route.name, style: theme.textTheme.titleMedium),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              // Transport Mode
+              Text('Transportmittel', style: theme.textTheme.titleSmall),
+              const SizedBox(height: 8),
+              SegmentedButton<TransportMode>(
+                segments: const [
+                  ButtonSegment(value: TransportMode.walking, icon: Icon(Icons.directions_walk)),
+                  ButtonSegment(value: TransportMode.cycling, icon: Icon(Icons.directions_bike)),
+                  ButtonSegment(value: TransportMode.driving, icon: Icon(Icons.directions_car)),
+                ],
+                selected: {route.transportMode},
+                onSelectionChanged: (val) {
+                  mapService.updateRouteTransportMode(route.id, val.first);
+                },
+              ),
+              const SizedBox(height: 24),
+
+              // Summary
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildDetailItem(theme, 'Zeit', '${route.duration?.inMinutes ?? 0} min', Icons.timer),
+                  _buildDetailItem(theme, 'Distanz', '${route.points.length * 1.5} km', Icons.straighten),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // Instructions
+              Text('Anweisungen', style: theme.textTheme.titleSmall),
+              const SizedBox(height: 8),
+              ...route.instructions.map((instr) => ListTile(
+                dense: true,
+                leading: const Icon(Icons.turn_right, size: 16),
+                title: Text(instr),
+              )),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDetailItem(ThemeData theme, String label, String value, IconData icon) {
+    return Column(
+      children: [
+        Icon(icon, color: theme.colorScheme.primary),
+        const SizedBox(height: 4),
+        Text(value, style: theme.textTheme.titleMedium),
+        Text(label, style: theme.textTheme.bodySmall),
+      ],
     );
   }
 
@@ -59,7 +136,7 @@ class MapSidePanel extends StatelessWidget {
           title: Text(location.name),
           subtitle: Text(location.description ?? ''),
           onTap: () {
-            mapController.move(location.position, 15.0);
+            widget.mapController.move(location.position, 15.0);
           },
           trailing: IconButton(
             icon: const Icon(Icons.delete_outline, size: 20),
@@ -82,14 +159,15 @@ class MapSidePanel extends StatelessWidget {
         return ListTile(
           leading: Icon(_getTransportIcon(route.transportMode), color: route.color),
           title: Text(route.name),
-          subtitle: Text('${loc?.transportMode ?? 'Mode'}: ${route.transportMode.name}'),
+          subtitle: Text('${route.duration?.inMinutes ?? 0} min • ${route.transportMode.name}'),
           trailing: Switch(
             value: route.isVisible,
             onChanged: (_) => mapService.toggleRouteVisibility(route.id),
           ),
           onTap: () {
+            setState(() => _selectedRouteId = route.id);
             if (route.points.isNotEmpty) {
-              mapController.move(route.points.first, 13.0);
+              widget.mapController.move(route.points.first, 13.0);
             }
           },
         );

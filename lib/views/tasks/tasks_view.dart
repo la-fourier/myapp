@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/models/task_item.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:myapp/services/app_state.dart';
+import 'package:myapp/widgets/empty_state_widget.dart';
+import 'package:myapp/widgets/shimmer_loading_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:collection/collection.dart';
 
@@ -34,14 +37,30 @@ class TasksView extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: tasks.isEmpty
-              ? const Center(child: Text('No tasks or projects yet.'))
-              : ListView.builder(
-                  itemCount: tasks.length,
-                  itemBuilder: (context, index) {
-                    return TaskItemWidget(item: tasks[index], isRoot: true);
-                  },
-                ),
+          child: !appState.isInitialized
+              ? ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: 5,
+                  itemBuilder: (context, index) => const SkeletonListTile(),
+                )
+              : tasks.isEmpty
+                  ? EmptyStateWidget(
+                      title: 'No tasks or projects',
+                      message: 'Organize your work and track your progress.',
+                      icon: Icons.assignment_turned_in_outlined,
+                      actionLabel: 'Add Task',
+                      onAction: () => _showTaskEditor(context),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: tasks.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12.0),
+                          child: TaskItemWidget(item: tasks[index], isRoot: true),
+                        );
+                      },
+                    ),
         ),
       ],
     );
@@ -70,24 +89,36 @@ class TaskItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    Widget content;
     if (item is Task) {
       final task = item as Task;
-      return ListTile(
-        contentPadding: EdgeInsets.only(left: isRoot ? 16 : 32),
+      content = ListTile(
+        contentPadding: EdgeInsets.only(left: isRoot ? 16 : 32, right: 8),
         leading: Icon(Icons.check_circle, color: Provider.of<AppState>(context).loggedInUser?.customCategories.firstWhereOrNull((c) => c.name == task.categoryId)?.color ?? Colors.grey),
-        title: Text(task.name),
-        subtitle: Text('P${task.priority} • Frog: ${task.froggyness} • ${task.duration.inMinutes}m'),
+        title: Text(task.name, style: TextStyle(fontWeight: isRoot ? FontWeight.bold : FontWeight.normal)),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('P${task.priority} • Frog: ${task.froggyness} • ${task.duration.inMinutes}m'),
+            const SizedBox(height: 4),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(2),
+              child: LinearProgressIndicator(
+                value: Provider.of<AppState>(context).getTaskProgress(task),
+                backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                minHeight: 4,
+              ),
+            ),
+          ],
+        ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (task.contactUids.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(right: 8.0),
-                child: Chip(
-                  label: Text('${task.contactUids.length}'),
-                  avatar: const Icon(Icons.people, size: 16),
-                  visualDensity: VisualDensity.compact,
-                ),
+                child: Icon(Icons.people, size: 16, color: theme.colorScheme.primary),
               ),
             IconButton(
               icon: const Icon(Icons.edit_outlined, size: 20),
@@ -102,13 +133,27 @@ class TaskItemWidget extends StatelessWidget {
       );
     } else if (item is Project) {
       final project = item as Project;
-      return ExpansionTile(
-        tilePadding: EdgeInsets.only(left: isRoot ? 16 : 32),
+      content = ExpansionTile(
+        tilePadding: EdgeInsets.only(left: isRoot ? 16 : 32, right: 8),
         leading: Icon(Icons.folder, color: Provider.of<AppState>(context).loggedInUser?.customCategories.firstWhereOrNull((c) => c.name == project.categoryId)?.color ?? Colors.grey),
         title: Text(project.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(
-          'Avg P: ${project.priority} • Avg Frog: ${project.froggyness} • Total: ${project.duration.inMinutes}m',
-          style: const TextStyle(fontSize: 12),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Avg P: ${project.priority} • Avg Frog: ${project.froggyness} • Total: ${project.duration.inMinutes}m',
+              style: const TextStyle(fontSize: 12),
+            ),
+            const SizedBox(height: 4),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(2),
+              child: LinearProgressIndicator(
+                value: Provider.of<AppState>(context).getTaskProgress(project),
+                backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                minHeight: 4,
+              ),
+            ),
+          ],
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
@@ -116,7 +161,7 @@ class TaskItemWidget extends StatelessWidget {
             if (project.contactUids.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(right: 8.0),
-                child: Icon(Icons.people, size: 16, color: Theme.of(context).primaryColor),
+                child: Icon(Icons.people, size: 16, color: theme.colorScheme.primary),
               ),
             IconButton(
               icon: const Icon(Icons.add, size: 20),
@@ -134,8 +179,20 @@ class TaskItemWidget extends StatelessWidget {
         ),
         children: project.children.map((child) => TaskItemWidget(item: child)).toList(),
       );
+    } else {
+      content = const SizedBox.shrink();
     }
-    return const SizedBox.shrink();
+
+    if (isRoot) {
+      return Card(
+        elevation: 0,
+        color: theme.colorScheme.surfaceContainerHighest.withAlpha(50),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        margin: EdgeInsets.zero,
+        child: content,
+      );
+    }
+    return content;
   }
 
   void _showSubItemOptions(BuildContext context, Project project) {
@@ -192,6 +249,8 @@ class _TaskEditorDialogState extends State<TaskEditorDialog> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _addressController = TextEditingController();
+  final _latController = TextEditingController();
+  final _lngController = TextEditingController();
   int _priority = 3;
   int _froggyness = 0;
   int _duration = 30;
@@ -206,6 +265,8 @@ class _TaskEditorDialogState extends State<TaskEditorDialog> {
     if (widget.task != null) {
       _nameController.text = widget.task!.name;
       _addressController.text = widget.task!.address ?? '';
+      _latController.text = widget.task!.location?.latitude.toString() ?? '';
+      _lngController.text = widget.task!.location?.longitude.toString() ?? '';
       _priority = widget.task!.priority;
       _froggyness = widget.task!.froggyness;
       _duration = widget.task!.duration.inMinutes;
@@ -238,6 +299,26 @@ class _TaskEditorDialogState extends State<TaskEditorDialog> {
               TextFormField(
                 controller: _addressController,
                 decoration: const InputDecoration(labelText: 'Address (optional)'),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _latController,
+                      decoration: const InputDecoration(labelText: 'Latitude'),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _lngController,
+                      decoration: const InputDecoration(labelText: 'Longitude'),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
               OutlinedButton.icon(
@@ -305,6 +386,9 @@ class _TaskEditorDialogState extends State<TaskEditorDialog> {
                 contactUids: _contactUids.toList(),
                 categoryId: _categoryId,
                 address: _addressController.text.isEmpty ? null : _addressController.text,
+                location: (_latController.text.isNotEmpty && _lngController.text.isNotEmpty)
+                    ? LatLng(double.parse(_latController.text), double.parse(_lngController.text))
+                    : null,
                 sessionIds: widget.task?.sessionIds,
               );
 
@@ -345,6 +429,9 @@ class ProjectEditorDialog extends StatefulWidget {
 class _ProjectEditorDialogState extends State<ProjectEditorDialog> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _latController = TextEditingController();
+  final _lngController = TextEditingController();
   final Set<String> _contactUids = {};
   String? _categoryId;
 
@@ -353,6 +440,9 @@ class _ProjectEditorDialogState extends State<ProjectEditorDialog> {
     super.initState();
     if (widget.project != null) {
       _nameController.text = widget.project!.name;
+      _addressController.text = widget.project!.address ?? '';
+      _latController.text = widget.project!.location?.latitude.toString() ?? '';
+      _lngController.text = widget.project!.location?.longitude.toString() ?? '';
       _contactUids.addAll(widget.project!.contactUids);
       _categoryId = widget.project!.categoryId;
     } else {
@@ -387,6 +477,29 @@ class _ProjectEditorDialogState extends State<ProjectEditorDialog> {
                 decoration: const InputDecoration(labelText: 'Project Name'),
                 validator: (val) => val == null || val.isEmpty ? 'Enter a name' : null,
               ),
+              TextFormField(
+                controller: _addressController,
+                decoration: const InputDecoration(labelText: 'Address (optional)'),
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _latController,
+                      decoration: const InputDecoration(labelText: 'Latitude'),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _lngController,
+                      decoration: const InputDecoration(labelText: 'Longitude'),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    ),
+                  ),
+                ],
+              ),
               const Divider(),
               ExpansionTile(
                 title: const Text('Contacts', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -411,6 +524,10 @@ class _ProjectEditorDialogState extends State<ProjectEditorDialog> {
               final newProj = Project(
                 id: widget.project?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
                 name: _nameController.text,
+                address: _addressController.text.isEmpty ? null : _addressController.text,
+                location: (_latController.text.isNotEmpty && _lngController.text.isNotEmpty)
+                    ? LatLng(double.parse(_latController.text), double.parse(_lngController.text))
+                    : null,
                 contactUids: _contactUids.toList(),
                 categoryId: _categoryId,
               );
@@ -436,6 +553,21 @@ class _ProjectEditorDialogState extends State<ProjectEditorDialog> {
           child: const Text('Add'),
         ),
       ],
+    );
+  }
+}
+class SkeletonListTile extends StatelessWidget {
+  const SkeletonListTile({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: ShimmerLoadingWidget(
+        width: double.infinity,
+        height: 72,
+        borderRadius: 16,
+      ),
     );
   }
 }

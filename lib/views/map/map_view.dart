@@ -7,6 +7,7 @@ import 'package:myapp/models/map_location.dart';
 import 'package:myapp/services/map_service.dart';
 import 'package:myapp/views/map/map_side_panel.dart';
 import 'package:provider/provider.dart';
+import 'dart:math';
 
 class MapView extends StatefulWidget {
   const MapView({super.key});
@@ -17,6 +18,7 @@ class MapView extends StatefulWidget {
 
 class _MapViewState extends State<MapView> {
   final MapController _mapController = MapController();
+  final GlobalKey _mapKey = GlobalKey();
 
   @override
   void initState() {
@@ -57,6 +59,7 @@ class _MapViewState extends State<MapView> {
           children: [
             Expanded(
               child: FlutterMap(
+                key: _mapKey,
                 mapController: _mapController,
                 options: MapOptions(
                   initialCenter: const LatLng(52.5200, 13.4050), // Berlin
@@ -67,9 +70,12 @@ class _MapViewState extends State<MapView> {
                 ),
                 children: [
                   TileLayer(
-                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    urlTemplate:
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: 'com.crealcraft.myapp',
                     tileProvider: CancellableNetworkTileProvider(),
+                    errorImage: const AssetImage(
+                        'assets/images/tile_error.png'), // Pre-defining a fallback
                   ),
                   PolylineLayer(
                     polylines: mapService.routes
@@ -83,38 +89,87 @@ class _MapViewState extends State<MapView> {
                         .cast<Polyline>(),
                   ),
                   MarkerLayer(
-                    markers: mapService.locations.map((loc) {
-                      return Marker(
-                        point: loc.position,
-                        width: 80,
-                        height: 80,
-                        child: GestureDetector(
-                          onTap: () {
-                            _showLocationDetails(context, loc);
-                          },
-                          child: Column(
-                            children: [
-                              _getMarkerIcon(loc.type),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.9),
-                                  borderRadius: BorderRadius.circular(4),
-                                  boxShadow: const [
-                                    BoxShadow(color: Colors.black12, blurRadius: 2),
-                                  ],
+                    markers: [
+                      ...mapService.locations.map((loc) {
+                        return Marker(
+                          point: loc.position,
+                          width: 80,
+                          height: 80,
+                          child: GestureDetector(
+                            onTap: () {
+                              _showLocationDetails(context, loc);
+                            },
+                            child: Column(
+                              children: [
+                                _getMarkerIcon(loc.type),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 4, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.9),
+                                    borderRadius: BorderRadius.circular(4),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                          color: Colors.black12,
+                                          blurRadius: 2),
+                                    ],
+                                  ),
+                                  child: Text(
+                                    loc.name,
+                                    style: const TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                                child: Text(
-                                  loc.name,
-                                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      );
-                    }).toList(),
+                        );
+                      }),
+                      // Waypoints
+                      ...mapService.routes
+                          .where((r) => r.isVisible)
+                          .expand((route) {
+                        return route.waypoints.asMap().entries.map((entry) {
+                          final idx = entry.key;
+                          final pos = entry.value;
+                          return Marker(
+                            point: pos,
+                            width: 40,
+                            height: 40,
+                            child: Draggable(
+                              feedback: Icon(Icons.location_on,
+                                  color: route.color.withOpacity(0.5),
+                                  size: 40),
+                              childWhenDragging: const Icon(Icons.location_on,
+                                  color: Colors.grey, size: 24),
+                              onDragEnd: (details) {
+                                final mapRenderBox = _mapKey.currentContext
+                                    ?.findRenderObject() as RenderBox?;
+                                if (mapRenderBox != null) {
+                                  final localOffset =
+                                      mapRenderBox.globalToLocal(details.offset);
+                                  final localPoint =
+                                      Point(localOffset.dx, localOffset.dy);
+                                  // A 'dynamic' cast is used here as a workaround for a suspected issue
+                                  // with the Dart analyzer failing to resolve the 'pointToLatLng'
+                                  // extension method on the MapController.
+                                  final point = (_mapController as dynamic)
+                                      .pointToLatLng(localPoint) as LatLng?;
+                                  if (point != null) {
+                                    mapService.updateRouteWaypoint(
+                                        route.id, idx, point);
+                                  }
+                                }
+                              },
+                              child: Icon(Icons.radio_button_checked,
+                                  color: route.color, size: 24),
+                            ),
+                          );
+                        });
+                      }),
+                    ],
                   ),
                   RichAttributionWidget(
                     attributions: [

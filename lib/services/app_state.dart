@@ -38,6 +38,7 @@ class AppState extends ChangeNotifier {
   // Global Settings Settings
   bool _toastNotificationsEnabled = true;
   Locale _currentLocale = const Locale('en');
+  bool _isInitialized = false;
 
   final Map<String, SingleActivator> _keybindings = {
     'new_item': const SingleActivator(LogicalKeyboardKey.keyN, alt: true),
@@ -50,6 +51,7 @@ class AppState extends ChangeNotifier {
   DateTime? get trackingStartTime => _trackingStartTime;
   bool get toastNotificationsEnabled => _toastNotificationsEnabled;
   bool get isTracking => _currentlyTracking != null;
+  bool get isInitialized => _isInitialized;
   Locale get currentLocale => _currentLocale;
   Map<String, SingleActivator> get keybindings => _keybindings;
 
@@ -113,6 +115,7 @@ class AppState extends ChangeNotifier {
       }
     }
 
+    _isInitialized = true;
     notifyListeners();
   }
 
@@ -234,11 +237,28 @@ class AppState extends ChangeNotifier {
     if (_loggedInUser == null) return [];
 
     final fromAppointments = _loggedInUser!.calendar.appointments.map(
-      (e) =>
-          SelectableActivity(name: e.title, category: e.category, original: e),
+      (e) => SelectableActivity(name: e.title, category: e.category, original: e),
     );
 
-    return fromAppointments.toList();
+    final fromTasks = _loggedInUser!.tasks.expand((rootItem) {
+      List<TaskItem> allItems = [];
+      void collect(TaskItem item) {
+        allItems.add(item);
+        if (item is Project) {
+          for (var child in item.children) {
+            collect(child);
+          }
+        }
+      }
+      collect(rootItem);
+      return allItems;
+    }).map((t) {
+      final category = _loggedInUser!.customCategories.firstWhereOrNull((c) => c.name == t.categoryId) 
+          ?? Category(name: 'Uncategorized', color: Colors.grey);
+      return SelectableActivity(name: t.name, category: category, original: t);
+    });
+
+    return [...fromAppointments, ...fromTasks];
   }
 
   void setSelectedActivity(SelectableActivity activity) {
@@ -261,18 +281,84 @@ class AppState extends ChangeNotifier {
     if (_currentlyTracking != null &&
         _trackingStartTime != null &&
         _loggedInUser != null) {
+      String? taskId;
+      if (_currentlyTracking!.original is TaskItem) {
+        taskId = (_currentlyTracking!.original as TaskItem).id;
+      }
+
       final trackedActivity = TrackedActivity(
         name: _currentlyTracking!.name,
         category: _currentlyTracking!.category,
         startTime: _trackingStartTime!,
         endTime: DateTime.now(),
+        taskId: taskId,
       );
       _loggedInUser!.calendar.trackedActivities.add(trackedActivity);
+      
+      // If it was a task, we might want to store the session id back in the task
+      // depending on how the model is designed. Currently the task has sessionIds.
+      if (taskId != null) {
+        _addSessionToTask(taskId, trackedActivity.id);
+      }
+
       _currentlyTracking = null;
       _trackingStartTime = null;
       _saveUsers();
       notifyListeners();
     }
+  }
+
+  void _addSessionToTask(String taskId, String sessionId) {
+    if (_loggedInUser == null) return;
+    
+    bool found = false;
+    void search(List<TaskItem> items) {
+      for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+        if (item.id == taskId && item is Task) {
+          final updatedTask = Task(
+            id: item.id,
+            name: item.name,
+            description: item.description,
+            contactUids: item.contactUids,
+            categoryId: item.categoryId,
+            location: item.location,
+            address: item.address,
+            deadline: item.deadline,
+            priority: item.priority,
+            froggyness: item.froggyness,
+            duration: item.duration,
+            sessionIds: [...item.sessionIds, sessionId],
+          );
+          items[i] = updatedTask;
+          found = true;
+          return;
+        } else if (item is Project) {
+          search(item.children);
+          if (found) return;
+        }
+      }
+    }
+    search(_loggedInUser!.tasks);
+  }
+
+  Duration getWorkedDuration(TaskItem item) {
+    if (_loggedInUser == null) return Duration.zero;
+    if (item is Task) {
+      return _loggedInUser!.calendar.trackedActivities
+          .where((a) => a.taskId == item.id)
+          .fold(Duration.zero, (sum, a) => sum + a.duration);
+    } else if (item is Project) {
+      return item.children.fold(Duration.zero, (sum, child) => sum + getWorkedDuration(child));
+    }
+    return Duration.zero;
+  }
+
+  double getTaskProgress(TaskItem item) {
+    final worked = getWorkedDuration(item);
+    final total = item.duration;
+    if (total.inMinutes <= 0) return 1.0;
+    return (worked.inMinutes / total.inMinutes).clamp(0.0, 1.0);
   }
 
   // DATA MANAGEMENT

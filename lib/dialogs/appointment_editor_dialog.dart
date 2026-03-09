@@ -7,6 +7,7 @@ import 'package:myapp/models/finance/attachment.dart';
 import 'package:myapp/models/calendar/category.dart';
 import 'package:myapp/dialogs/bill_editor_dialog.dart';
 import 'package:provider/provider.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:myapp/widgets/editable_text.dart' as editable_text;
 
 class AppointmentEditorDialog extends StatefulWidget {
@@ -40,6 +41,8 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
   late Priority _priority;
   late Set<String> _contactUids;
   String _address = '';
+  double? _lat;
+  double? _lng;
 
   bool _isRawEditMode = false;
   final TextEditingController _rawTextController = TextEditingController();
@@ -62,6 +65,8 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
       _priority = widget.appointment!.priority;
       _contactUids = Set<String>.from(widget.appointment!.contactUids);
       _address = widget.appointment!.address ?? '';
+      _lat = widget.appointment!.location?.latitude;
+      _lng = widget.appointment!.location?.longitude;
 
       if (!_categories.contains(_category)) {
         _categories.insert(0, _category);
@@ -202,6 +207,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
         priority: _priority,
         contactUids: _contactUids.toList(),
         address: _address.isEmpty ? null : _address,
+        location: (_lat != null && _lng != null) ? LatLng(_lat!, _lng!) : null,
       );
 
       widget.onSave(newAppointment);
@@ -267,12 +273,27 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                       onSaved: (value) => _description = value ?? '',
                     ),
                     const SizedBox(height: 10),
-                    TextFormField(
-                      initialValue: _address,
-                      decoration: const InputDecoration(
-                        labelText: 'Address (optional)',
-                      ),
-                      onSaved: (value) => _address = value ?? '',
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            initialValue: _lat?.toString(),
+                            decoration: const InputDecoration(labelText: 'Latitude'),
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            onSaved: (value) => _lat = double.tryParse(value ?? ''),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: TextFormField(
+                            initialValue: _lng?.toString(),
+                            decoration: const InputDecoration(labelText: 'Longitude'),
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            onSaved: (value) => _lng = double.tryParse(value ?? ''),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 10),
                     Table(

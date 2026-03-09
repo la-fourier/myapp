@@ -30,14 +30,16 @@ class PlannerView extends StatelessWidget {
                   ],
                 ),
               ),
+              const SizedBox(width: 12),
               Padding(
-                padding: const EdgeInsets.only(right: 12),
+                padding: const EdgeInsets.only(),
                 child: FilledButton.icon(
                   icon: const Icon(Icons.auto_fix_high, size: 18),
                   label: const Text('Plan'),
                   onPressed: () => _runPlanner(context),
                 ),
               ),
+              const SizedBox(width: 12),
             ],
           ),
           const Expanded(

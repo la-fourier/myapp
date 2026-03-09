@@ -5,8 +5,15 @@ import 'package:myapp/services/settings_service.dart';
 import 'package:myapp/services/action_registry.dart';
 import 'package:myapp/models/app_action.dart';
 
-class KeybindingsSettingsView extends StatelessWidget {
-  const KeybindingsSettingsView({super.key});
+class _KeybindingsSettingsView extends StatefulWidget {
+  const _KeybindingsSettingsView();
+
+  @override
+  State<_KeybindingsSettingsView> createState() => _KeybindingsSettingsViewState();
+}
+
+class _KeybindingsSettingsViewState extends State<_KeybindingsSettingsView> {
+  String _searchQuery = '';
 
   @override
   Widget build(BuildContext context) {
@@ -18,59 +25,134 @@ class KeybindingsSettingsView extends StatelessWidget {
     final loc = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
+    // Filter actions by search query
+    final filteredActions = actions.where((a) =>
+      a.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+      (bindings[a.id]?.toString().toLowerCase().contains(_searchQuery.toLowerCase()) ?? false)
+    ).toList();
+
     // Group actions by category
     final Map<ActionCategory, List<AppAction>> groupedActions = {};
-    for (final action in actions) {
+    for (final action in filteredActions) {
       groupedActions.putIfAbsent(action.category, () => []).add(action);
     }
 
-    return ListView(
-      primary: false,
-      padding: const EdgeInsets.all(16.0),
-      children: groupedActions.entries.map((entry) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8.0),
-              child: Text(
-                _getCategoryName(entry.key, loc),
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: theme.colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+    // Prepare System shortcuts (hardcoded as they aren't in registry yet, or I'll add them to registry)
+    // For now, I'll just ensure core/system is at the top.
+    final categories = groupedActions.keys.toList()..sort((a, b) => a.index.compareTo(b.index));
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: TextField(
+            decoration: InputDecoration(
+              hintText: 'Search shortcuts...',
+              prefixIcon: const Icon(Icons.search),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              filled: true,
+              fillColor: theme.colorScheme.surfaceVariant.withOpacity(0.3),
             ),
-            ...entry.value.map((action) {
-              final shortcut = bindings[action.id] ?? '';
-              return Card(
-                elevation: 0,
-                color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
-                margin: const EdgeInsets.only(bottom: 8.0),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                child: ListTile(
-                  leading: Icon(action.icon ?? Icons.keyboard, size: 20),
-                  title: Text(action.name),
-                  subtitle: Text(
-                    shortcut.isEmpty 
-                      ? (loc?.advanced ?? 'None') 
-                      : shortcut.toUpperCase(),
-                    style: TextStyle(
-                      fontFamily: 'monospace',
-                      color: shortcut.isEmpty ? Colors.grey : theme.colorScheme.secondary,
+            onChanged: (value) => setState(() => _searchQuery = value),
+          ),
+        ),
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            children: [
+              // --- Hardcoded "System" section as requested ---
+              if (_searchQuery.isEmpty) _buildSystemSection(context, theme),
+              
+              ...categories.map((category) {
+                final categoryActions = groupedActions[category]!;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8.0),
+                      child: Text(
+                        _getCategoryName(category, loc),
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                  ),
-                  trailing: OutlinedButton(
-                    onPressed: () => _showRebindDialog(context, action, settings),
-                    child: Text(loc?.edit ?? 'Edit'),
-                  ),
-                ),
-              );
-            }),
-            const SizedBox(height: 16),
-          ],
-        );
-      }).toList(),
+                    ...categoryActions.map((action) {
+                      final shortcut = bindings[action.id] ?? '';
+                      return Card(
+                        elevation: 0,
+                        color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+                        margin: const EdgeInsets.only(bottom: 8.0),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () => _showRebindDialog(context, action, settings),
+                          child: ListTile(
+                            leading: Icon(action.icon ?? Icons.keyboard, size: 20),
+                            title: Text(action.name),
+                            subtitle: Text(
+                              shortcut.isEmpty 
+                                ? (loc?.advanced ?? 'None') 
+                                : shortcut.toUpperCase(),
+                              style: TextStyle(
+                                fontFamily: 'monospace',
+                                color: shortcut.isEmpty ? Colors.grey : theme.colorScheme.secondary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                    const SizedBox(height: 16),
+                  ],
+                );
+              }).toList(),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSystemSection(BuildContext context, ThemeData theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8.0),
+          child: Text(
+            'System',
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: theme.colorScheme.primary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        _buildSystemShortcutTile(theme, 'Navigation', 'LEFT / RIGHT ARROW'),
+        _buildSystemShortcutTile(theme, 'Action Palette', 'ALT + P'),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _buildSystemShortcutTile(ThemeData theme, String name, String shortcut) {
+    return Card(
+      elevation: 0,
+      color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+      margin: const EdgeInsets.only(bottom: 8.0),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        leading: const Icon(Icons.settings_suggest, size: 20),
+        title: Text(name),
+        subtitle: Text(
+          shortcut,
+          style: TextStyle(
+            fontFamily: 'monospace',
+            color: theme.colorScheme.secondary,
+          ),
+        ),
+      ),
     );
   }
 
@@ -138,5 +220,14 @@ class KeybindingsSettingsView extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+class KeybindingsSettingsView extends StatelessWidget {
+  const KeybindingsSettingsView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _KeybindingsSettingsView();
   }
 }

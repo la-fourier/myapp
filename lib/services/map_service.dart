@@ -32,18 +32,56 @@ class MapService with ChangeNotifier {
     final id = 'tour_${DateTime.now().millisecondsSinceEpoch}';
     final points = tourLocations.map((l) => l.position).toList();
     
-    // In a real app, we'd fetch actual routing points from an API for the transport mode
-    // For now, we use straight lines between locations
-    
+    // Simulating turn-by-turn instructions and duration
+    final instructions = [
+      'Ganz am Anfang nach Norden abbiegen',
+      'Nach 200m rechts in die Lindenstraße',
+      'Dem Straßenverlauf für 1.2km folgen',
+      'Das Ziel liegt auf der linken Seite',
+    ];
+
     final route = MapRoute(
       id: id,
       name: name,
       points: points,
+      waypoints: points, // Waypoints are initially the location positions
+      instructions: instructions,
+      duration: Duration(minutes: points.length * 10), // Simulated duration
       transportMode: mode,
       color: _getRouteColor(mode),
     );
     
     addRoute(route);
+  }
+
+  void updateRouteWaypoint(String routeId, int index, LatLng newPos) {
+    final routeIndex = _routes.indexWhere((r) => r.id == routeId);
+    if (routeIndex != -1) {
+      final route = _routes[routeIndex];
+      final newWaypoints = List<LatLng>.from(route.waypoints);
+      newWaypoints[index] = newPos;
+      
+      // Update points as well for simple straight-line routing
+      final newPoints = List<LatLng>.from(newWaypoints);
+      
+      _routes[routeIndex] = route.copyWith(
+        waypoints: newWaypoints,
+        points: newPoints,
+      );
+      notifyListeners();
+    }
+  }
+
+  void updateRouteTransportMode(String routeId, TransportMode mode) {
+    final index = _routes.indexWhere((r) => r.id == routeId);
+    if (index != -1) {
+      _routes[index] = _routes[index].copyWith(
+        transportMode: mode,
+        color: _getRouteColor(mode),
+        duration: Duration(minutes: _routes[index].points.length * (mode == TransportMode.walking ? 15 : 5)),
+      );
+      notifyListeners();
+    }
   }
 
   Color _getRouteColor(TransportMode mode) {

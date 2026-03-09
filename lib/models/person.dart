@@ -1,3 +1,5 @@
+import 'package:latlong2/latlong.dart';
+
 class Person {
   final String uid;
   final String fullName;
@@ -5,6 +7,7 @@ class Person {
   final String? nickname;
   final String? profilePictureUrl;
   final String? address;
+  final LatLng? location;
   final String? email;
   final String? phoneNumber;
 
@@ -15,6 +18,7 @@ class Person {
     this.nickname,
     this.profilePictureUrl,
     this.address,
+    this.location,
     this.email,
     this.phoneNumber,
   });
@@ -27,6 +31,9 @@ class Person {
       nickname: json['nickname'],
       profilePictureUrl: json['profilePictureUrl'],
       address: json['address'],
+      location: json['location'] != null
+          ? LatLng(json['location']['lat'] as double, json['location']['lng'] as double)
+          : null,
       email: json['email'],
       phoneNumber: json['phoneNumber'],
     );
@@ -40,6 +47,9 @@ class Person {
       'nickname': nickname,
       'profilePictureUrl': profilePictureUrl,
       'address': address,
+      'location': location != null
+          ? {'lat': location!.latitude, 'lng': location!.longitude}
+          : null,
       'email': email,
       'phoneNumber': phoneNumber,
     };

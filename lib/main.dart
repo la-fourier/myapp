@@ -49,7 +49,7 @@ class MyApp extends StatelessWidget {
     return Consumer2<ThemeProvider, AppState>(
       builder: (context, themeProvider, appState, child) {
         return MaterialApp(
-          title: 'Orgaa stuff',
+          title: 'Synapse',
           theme: themeProvider.getTheme(),
           darkTheme: themeProvider.getTheme(),
           themeMode: themeProvider.themeMode,
