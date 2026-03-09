@@ -98,7 +98,7 @@ class _PlayBarState extends State<PlayBar> {
         return Container(
           height: 40,
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceVariant,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(12),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 8.0),

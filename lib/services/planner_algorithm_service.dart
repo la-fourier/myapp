@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/models/calendar/appointment.dart';
-import 'package:myapp/models/calendar/category.dart';
 import 'package:myapp/models/habit.dart';
 import 'package:myapp/models/task_item.dart';
 

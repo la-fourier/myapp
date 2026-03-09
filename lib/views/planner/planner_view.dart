@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/services/app_state.dart';
-import 'package:myapp/models/task_item.dart';
-import 'package:myapp/models/habit.dart';
 import 'package:myapp/models/calendar/appointment.dart';
 import 'package:myapp/services/planner_algorithm_service.dart';
 import 'package:myapp/views/habits/habits_view.dart';

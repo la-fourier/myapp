@@ -1,7 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:myapp/models/calendar/appointment.dart';
-import 'package:myapp/models/task_item.dart';
 
 class TravelTimeService {
   // Simple heuristic: 50 km/h average speed in urban areas

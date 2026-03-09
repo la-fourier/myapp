@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:myapp/models/person.dart';
-import 'package:myapp/widgets/editable_text.dart' as editable_text;
 
 class PersonEditorDialog extends StatefulWidget {
   final Person? person;

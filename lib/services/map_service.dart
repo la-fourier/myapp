@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/models/map_location.dart';

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:myapp/models/person.dart';
 import 'package:myapp/services/app_state.dart';
 import 'package:myapp/widgets/empty_state_widget.dart';
@@ -21,6 +22,25 @@ class ContactsView extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
+              ElevatedButton.icon(
+                icon: const Icon(Icons.schedule),
+                label: const Text('Plan Appointment with...'),
+                onPressed: () {
+                  final contacts =
+                      Provider.of<AppState>(context, listen: false).loggedInUser?.contacts ?? [];
+                  if (contacts.isNotEmpty) {
+                    _showContactSelectionDialog(context, contacts);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Add a contact before planning an appointment.'),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                },
+              ),
+              const SizedBox(width: 8),
               IconButton(
                 icon: const Icon(Icons.add),
                 onPressed: () => _showContactEditor(context),
@@ -76,6 +96,87 @@ class ContactsView extends StatelessWidget {
                     ),
         ),
       ],
+    );
+  }
+
+  void _showContactSelectionDialog(BuildContext context, List<Person> contacts) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Select a Contact'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: contacts.length,
+              itemBuilder: (BuildContext context, int index) {
+                final contact = contacts[index];
+                return ListTile(
+                  title: Text(contact.fullName),
+                  onTap: () {
+                    Navigator.of(context).pop(); // Close the selection dialog
+                    _generateAndShowLink(context, contact);
+                  },
+                );
+              },
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _generateAndShowLink(BuildContext context, Person contact) {
+    final dummyLink = 'https://myapp.dev/planner/${contact.uid}';
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Shareable Link'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Share this link with ${contact.fullName} to coordinate an appointment:'),
+              const SizedBox(height: 16),
+              SelectableText(
+                dummyLink,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: dummyLink));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Link copied to clipboard!'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              child: const Text('Copy'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
     );
   }
 

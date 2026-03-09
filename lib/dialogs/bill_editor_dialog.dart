@@ -203,7 +203,7 @@ class _BillEditorDialogState extends State<BillEditorDialog> {
                     const Divider(height: 20),
                     if (_categories.isNotEmpty)
                       DropdownButtonFormField<Category>(
-                        value: _category,
+                        initialValue: _category,
                         items: _categories.map((Category category) {
                           return DropdownMenuItem<Category>(
                             value: category,
@@ -266,7 +266,7 @@ class _BillEditorDialogState extends State<BillEditorDialog> {
                               ),
                             ],
                           );
-                        }).toList(),
+                        }),
                         TextButton.icon(
                           icon: const Icon(Icons.add),
                           label: const Text('Add Item'),

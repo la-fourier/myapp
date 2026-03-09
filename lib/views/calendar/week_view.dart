@@ -147,7 +147,6 @@ class _WeekViewState extends State<WeekView> {
       hourHeight,
       timeColWidth,
     );
-    if (hoverTime == null) return const SizedBox.shrink();
 
     final dayIndex = hoverTime.weekday - 1;
     final top =
@@ -235,10 +234,8 @@ class _WeekViewState extends State<WeekView> {
                             hourHeight,
                             timeColWidth,
                           );
-                          if (hoverTime != null) {
-                            _showAppointmentEditor(hoverTime);
-                          }
-                        },
+                          _showAppointmentEditor(hoverTime);
+                                                },
                         child: Stack(
                           children: [
                             _buildTimeGrid(hourHeight, timeColWidth),

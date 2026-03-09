@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/models/habit.dart';
-import 'package:myapp/models/calendar/category.dart';
-import 'package:myapp/models/person.dart';
 import 'package:myapp/services/app_state.dart';
 import 'package:myapp/widgets/empty_state_widget.dart';
 import 'package:myapp/widgets/shimmer_loading_widget.dart';
@@ -162,7 +160,7 @@ class _HabitEditorDialogState extends State<HabitEditorDialog> {
             mainAxisSize: MainAxisSize.min,
             children: [
               DropdownButtonFormField<String>(
-                value: _categoryId,
+                initialValue: _categoryId,
                 decoration: const InputDecoration(labelText: 'Category'),
                 items: Provider.of<AppState>(context).loggedInUser?.customCategories.map((c) => DropdownMenuItem(value: c.name, child: Text(c.name))).toList() ?? [],
                 onChanged: (cat) => setState(() => _categoryId = cat),
@@ -182,7 +180,7 @@ class _HabitEditorDialogState extends State<HabitEditorDialog> {
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<int>(
-                      value: _frequencyTimes,
+                      initialValue: _frequencyTimes,
                       decoration: const InputDecoration(labelText: 'Times'),
                       items: List.generate(10, (i) => i + 1)
                           .map((i) => DropdownMenuItem(value: i, child: Text('$i')))
@@ -195,7 +193,7 @@ class _HabitEditorDialogState extends State<HabitEditorDialog> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: DropdownButtonFormField<FrequencyPeriod>(
-                      value: _frequencyPeriod,
+                      initialValue: _frequencyPeriod,
                       decoration: const InputDecoration(labelText: 'Period'),
                       items: FrequencyPeriod.values
                           .map((e) => DropdownMenuItem(value: e, child: Text(e.name)))

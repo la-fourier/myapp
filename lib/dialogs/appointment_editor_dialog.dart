@@ -545,7 +545,7 @@ class _AppointmentEditorDialogState extends State<AppointmentEditorDialog> {
                                            });
                                        }
                                      },
-                                     value: null,
+                                     initialValue: null,
                                    ),
                                  ),
                                  const SizedBox(width: 8),

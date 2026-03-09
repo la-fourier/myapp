@@ -51,7 +51,7 @@ class _KeybindingsSettingsViewState extends State<_KeybindingsSettingsView> {
               prefixIcon: const Icon(Icons.search),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               filled: true,
-              fillColor: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+              fillColor: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
             ),
             onChanged: (value) => setState(() => _searchQuery = value),
           ),
@@ -82,7 +82,7 @@ class _KeybindingsSettingsViewState extends State<_KeybindingsSettingsView> {
                       final shortcut = bindings[action.id] ?? '';
                       return Card(
                         elevation: 0,
-                        color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+                        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
                         margin: const EdgeInsets.only(bottom: 8.0),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         child: InkWell(
@@ -107,7 +107,7 @@ class _KeybindingsSettingsViewState extends State<_KeybindingsSettingsView> {
                     const SizedBox(height: 16),
                   ],
                 );
-              }).toList(),
+              }),
             ],
           ),
         ),
@@ -139,7 +139,7 @@ class _KeybindingsSettingsViewState extends State<_KeybindingsSettingsView> {
   Widget _buildSystemShortcutTile(ThemeData theme, String name, String shortcut) {
     return Card(
       elevation: 0,
-      color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+      color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
       margin: const EdgeInsets.only(bottom: 8.0),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(

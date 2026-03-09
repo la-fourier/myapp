@@ -182,7 +182,7 @@ class AppointmentReadView extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+            color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, size: 20, color: theme.colorScheme.primary),

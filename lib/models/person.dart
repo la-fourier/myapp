@@ -1,5 +1,22 @@
 import 'package:latlong2/latlong.dart';
 
+enum Credibility {
+  Unknown,
+  Colleague,
+  Friend,
+  Family;
+
+  @override
+  String toString() {
+    return switch (this) {
+      Credibility.Unknown => 'Unknown',
+      Credibility.Colleague => 'Colleague',
+      Credibility.Friend => 'Friend',
+      Credibility.Family => 'Family',
+    };
+  }
+}
+
 class Person {
   final String uid;
   final String fullName;
@@ -10,6 +27,7 @@ class Person {
   final LatLng? location;
   final String? email;
   final String? phoneNumber;
+  final Credibility credibility;
 
   Person({
     required this.uid,
@@ -21,6 +39,7 @@ class Person {
     this.location,
     this.email,
     this.phoneNumber,
+    this.credibility = Credibility.Unknown,
   });
 
   factory Person.fromJson(Map<String, dynamic> json) {
@@ -36,6 +55,9 @@ class Person {
           : null,
       email: json['email'],
       phoneNumber: json['phoneNumber'],
+      credibility: json['credibility'] != null
+          ? Credibility.values.firstWhere((e) => e.toString() == json['credibility'])
+          : Credibility.Unknown,
     );
   }
 
@@ -52,6 +74,7 @@ class Person {
           : null,
       'email': email,
       'phoneNumber': phoneNumber,
+      'credibility': credibility.toString(),
     };
   }
 

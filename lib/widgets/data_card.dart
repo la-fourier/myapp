@@ -205,8 +205,8 @@ class _DataCardState<T> extends State<DataCard<T>> {
                   child: Theme(
                     data: Theme.of(context).copyWith(
                       dataTableTheme: DataTableThemeData(
-                        headingRowColor: MaterialStateProperty.all(
-                          Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.4)
+                        headingRowColor: WidgetStateProperty.all(
+                          Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4)
                         ),
                       ),
                     ),
@@ -300,7 +300,7 @@ class _DataCardState<T> extends State<DataCard<T>> {
                                     width: column.width ?? 150,
                                     child: Align(
                                       alignment: column.alignment,
-                                      child: column.cellBuilder(item)
+                                      child: column.cellBuilder(item),
                                     ),
                                   )
                                 );

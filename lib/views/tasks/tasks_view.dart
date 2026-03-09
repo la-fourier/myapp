@@ -286,7 +286,7 @@ class _TaskEditorDialogState extends State<TaskEditorDialog> {
             mainAxisSize: MainAxisSize.min,
             children: [
               DropdownButtonFormField<String>(
-                value: _categoryId,
+                initialValue: _categoryId,
                 decoration: const InputDecoration(labelText: 'Category'),
                 items: Provider.of<AppState>(context).loggedInUser?.customCategories.map((c) => DropdownMenuItem(value: c.name, child: Text(c.name))).toList() ?? [],
                 onChanged: (cat) => setState(() => _categoryId = cat),
@@ -467,7 +467,7 @@ class _ProjectEditorDialogState extends State<ProjectEditorDialog> {
             mainAxisSize: MainAxisSize.min,
             children: [
               DropdownButtonFormField<String>(
-                value: _categoryId,
+                initialValue: _categoryId,
                 decoration: const InputDecoration(labelText: 'Category'),
                 items: Provider.of<AppState>(context).loggedInUser?.customCategories.map((c) => DropdownMenuItem(value: c.name, child: Text(c.name))).toList() ?? [],
                 onChanged: (cat) => setState(() => _categoryId = cat),

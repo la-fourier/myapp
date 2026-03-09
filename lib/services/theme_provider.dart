@@ -194,7 +194,7 @@ class ThemeProvider extends ChangeNotifier {
           backgroundColor: _themeMode == ThemeMode.light
               ? const Color(0xFFD2B48C)
               : baseTheme.elevatedButtonTheme.style?.backgroundColor!.resolve(
-                  <MaterialState>{},
+                  <WidgetState>{},
                 ), // Tan// Tan
           foregroundColor: Colors.black,
           shape: RoundedRectangleBorder(
