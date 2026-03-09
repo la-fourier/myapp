@@ -13,9 +13,10 @@ import 'package:myapp/services/plugin_service.dart';
 import 'package:myapp/services/action_registry.dart';
 import 'package:myapp/services/travel_time_service.dart';
 import 'package:myapp/views/auth/login_view.dart';
+import 'package:myapp/views/auth/signup_view.dart';
 import 'package:myapp/views/main/main_screen.dart';
 import 'package:myapp/widgets/loading_overlay.dart';
-import 'package:myapp/views/auth/signup_view.dart';
+import 'package:myapp/views/shared_calendar_view.dart';
 
 // All main Todos from this file have been addressed.
 
@@ -70,10 +71,24 @@ class MyApp extends StatelessWidget {
           },
           debugShowCheckedModeBanner: false,
           initialRoute: '/',
+          onGenerateRoute: (settings) {
+            if (settings.name!.startsWith('/planner/')) {
+              final uri = Uri.parse(settings.name!);
+              final parts = uri.pathSegments;
+              if (parts.length >= 2) {
+                final uid = parts[1];
+                final credibility = uri.queryParameters['credibility'] ?? 'unknown';
+                return MaterialPageRoute(
+                  builder: (context) => SharedCalendarView(contactUid: uid, credibility: credibility),
+                );
+              }
+            }
+            return null;
+          },
           routes: {
             '/': (context) => const AuthWrapper(),
             '/login': (context) => const LoginView(),
-            '/signup': (context) => const SignupView(),
+            '/signup': (context) => SignupView(),
           },
         );
       },

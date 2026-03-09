@@ -109,12 +109,20 @@ class _LoginViewState extends State<LoginView> {
                         onPressed: () async {
                           await _login();
                         },
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(80, 36),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                        ),
                         child: const Text('Login'),
                       ),
                       ElevatedButton(
                         onPressed: () {
                           Navigator.of(context).pushNamed('/signup');
                         },
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(80, 36),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                        ),
                         child: const Text('Sign Up'),
                       ),
                       IconButton(

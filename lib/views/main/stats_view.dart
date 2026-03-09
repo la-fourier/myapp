@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/services/app_state.dart';
@@ -74,7 +75,7 @@ class StatsView extends StatelessWidget {
               final thisWeek = activities.where((a) =>
                 a.name == habit.name &&
                 a.startTime.isAfter(weekAgo)).toList();
-              final totalMinutes = thisWeek.fold<int>(0, (sum, a) => sum + a.duration.inMinutes);
+              final totalMinutes = thisWeek.fold<int>(0, (int sum, TrackedActivity a) => sum + a.duration.inMinutes);
               final targetPerWeek = habit.frequencyPerWeek;
               final completionRate = targetPerWeek > 0
                   ? (thisWeek.length / targetPerWeek).clamp(0.0, 1.0)
@@ -129,7 +130,7 @@ class StatsView extends StatelessWidget {
           _buildWeeklyActivityChart(context, activities),
           const SizedBox(height: 24),
           // Additional stats
-          _buildStatCard(context, 'Total Time', '${activities.fold<int>(0, (sum, a) => sum + a.duration.inMinutes)} min', Icons.timer),
+          _buildStatCard(context, 'Total Time', '${activities.fold<int>(0, (int sum, TrackedActivity a) => sum + a.duration.inMinutes)} min', Icons.timer),
           const SizedBox(height: 12),
           _buildStatCard(context, 'Sessions', '${activities.length}', Icons.event_available),
           const SizedBox(height: 24),
@@ -254,7 +255,7 @@ class StatsView extends StatelessWidget {
     if (item is Task) {
       // Calculate worked duration from sessions
       final sessions = activities.where((a) => item.sessionIds.contains(a.id)).toList();
-      final workedDuration = sessions.fold<Duration>(Duration.zero, (sum, a) => sum + a.duration);
+      final workedDuration = sessions.fold<Duration>(Duration.zero, (Duration sum, TrackedActivity a) => sum + a.duration);
       final progress = item.computeProgress(workedDuration);
 
       return Card(
@@ -325,11 +326,11 @@ class StatsView extends StatelessWidget {
         a.startTime.year == day.year &&
         a.startTime.month == day.month &&
         a.startTime.day == day.day).toList();
-      final totalMinutes = dayActivities.fold<int>(0, (sum, a) => sum + a.duration.inMinutes);
+      final totalMinutes = dayActivities.fold<int>(0, (int sum, TrackedActivity a) => sum + a.duration.inMinutes);
       return totalMinutes;
     }).toList();
 
-    final maxMinutes = dayData.reduce((a, b) => a > b ? a : b).clamp(1, 999999);
+    final maxMinutes = dayData.isEmpty ? 1 : dayData.reduce(max).clamp(1, 999999);
 
     return Card(
       child: Padding(

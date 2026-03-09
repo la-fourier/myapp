@@ -136,7 +136,10 @@ class ContactsView extends StatelessWidget {
   }
 
   void _generateAndShowLink(BuildContext context, Person contact) {
-    final dummyLink = 'https://myapp.dev/planner/${contact.uid}';
+    final credibility = contact.credibility?.name ?? 'unknown';
+    final host = Uri.base.host;
+    final port = Uri.base.port;
+    final link = 'http://$host:$port/#/planner/${contact.uid}?credibility=$credibility';
 
     showDialog(
       context: context,
@@ -150,7 +153,7 @@ class ContactsView extends StatelessWidget {
               Text('Share this link with ${contact.fullName} to coordinate an appointment:'),
               const SizedBox(height: 16),
               SelectableText(
-                dummyLink,
+                link,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ],
@@ -158,13 +161,8 @@ class ContactsView extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () {
-                Clipboard.setData(ClipboardData(text: dummyLink));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Link copied to clipboard!'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
+                // For demo, just copy
+                // In real app, start web server or use deep linking
               },
               child: const Text('Copy'),
             ),

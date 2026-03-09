@@ -415,8 +415,7 @@ class AppState extends ChangeNotifier {
         final index = _loggedInUser!.habits.indexOf(oldItem);
         if (index != -1) _loggedInUser!.habits[index] = newItem;
       } else if (oldItem is TaskItem && newItem is TaskItem) {
-        final index = _loggedInUser!.tasks.indexOf(oldItem);
-        if (index != -1) _loggedInUser!.tasks[index] = newItem;
+        _updateTaskItemInTree(_loggedInUser!.tasks, oldItem, newItem);
       } else if (oldItem is Bill && newItem is Bill) {
         final index = _loggedInUser!.bills.indexOf(oldItem);
         if (index != -1) _loggedInUser!.bills[index] = newItem;
@@ -468,6 +467,19 @@ class AppState extends ChangeNotifier {
     if (_loggedInUser != null) {
       _loggedInUser!.person = newProfile;
       _onDataChanged();
+    }
+  }
+
+  void _updateTaskItemInTree(List<TaskItem> items, TaskItem oldItem, TaskItem newItem) {
+    for (int i = 0; i < items.length; i++) {
+      if (items[i] == oldItem) {
+        items[i] = newItem;
+        return;
+      }
+      if (items[i] is Project) {
+        final project = items[i] as Project;
+        _updateTaskItemInTree(project.children, oldItem, newItem);
+      }
     }
   }
 }
