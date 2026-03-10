@@ -1,43 +1,61 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/services/app_state.dart';
 import 'package:myapp/models/person.dart';
 import 'package:myapp/models/user.dart';
+import 'package:myapp/models/calendar/appointment.dart';
 import 'package:myapp/views/calendar/calendar_view.dart';
 
 class SharedCalendarView extends StatelessWidget {
-  final String contactUid;
-  final String credibility;
+  final String? contactUid;
+  final String? credibility;
+  final String? encodedData;
 
-  const SharedCalendarView({super.key, required this.contactUid, required this.credibility});
+  const SharedCalendarView({super.key, this.contactUid, this.credibility, this.encodedData});
 
   @override
   Widget build(BuildContext context) {
     final appState = Provider.of<AppState>(context);
     final user = appState.loggedInUser;
-    if (user == null) {
-      return const Scaffold(body: Center(child: Text('User not logged in')));
+
+    List<Appointment> appointments = [];
+    String cred = 'unknown';
+    String contactUidLocal = '';
+
+    if (encodedData != null) {
+      try {
+        final decoded = jsonDecode(utf8.decode(base64Decode(encodedData!)));
+        appointments = (decoded['appointments'] as List).map((a) => Appointment.fromJson(a)).toList();
+        cred = decoded['credibility'];
+        contactUidLocal = decoded['contactUid'];
+      } catch (e) {
+        return const Scaffold(body: Center(child: Text('Invalid shared data')));
+      }
+    } else if (user != null && contactUid != null) {
+      final contact = user.contacts.firstWhere(
+        (c) => c.uid == contactUid,
+        orElse: () => Person(uid: '', fullName: '', dateOfBirth: DateTime.now()),
+      );
+      appointments = user.calendar.appointments;
+      cred = credibility ?? 'unknown';
+      contactUidLocal = contactUid!;
+    } else {
+      return const Scaffold(body: Center(child: Text('Shared calendar not available')));
     }
 
-    final contact = user.contacts.firstWhere(
-      (c) => c.uid == contactUid,
-      orElse: () => Person(uid: '', fullName: '', dateOfBirth: DateTime.now()),
-    );
-
-    if (contact.uid.isEmpty) {
-      return const Scaffold(body: Center(child: Text('Contact not found')));
-    }
+    final contact = Person(uid: contactUidLocal, fullName: 'Shared Contact', dateOfBirth: DateTime.now());
 
     Widget content;
-    switch (credibility.toLowerCase()) {
+    switch (cred.toLowerCase()) {
       case 'family':
-        content = CalendarView(onDaySelected: (date) {}); // Full calendar
+        content = CalendarView(onDaySelected: (date) {}); // Full calendar, but with shared data?
         break;
       case 'friend':
-        content = AnonymizedCalendarView(user: user, contact: contact);
+        content = AnonymizedCalendarView(appointments: appointments, contact: contact);
         break;
       case 'colleague':
-        content = AvailabilityCalendarView(user: user, contact: contact);
+        content = AvailabilityCalendarView(appointments: appointments, contact: contact);
         break;
       default:
         content = const Center(child: Text('Invalid credibility level'));
@@ -53,17 +71,17 @@ class SharedCalendarView extends StatelessWidget {
 }
 
 class AnonymizedCalendarView extends StatelessWidget {
-  final User user;
+  final List<Appointment> appointments;
   final Person contact;
 
-  const AnonymizedCalendarView({super.key, required this.user, required this.contact});
+  const AnonymizedCalendarView({super.key, required this.appointments, required this.contact});
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount: user.calendar.appointments.length,
+      itemCount: appointments.length,
       itemBuilder: (context, index) {
-        final appointment = user.calendar.appointments[index];
+        final appointment = appointments[index];
         return ListTile(
           title: Text('Appointment ${index + 1}'),
           subtitle: Text('Priority: ${appointment.priority ?? 'N/A'}'),
@@ -75,10 +93,10 @@ class AnonymizedCalendarView extends StatelessWidget {
 }
 
 class AvailabilityCalendarView extends StatelessWidget {
-  final User user;
+  final List<Appointment> appointments;
   final Person contact;
 
-  const AvailabilityCalendarView({super.key, required this.user, required this.contact});
+  const AvailabilityCalendarView({super.key, required this.appointments, required this.contact});
 
   @override
   Widget build(BuildContext context) {

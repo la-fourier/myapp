@@ -7,6 +7,7 @@ import 'package:myapp/views/habits/habits_view.dart';
 import 'package:myapp/views/tasks/tasks_view.dart';
 import 'package:myapp/l10n/app_localizations.dart';
 
+
 class PlannerView extends StatelessWidget {
   const PlannerView({super.key});
 
@@ -16,12 +17,15 @@ class PlannerView extends StatelessWidget {
 
     return DefaultTabController(
       length: 2,
-      child: Column(
-        children: [
-          Row(
+      child: Scaffold(
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: Row(
             children: [
               Expanded(
                 child: TabBar(
+                  isScrollable: true,
+                  indicatorSize: TabBarIndicatorSize.tab,
                   tabs: [
                     Tab(icon: const Icon(Icons.repeat), text: loc?.habits ?? 'Habits'),
                     Tab(icon: const Icon(Icons.check_circle_outline), text: loc?.planner ?? 'Tasks & Projects'),
@@ -40,15 +44,13 @@ class PlannerView extends StatelessWidget {
               const SizedBox(width: 12),
             ],
           ),
-          const Expanded(
-            child: TabBarView(
-              children: [
-                HabitsView(),
-                TasksView(),
-              ],
-            ),
-          ),
-        ],
+        ),
+        body: const TabBarView(
+          children: [
+            HabitsView(),
+            TasksView(),
+          ],
+        ),
       ),
     );
   }

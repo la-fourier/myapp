@@ -72,6 +72,12 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           initialRoute: '/',
           onGenerateRoute: (settings) {
+            if (settings.name!.startsWith('/shared/')) {
+              final encodedData = settings.name!.substring('/shared/'.length);
+              return MaterialPageRoute(
+                builder: (context) => SharedCalendarView(encodedData: encodedData),
+              );
+            }
             if (settings.name!.startsWith('/planner/')) {
               final uri = Uri.parse(settings.name!);
               final parts = uri.pathSegments;

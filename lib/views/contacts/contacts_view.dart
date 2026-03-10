@@ -1,11 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:myapp/models/person.dart';
-import 'package:myapp/services/app_state.dart';
-import 'package:myapp/widgets/empty_state_widget.dart';
-import 'package:myapp/widgets/shimmer_loading_widget.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:myapp/views/habits/habits_view.dart';
 import 'package:provider/provider.dart';
+import 'package:latlong2/latlong.dart';
+
+import '../../models/person.dart';
+import '../../services/app_state.dart';
+import '../../widgets/empty_state_widget.dart';
+import 'package:flutter/services.dart';
+
 
 class ContactsView extends StatelessWidget {
   const ContactsView({super.key});
@@ -136,10 +140,22 @@ class ContactsView extends StatelessWidget {
   }
 
   void _generateAndShowLink(BuildContext context, Person contact) {
+    final appState = Provider.of<AppState>(context, listen: false);
+    final user = appState.loggedInUser;
+    if (user == null) return;
+
     final credibility = contact.credibility?.name ?? 'unknown';
     final host = Uri.base.host;
     final port = Uri.base.port;
-    final link = 'http://$host:$port/#/planner/${contact.uid}?credibility=$credibility';
+
+    // Encode user data
+    final data = {
+      'appointments': user.calendar.appointments.map((a) => a.toJson()).toList(),
+      'credibility': credibility,
+      'contactUid': contact.uid,
+    };
+    final encodedData = base64Encode(utf8.encode(jsonEncode(data)));
+    final link = 'http://$host:$port/#/shared/$encodedData';
 
     showDialog(
       context: context,
@@ -161,8 +177,13 @@ class ContactsView extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () {
-                // For demo, just copy
-                // In real app, start web server or use deep linking
+                Clipboard.setData(ClipboardData(text: link));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Link copied to clipboard!'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
               },
               child: const Text('Copy'),
             ),
@@ -251,7 +272,7 @@ class _ContactEditorDialogState extends State<ContactEditorDialog> {
                     child: TextFormField(
                       controller: _latController,
                       decoration: const InputDecoration(labelText: 'Latitude'),
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: TextInputType.number,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -259,7 +280,7 @@ class _ContactEditorDialogState extends State<ContactEditorDialog> {
                     child: TextFormField(
                       controller: _lngController,
                       decoration: const InputDecoration(labelText: 'Longitude'),
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: TextInputType.number,
                     ),
                   ),
                 ],
