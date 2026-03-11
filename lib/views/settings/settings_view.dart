@@ -10,6 +10,8 @@ import 'package:myapp/views/settings/keybindings_settings_view.dart';
 import 'package:myapp/views/settings/plugins_settings_view.dart';
 import 'package:myapp/l10n/app_localizations.dart';
 
+import 'package:myapp/views/settings/data_settings_view.dart';
+
 class SettingsView extends StatefulWidget {
   final ScrollController? scrollController;
   const SettingsView({super.key, this.scrollController});
@@ -23,7 +25,7 @@ class _SettingsViewState extends State<SettingsView> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: DefaultTabController(
-        length: 6,
+        length: 7,
         child: NestedScrollView(
           controller: widget.scrollController,
           headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
@@ -46,6 +48,7 @@ class _SettingsViewState extends State<SettingsView> {
                     Tab(text: AppLocalizations.of(context)?.appearance ?? 'Appearance'),
                     Tab(text: AppLocalizations.of(context)?.keybindings ?? 'Keybindings'),
                     Tab(text: 'Plugins'),
+                    Tab(text: 'Data'),
                     Tab(text: AppLocalizations.of(context)?.notifications ?? 'Notifications'),
                     Tab(text: AppLocalizations.of(context)?.advanced ?? 'Advanced'),
                     Tab(text: AppLocalizations.of(context)?.about ?? 'About'),
@@ -59,6 +62,7 @@ class _SettingsViewState extends State<SettingsView> {
               AppearanceSettingsView(),
               KeybindingsSettingsView(),
               PluginsSettingsView(),
+              DataSettingsView(),
               NotificationSettingsView(),
               AdvancedSettingsView(),
               AboutSettingsView(),

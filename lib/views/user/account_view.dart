@@ -369,57 +369,6 @@ class _IntegrationsPageState extends State<IntegrationsPage> {
     super.dispose();
   }
   
-  void _showExportDialog(BuildContext context, AppState appState) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Select Export Format'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                title: const Text('CSV'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  _exportData(context, appState, 'csv');
-                },
-              ),
-              ListTile(
-                title: const Text('JSON'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  _exportData(context, appState, 'json');
-                },
-              ),
-              ListTile(
-                title: const Text('TXT'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  _exportData(context, appState, 'txt');
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> _exportData(BuildContext context, AppState appState, String format) async {
-    final loadingService = LoadingService();
-    loadingService.show();
-    try {
-      final exportService = ExportService();
-      await exportService.exportData(appState, format);
-      if (context.mounted) AppToast.success(context, 'Data exported successfully as $format');
-    } catch (e) {
-      if (context.mounted) AppToast.error(context, 'Failed to export data: ${e.toString()}');
-    } finally {
-      loadingService.hide();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -503,18 +452,6 @@ class _IntegrationsPageState extends State<IntegrationsPage> {
           },
           icon: const Icon(Icons.grain),
           label: const Text('Connect to GitHub'),
-        ),
-        const Divider(height: 32),
-        const Text(
-          'Export Data',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        const Text('Download all your data as a single file.'),
-        ElevatedButton.icon(
-          onPressed: () => _showExportDialog(context, widget.appState),
-          icon: const Icon(Icons.download),
-          label: const Text('Export'),
         ),
       ],
     );

@@ -3,6 +3,8 @@ import 'dart:io' show File;
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'package:myapp/services/storage_service.dart';
+
 class SettingsService with ChangeNotifier {
   Map<String, dynamic> _settings = {};
   bool _isLoaded = false;
@@ -36,6 +38,13 @@ class SettingsService with ChangeNotifier {
           final decoded = json.decode(content);
           if (decoded is Map) {
             _settings = Map<String, dynamic>.from(decoded);
+            // Ensure all default keys exist
+            final defaultSettings = _defaultSettings();
+            for (var key in defaultSettings.keys) {
+              if (!_settings.containsKey(key)) {
+                _settings[key] = defaultSettings[key];
+              }
+            }
           } else {
             _settings = _defaultSettings();
           }
@@ -86,6 +95,7 @@ class SettingsService with ChangeNotifier {
       },
       'themeMode': 'system',
       'language': 'de',
+      'storageType': 'sembast', // Default to sembast
     };
   }
 
@@ -97,6 +107,20 @@ class SettingsService with ChangeNotifier {
     _settings[key] = value;
     await saveSettings();
     notifyListeners();
+  }
+
+  StorageType getStorageType() {
+    final typeString = getSetting('storageType', defaultValue: 'sembast') as String;
+    switch (typeString) {
+      case 'legacy':
+        return StorageType.legacy;
+      case 'sembast':
+        return StorageType.sembast;
+      case 'github':
+        return StorageType.github;
+      default:
+        return StorageType.sembast;
+    }
   }
 
   // Specialized helpers

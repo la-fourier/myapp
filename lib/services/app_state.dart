@@ -29,7 +29,7 @@ class SelectableActivity {
 class AppState extends ChangeNotifier {
   User? _loggedInUser;
   List<User> _users = [];
-  final StorageService _storageService = StorageService();
+  final StorageService _storageService;
 
   // Tracking State
   SelectableActivity? _currentlyTracking;
@@ -55,8 +55,10 @@ class AppState extends ChangeNotifier {
   Locale get currentLocale => _currentLocale;
   Map<String, SingleActivator> get keybindings => _keybindings;
 
-  AppState() {
-    _loadUsers();
+  AppState(this._storageService);
+
+  Future<void> init() async {
+    await _loadUsers();
   }
 
   void setLocale(Locale newLocale) {

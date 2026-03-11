@@ -1,3 +1,5 @@
+import 'package:myapp/services/storage_service.dart';
+
 // Google Firebase STudio: https://studio.firebase.google.com/crealcraft-96586257
 
 
@@ -26,10 +28,17 @@ void main() async {
   final settingsService = SettingsService();
   await settingsService.init();
 
+  final storageService = StorageService();
+  final storageType = settingsService.getStorageType();
+  await storageService.init(storageType);
+
+  final appState = AppState(storageService);
+  await appState.init();
+
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => AppState()),
+        ChangeNotifierProvider.value(value: appState),
         ChangeNotifierProvider(create: (context) => ThemeProvider()),
         ChangeNotifierProvider(create: (context) => MapService()),
         ChangeNotifierProvider.value(value: settingsService),
